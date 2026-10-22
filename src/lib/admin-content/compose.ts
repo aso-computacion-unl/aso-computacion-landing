@@ -30,6 +30,8 @@ export interface SiteContent {
 	nextEvent: TimelineEntry | undefined;
 	pillars: Pillar[];
 	faqItems: FaqItem[];
+	// True while the FAQ shown is the demo placeholder set (drives the section's "demo" tag).
+	faqIsDemo: boolean;
 	team: TeamMember[];
 	socials: Social[];
 	collage: Photo[];
@@ -73,7 +75,8 @@ export function composeSiteContent(options: {
 	const nextEvent = upcoming.filter((entry) => entry.date).reduce<TimelineEntry | undefined>((nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest), undefined);
 
 	const pillars = content.pillars.length > 0 || !withDemo ? toPillars(content.pillars, ctx) : baseline.demo.pillars;
-	const faqItems = content.faqs.length > 0 || !withDemo ? toFaqItems(content.faqs) : baseline.demo.faqItems;
+	const faqIsDemo = withDemo && content.faqs.length === 0 && baseline.demo.faqItems.length > 0;
+	const faqItems = faqIsDemo ? baseline.demo.faqItems : toFaqItems(content.faqs);
 	const socials = toSocials(content.socials);
 
 	const seen = new Set<Photo['src']>();
@@ -86,6 +89,6 @@ export function composeSiteContent(options: {
 	const hasContent: Record<string, boolean> = { '#faq': faqItems.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
 	const navLinks = baseline.navLinks.filter((link) => hasContent[link.href] ?? true);
 
-	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, team, socials, collage };
+	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, team, socials, collage };
 }
 
