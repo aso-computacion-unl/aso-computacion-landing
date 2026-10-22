@@ -1,0 +1,32 @@
+name: Daily rebuild
+
+# Safety net for the admin's deploy hook: rebuilds the landing once a day so that
+# "today" (fixed at build time, in Ecuador time, UTC-5) moves forward and lost or
+# duplicated hook builds are corrected. Keep the cron after 05:00 UTC: before that
+# it is still the previous day in Ecuador.
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the Cloudflare Pages deploy hook
+        env:
+          CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_DEPLOY_HOOK_URL}" ]; then
+            echo "::error::The CLOUDFLARE_DEPLOY_HOOK_URL secret is not set. Add it under Settings > Secrets and variables > Actions (see docs/DEPLOY.md)."
+            exit 1
+          fi
+          # The URL carries the hook token: it is only passed to curl, never printed.
+          curl --fail --silent --show-error --max-time 30 \
+            --request POST --output /dev/null \
+            "${CLOUDFLARE_DEPLOY_HOOK_URL}"
+          echo "Deploy hook accepted."
