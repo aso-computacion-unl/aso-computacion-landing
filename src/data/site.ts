@@ -44,16 +44,43 @@ export const ribbon = [
 	'refactor: hacer la carrera más llevadera',
 ];
 
-// DEMO: what the ASO changes for a student, shown as a git diff. Invented copy; replace with the board's words.
-export const diff = {
-	demo: true,
-	title: 'lo que cambia para ti',
-	rows: [
-		{ del: 'llegar a primer ciclo sin conocer a nadie', add: 'una comunidad que te recibe' },
-		{ del: 'enterarte tarde de los eventos', add: 'todo anunciado primero en Instagram' },
-		{ del: 'estudiar solo', add: 'talleres, charlas y hackatones con tu carrera' },
-	],
+// Nosotros manifesto: two static lines plus one rotating word. Screen readers get `sr` instead of the animation.
+export const manifesto = {
+	lines: ['Somos la ASO', 'de Computación'],
+	rotor: ['estudiantes', 'comunidad', 'tu voz'],
+	sr: 'Somos la ASO de Computación: estudiantes, comunidad y tu voz.',
 };
+
+// DEMO: the three pillars of the bento grid (invented copy and demo photos). Replace with the board's own words.
+export const pillars = [
+	{
+		id: 'representamos',
+		word: 'VOZ',
+		title: 'Representamos',
+		text: 'Llevamos lo que piensan los estudiantes de Computación hasta quienes toman las decisiones en la carrera.',
+		image: charlaCiberseguridad,
+		imageAlt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro',
+		demo: true,
+	},
+	{
+		id: 'organizamos',
+		word: 'EVENTOS',
+		title: 'Organizamos',
+		text: 'Talleres, charlas y encuentros para aprender fuera del aula y pasarla bien con tu carrera.',
+		image: hackaton,
+		imageAlt: 'Foto de ejemplo: una sala amplia con personas programando en sus puestos',
+		demo: true,
+	},
+	{
+		id: 'acompanamos',
+		word: 'APOYO',
+		title: 'Acompañamos',
+		text: 'Desde primer ciclo: que te sientas escuchado y apoyado desde el primer día.',
+		// Shows the real board photos (duotone) on the tile.
+		faces: true,
+		demo: true,
+	},
+];
 
 export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },
@@ -255,37 +282,28 @@ export const nextEvent = timeline
 	.filter((entry) => entry.kind === 'upcoming' && entry.date)
 	.sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))[0];
 
-// DEMO: ways to get involved (invented copy). Replace with the board's real invitation, then drop `demo`.
+// DEMO: the "join" call to action, including the newcomer line for first-cycle students (invented copy; the
+// Instagram DM channel is real). No statistics, no certificates. Replace with the board's own words, then drop `demo`.
 export const join = {
 	demo: true,
-	steps: [
-		{ title: 'Entérate', text: 'Síguenos en Instagram: ahí anunciamos primero cada actividad.' },
-		{ title: 'Participa', text: 'Ven a un taller, una charla o un torneo y conoce a otros estudiantes.' },
-		{ title: 'Propón', text: '¿Tienes una idea para un taller o una charla? Cuéntanosla por mensaje directo.' },
+	headline: ['Tu carrera', 'es más que', 'clases'],
+	lead: 'Súmate a la ASO y vive la carrera con gente que está en lo mismo que tú.',
+	stickers: ['¡únete!', 'sin experiencia previa'],
+	reasons: [
+		{ title: 'Conoce gente de todos los ciclos', text: 'Desde primer ciclo hasta quienes ya casi terminan: aquí todos se mezclan.' },
+		{ title: 'Aprende fuera del aula', text: 'Talleres, charlas y retos que no vienen en el pensum.' },
+		{ title: 'Organiza eventos y gana experiencia', text: 'Ayuda a armar actividades reales de principio a fin.' },
+		{ title: 'Haz que tu voz llegue a la carrera', text: 'Lo que piensas se lleva a quienes toman las decisiones.' },
 	],
-};
-
-// DEMO: newcomer block for first-cycle students (invented copy; the Instagram DM channel is real).
-// Replace with the board's own words, then drop `demo`.
-export const firstCommit = {
-	demo: true,
-	title: 'Tu primer commit',
-	lead: 'Un commit es un punto en esta historia. Tu primera actividad con nosotros será el tuyo.',
-	steps: [
-		{
-			title: 'Al principio nadie conoce a nadie',
-			text: 'Es normal. Llega, saluda y quédate a ver: nadie espera que ya sepas cómo funciona todo.',
-		},
-		{
-			title: 'No necesitas experiencia previa',
-			text: 'Hay actividades para primer ciclo y para todos los ciclos. Pregunta lo que quieras.',
-		},
-		{
-			title: 'Escríbenos por Instagram',
-			text: 'Mándanos un mensaje directo y te contamos cuál es la próxima actividad y dónde nos vemos.',
-		},
-	],
-	cta: 'Escribir por Instagram',
+	newcomer: {
+		title: 'Tu primer commit',
+		lead: 'Al principio nadie conoce a nadie.',
+		steps: [
+			'Es normal: llega, saluda y quédate a ver. Nadie espera que ya sepas cómo funciona todo.',
+			'No necesitas experiencia previa. Escríbenos por mensaje directo y te contamos cuál es la próxima actividad.',
+		],
+	},
+	cta: 'Escríbenos por Instagram',
 };
 
 interface TeamMember {

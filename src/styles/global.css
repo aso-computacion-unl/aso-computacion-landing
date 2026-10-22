@@ -29,6 +29,7 @@
 
 @layer base {
 	html {
+		font-variant-ligatures: none;
 		color-scheme: dark;
 		background: var(--color-navy);
 		scroll-padding-top: 4.5rem;
@@ -704,7 +705,7 @@
 		border-radius: 4px;
 	}
 
-	@media (min-width: 64rem) {
+	@media (min-width: 80rem) {
 		.faces {
 			flex: none;
 			flex-wrap: nowrap;
@@ -751,19 +752,36 @@
 		display: block;
 	}
 
+	/* Filter chips: tag buttons (`#taller`). Selected = solid sky face. */
 	.chip {
-		padding: 0.5rem 0.75rem;
-		background: transparent;
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-sky) 60%, transparent);
-		color: var(--color-mist);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.5rem;
+		padding: 0 0.875rem;
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+		box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-sky) 55%, transparent);
+		color: #fff;
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
+		font-weight: 600;
 		line-height: 1;
 		cursor: pointer;
 	}
 
+	.chip::before {
+		content: "#";
+		color: var(--color-sky);
+	}
+
+	.chip-count {
+		color: var(--color-mist);
+		font-weight: 500;
+	}
+
 	.chip:hover {
-		color: #fff;
+		box-shadow: inset 0 0 0 2px var(--color-sky);
 	}
 
 	.chip[aria-pressed="true"] {
@@ -771,6 +789,11 @@
 		box-shadow: none;
 		color: var(--color-navy);
 		font-weight: 700;
+	}
+
+	.chip[aria-pressed="true"]::before,
+	.chip[aria-pressed="true"] .chip-count {
+		color: var(--color-navy);
 	}
 
 	.tag {
@@ -916,7 +939,7 @@
 		position: absolute;
 		z-index: 10;
 		top: 1.5rem;
-		right: 1.25rem;
+		left: 1.25rem;
 		width: 6.5rem;
 		aspect-ratio: 186 / 209;
 		transform-origin: 0 0;
@@ -926,7 +949,8 @@
 	@media (min-width: 40rem) {
 		.hero-mark {
 			top: 2.5rem;
-			right: 4vw;
+			left: 4vw;
+			right: auto;
 			width: 8rem;
 		}
 	}
@@ -934,7 +958,8 @@
 	@media (min-width: 64rem) {
 		.hero-mark {
 			top: 2.5rem;
-			right: calc(max(26rem, 34%) + 1.5rem);
+			left: max(4vw, calc((100vw - 1600px) / 2));
+			right: auto;
 			width: min(12vw, 15rem);
 		}
 	}
@@ -980,223 +1005,494 @@
 		pointer-events: none;
 	}
 
-	/* Editor chrome (README.md, CONTRIBUTING.md): tab bar, line-number gutter, JetBrains Mono. */
-	.editor {
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		font-family: var(--font-mono);
+	/* Root commit: a ring terminator. The rail ends at its centre and the hollow face hides the end of the line. */
+	.node-root {
+		--node: calc(26px * var(--s));
+		background: var(--bg);
+		border-color: var(--color-sky);
 	}
 
-	.editor-bar {
-		display: flex;
-		align-items: stretch;
-		gap: 0.25rem;
-		padding: 0.5rem 0.75rem 0;
-		background: var(--color-navy-deep);
-		border-radius: 4px 4px 0 0;
-		font-size: 0.8125rem;
-	}
-
-	.editor-dots {
-		display: none;
-		align-items: center;
-		gap: 0.375rem;
-		margin-right: 0.75rem;
-	}
-
-	@media (min-width: 26rem) {
-		.editor-dots {
-			display: flex;
-		}
-
-		.tab {
-			padding-inline: 1rem;
-		}
-	}
-
-	.editor-dots i {
-		width: 0.625rem;
-		height: 0.625rem;
+	.node-root::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		width: 36%;
+		height: 36%;
 		border-radius: 9999px;
-		box-shadow: inset 0 0 0 1.5px var(--color-sky);
-	}
-
-	.editor-dots i:first-child {
 		background: var(--color-sky);
 	}
 
-	.tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.625rem 0.75rem;
-		border-radius: 4px 4px 0 0;
-		color: var(--color-mist);
-		font-weight: 600;
-	}
-
-	a.tab:hover {
-		color: #fff;
-	}
-
-	.tab-active {
-		background: var(--color-navy-lift);
-		color: #fff;
-	}
-
-	.tab-dot {
-		width: 0.5rem;
-		height: 0.5rem;
-		background: var(--color-sky);
-	}
-
-	.editor-body {
-		padding: 1.25rem 0 1.5rem;
-	}
-
-	.line {
-		display: grid;
-		grid-template-columns: 3.25rem minmax(0, 1fr);
-		min-height: 1.75rem;
-	}
-
-	.ln {
-		padding-right: 1rem;
-		text-align: right;
-		font-size: 0.8125rem;
-		line-height: 1.75rem;
-		color: color-mix(in srgb, var(--color-mist) 55%, transparent);
-		font-variant-numeric: tabular-nums;
-		user-select: none;
-	}
-
-	.line-code {
-		min-width: 0;
-		padding-right: 1.25rem;
-	}
-
-	.syn {
-		font-family: var(--font-mono);
-		font-weight: 600;
-		color: var(--color-sky);
-	}
-
-	.statement {
-		font-family: var(--font-sans);
-		font-size: clamp(1.25rem, 2.1vw, 2.375rem);
-		font-weight: 400;
-		line-height: 1.32;
-		color: #fff;
-		text-wrap: pretty;
-	}
-
-	.statement .syn {
-		font-size: 0.6em;
-		vertical-align: 0.15em;
-	}
-
-	/* Key phrases: Audiowide in sky between visible ** markers. */
-	.key {
-		font-family: var(--font-display);
-		font-size: 0.9em;
-		letter-spacing: -0.01em;
-		color: var(--color-sky);
-	}
-
-	.caret {
+	/* Buttons: flat two-layer. The face presses down onto an offset, darker base layer. No blur. */
+	.btn {
+		--face: var(--color-sky);
+		--ink: var(--color-navy);
+		--base: color-mix(in srgb, var(--color-sky) 55%, var(--color-navy));
+		--lift: 6px;
 		display: inline-block;
-		width: 0.55em;
-		height: 1.05em;
-		margin-left: 0.15em;
-		vertical-align: -0.15em;
-		background: var(--color-sky);
+		margin-top: var(--lift);
+		border-radius: 4px;
+		background: var(--base);
+		text-decoration: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.btn-ghost {
+		--face: var(--color-navy-lift);
+		--ink: #fff;
+		--base: color-mix(in srgb, var(--color-sky) 38%, var(--color-navy-deep));
+	}
+
+	.btn-xl {
+		--lift: 8px;
+	}
+
+	.btn-face {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		height: 3.5rem;
+		padding-inline: 1.5rem;
+		border-radius: 4px;
+		background: var(--face);
+		color: var(--ink);
+		font-family: var(--font-sans);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		line-height: 1;
+		transform: translateY(calc(var(--lift) * -1));
+	}
+
+	.btn-ghost .btn-face {
+		box-shadow: inset 0 0 0 2px var(--color-sky);
+	}
+
+	.btn-xl .btn-face {
+		height: 4rem;
+		padding-inline: 2rem;
+		font-size: 1.25rem;
+	}
+
+	.btn-glyph {
+		font-family: var(--font-mono);
+		font-size: 1.2em;
+		font-weight: 500;
+	}
+
+	.btn:hover .btn-face,
+	.btn:focus-visible .btn-face {
+		transform: translateY(calc(var(--lift) * -0.5));
+	}
+
+	.btn:active .btn-face {
+		transform: translateY(0);
+	}
+
+	.btn:focus-visible {
+		outline-offset: 5px;
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.caret {
-			animation: blink 1.1s steps(1) infinite;
+		.btn-face {
+			transition: transform 110ms cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.btn-glyph {
+			transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.btn:hover .btn-glyph,
+		.btn:focus-visible .btn-glyph {
+			transform: translateX(4px);
 		}
 	}
 
-	@keyframes blink {
-		50% {
-			opacity: 0;
-		}
+	/* Nosotros manifesto: huge Audiowide statement, one word rotates. */
+	.manifesto {
+		font-family: var(--font-display);
+		font-size: clamp(2.25rem, 5.6vw, 6.5rem);
+		line-height: 1.04;
+		letter-spacing: -0.02em;
+		color: #fff;
 	}
 
-	/* git diff: removed lines on a red gutter, added lines on a sky gutter. Text stays AA on both tints. */
-	.diff {
-		display: flex;
-		flex-direction: column;
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		font-family: var(--font-mono);
+	.m-line {
+		display: block;
 		overflow: hidden;
+		padding-block: 0.06em;
+		margin-block: -0.06em;
 	}
 
-	.diff-head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 0.75rem;
-		padding: 0.875rem 1rem;
-		background: var(--color-navy-deep);
-		font-size: 0.8125rem;
-		color: var(--color-mist);
+	.m-in {
+		display: block;
 	}
 
-	.diff-hunk {
-		padding: 0.5rem 1rem;
-		font-size: 0.8125rem;
+	.rotor {
 		color: var(--color-sky);
 	}
 
-	.diff > ul {
-		display: grid;
-		flex: 1;
-		grid-auto-rows: 1fr;
+	.rotor-word {
+		display: block;
 	}
 
-	.diff-row {
-		display: grid;
-		align-items: stretch;
-		grid-template-columns: 2.5rem minmax(0, 1fr);
-		font-size: clamp(0.875rem, 0.9vw + 0.4rem, 1.0625rem);
-		line-height: 1.45;
+	.rotor-word::after {
+		content: ".";
+		color: #fff;
 	}
 
-	.diff-row .gut {
-		display: grid;
-		place-items: center;
-		font-weight: 700;
+	/* With motion, the three words share one cell and take turns. Without it, all three stay visible. */
+	html.motion .rotor {
+		display: inline-grid;
+		overflow: hidden;
+		vertical-align: bottom;
 	}
 
-	.diff-row .txt {
+	html.motion .rotor-word {
+		grid-area: 1 / 1;
+	}
+
+	html.motion .rotor-word:not(:first-child) {
+		transform: translateY(110%);
+	}
+
+	.about-text {
+		font-family: var(--font-sans);
+		font-size: clamp(1.125rem, 1.15vw + 0.55rem, 1.5rem);
+		line-height: 1.55;
+		color: #fff;
+		max-width: 52ch;
+	}
+
+	/* Bento grid: three pillars, flat tiles of different weight. */
+	.bento {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.tile {
+		position: relative;
 		display: flex;
-		align-items: center;
-		padding: 0.75rem 1rem;
-		overflow-wrap: anywhere;
+		flex-direction: column;
+		overflow: hidden;
+		container-type: inline-size;
+		border-radius: 4px;
+		background: var(--color-navy-lift);
 	}
 
-	.diff-del {
-		background: color-mix(in srgb, var(--color-signal) 24%, var(--color-navy-deep));
+	.tile-body {
+		position: relative;
+		padding: 1.5rem;
+	}
+
+	.outline-word {
+		display: block;
+		margin-bottom: 1rem;
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 17cqw, 8rem);
+		line-height: 0.9;
+		letter-spacing: -0.01em;
+		color: transparent;
+		-webkit-text-stroke: 2px var(--color-sky);
+	}
+
+	.tile-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 2.2vw, 2.25rem);
+		line-height: 1.1;
+		color: #fff;
+	}
+
+	.tile-text {
+		margin-top: 0.75rem;
+		max-width: 44ch;
+		font-size: 1.125rem;
+		line-height: 1.5;
 		color: var(--color-mist);
 	}
 
-	.diff-del .gut {
-		background: var(--color-signal);
-		color: #fff;
+	.tile .demo-tag {
+		margin-top: 1.25rem;
 	}
 
-	.diff-add {
-		background: color-mix(in srgb, var(--color-sky) 16%, var(--color-navy-deep));
-		color: #fff;
-		font-weight: 600;
+	.tile-photo {
+		order: -1;
+		aspect-ratio: 2 / 1;
 	}
 
-	.diff-add .gut {
+	.tile-photo img {
+		position: absolute;
+		inset: 0;
+	}
+
+	/* The sky tile is the single bright relief of the grid. */
+	.tile-2 {
 		background: var(--color-sky);
+	}
+
+	.tile-2 .outline-word {
+		-webkit-text-stroke-color: var(--color-navy);
+	}
+
+	.tile-2 .tile-title,
+	.tile-2 .tile-text {
 		color: var(--color-navy);
+	}
+
+	/* Real board photos, duotone, fanned out on the sky tile. */
+	.tile-faces {
+		display: flex;
+		order: 2;
+		padding: 0 1.5rem 1.5rem;
+	}
+
+	.face-card {
+		flex: none;
+		width: 4.5rem;
+		height: 5.5rem;
+		margin-left: -0.75rem;
+		border-radius: 4px;
+		transform: rotate(var(--r, 0deg));
+	}
+
+	.face-card:first-child {
+		margin-left: 0;
+	}
+
+	.face-card:nth-child(odd) {
+		--r: -3deg;
+	}
+
+	.face-card:nth-child(even) {
+		--r: 3deg;
+		margin-top: 0.75rem;
+	}
+
+	.tile-2 .demo-tag {
+		border-color: color-mix(in srgb, var(--color-navy) 60%, transparent);
+		color: var(--color-navy);
+	}
+
+	@media (min-width: 64rem) {
+		.bento {
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+			gap: 1.25rem;
+		}
+
+		.tile-0 {
+			grid-column: 1 / 8;
+			min-height: 22rem;
+		}
+
+		.tile-1 {
+			grid-column: 8 / 13;
+			grid-row: 1 / 3;
+		}
+
+		.tile-2 {
+			grid-column: 1 / 8;
+		}
+
+		.tile-faces {
+			position: absolute;
+			inset: 0 2rem 0 auto;
+			align-items: center;
+			padding: 0;
+		}
+
+		.face-card {
+			width: clamp(5.5rem, 9cqw, 9rem);
+			height: clamp(7rem, 12cqw, 11.5rem);
+			margin-left: -1.5rem;
+		}
+
+		.tile-2 .tile-body {
+			width: 56%;
+		}
+
+		.tile-body {
+			padding: 2rem;
+		}
+
+		.tile-0 .tile-photo {
+			position: absolute;
+			inset: 0 0 0 auto;
+			width: 38%;
+			aspect-ratio: auto;
+		}
+
+		.tile-0 .tile-body {
+			width: 62%;
+		}
+
+		.tile-1 .tile-photo {
+			flex: 1;
+			aspect-ratio: auto;
+			min-height: 14rem;
+		}
+	}
+
+	/* Join: full-bleed sky section. Navy text on sky; stickers and the photo collage carry the energy. */
+	.on-sky :focus-visible {
+		outline-color: var(--color-navy);
+	}
+
+	.on-sky .demo-tag {
+		border-color: color-mix(in srgb, var(--color-navy) 60%, transparent);
+		color: var(--color-navy);
+	}
+
+	.join-title {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 8.4vw, 7.5rem);
+		line-height: 1;
+		letter-spacing: -0.02em;
+		color: var(--color-navy);
+	}
+
+	.collage {
+		position: relative;
+		display: grid;
+		gap: 1rem;
+		overflow-x: clip;
+		padding-block: 2rem;
+	}
+
+	.c-row {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		width: max-content;
+	}
+
+	.c-row-b {
+		margin-left: -3rem;
+	}
+
+	.c-tile {
+		flex: none;
+		border-radius: 4px;
+		background: var(--color-navy);
+		transform: translateY(var(--y, 0)) rotate(var(--r, 0deg));
+	}
+
+	.c-tile:nth-child(odd) {
+		--r: -2deg;
+		--y: 0.5rem;
+	}
+
+	.c-tile:nth-child(even) {
+		--r: 2.5deg;
+		--y: -0.5rem;
+	}
+
+	.c-wide {
+		width: 12rem;
+		height: 8.5rem;
+	}
+
+	.c-tall {
+		width: 8rem;
+		height: 9.5rem;
+	}
+
+	@media (min-width: 48rem) {
+		.c-wide {
+			width: 17rem;
+			height: 12rem;
+		}
+
+		.c-tall {
+			width: 12rem;
+			height: 14rem;
+		}
+	}
+
+	/* Stickers: flat, rotated, used sparingly. The wrapper rotates; the face is what pops in. */
+	.stk {
+		position: absolute;
+		z-index: 4;
+		transform: rotate(var(--r, 0deg));
+	}
+
+	.stk-face {
+		display: block;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		font-family: var(--font-mono);
+		font-size: clamp(0.875rem, 1.1vw + 0.4rem, 1.25rem);
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.stk-white {
+		background: #fff;
+		color: var(--color-navy);
+	}
+
+	.stk-navy {
+		background: var(--color-navy);
+		color: #fff;
+	}
+
+	.stk-iso {
+		top: -2.25rem;
+		right: 1.25rem;
+	}
+
+	.stk-iso .stk-face {
+		width: 4.5rem;
+		height: 4.5rem;
+		padding: 0.75rem;
+	}
+
+	@media (min-width: 64rem) {
+		.stk-iso {
+			right: 2.5rem;
+		}
+
+		.stk-iso .stk-face {
+			width: 6rem;
+			height: 6rem;
+			padding: 1rem;
+		}
+	}
+
+	.reason {
+		border-top: 2px solid var(--color-navy);
+		padding-block: 1.5rem 2rem;
+	}
+
+	.reason-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 2.6vw, 2.75rem);
+		line-height: 1.1;
+		color: var(--color-navy);
+	}
+
+	.reason-text {
+		margin-top: 0.75rem;
+		max-width: 42ch;
+		font-size: 1.125rem;
+		line-height: 1.5;
+		color: var(--color-navy);
+	}
+
+	.newcomer {
+		border-radius: 4px;
+		background: var(--color-navy);
+		padding: 2rem 1.5rem 2.5rem;
+	}
+
+	@media (min-width: 40rem) {
+		.newcomer {
+			padding: 3rem 2.5rem;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.newcomer {
+			padding: 4rem 3.5rem;
+		}
 	}
 
 	/* Trunk: the hero stem continues into the Activities main branch (desktop only). */
@@ -1353,9 +1649,19 @@ html.motion [data-card] {
 	transform: translateX(-2.5rem);
 }
 
-html.motion [data-diff-row] {
+html.motion [data-tile],
+html.motion [data-reason] {
 	opacity: 0;
-	transform: translateX(-1.5rem);
+	transform: translateY(3rem);
+}
+
+html.motion [data-pop] {
+	transform: scale(0);
+}
+
+html.motion [data-m-in],
+html.motion [data-j-in] {
+	transform: translateY(105%);
 }
 
 html.motion .hero-mark-svg {

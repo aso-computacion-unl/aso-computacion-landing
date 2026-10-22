@@ -1,111 +1,93 @@
 ---
-import { aboutHighlights, diff, join, site } from '../data/site';
+import { Image } from 'astro:assets';
+import { aboutHighlights, manifesto, pillars, site, team } from '../data/site';
 
-// Split the statement so the key phrases can be drawn in Audiowide + sky between visible ** markers.
+// The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
 const parts = site.about.split(pattern).filter(Boolean);
-// Each word is its own span so the scroll scrub can light the statement up word by word.
+// Each word is its own span so the scroll scrub can light the sentence up word by word.
 const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.length > 0);
 ---
 
 <section id="nosotros" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<h2 class="h2-xl">Nosotros</h2>
+		<p class="file-tab" aria-hidden="true">README.md</p>
 
-		<div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:mt-14 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-12">
-			<div class="editor" data-editor>
-				<div class="editor-bar">
-					<span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-					<span class="tab tab-active" aria-current="true"><span class="tab-dot" aria-hidden="true"></span>README.md</span>
-					<a class="tab" href="#sumarte">CONTRIBUTING.md</a>
-				</div>
-				<div class="editor-body">
-					<div class="line">
-						<span class="ln" aria-hidden="true">1</span>
-						<h3 class="line-code font-display text-[clamp(1.5rem,2.4vw,2.5rem)] leading-tight text-white">
-							<span class="syn" aria-hidden="true">#</span> ASO Computación
-						</h3>
-					</div>
-					<div class="line"><span class="ln" aria-hidden="true">2</span></div>
-					<div class="line">
-						<span class="ln" aria-hidden="true">3</span>
-						<p class="line-code statement" data-statement>
-							<span class="syn" aria-hidden="true">&gt; </span>
-							{
-								parts.map((part) =>
-									aboutHighlights.includes(part) ? (
-										<span class="key">
-											<span class="syn" aria-hidden="true">**</span>
-											{words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))}
-											<span class="syn" aria-hidden="true">**</span>
-										</span>
-									) : (
-										words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))
-									),
-								)
-							}<span class="caret" aria-hidden="true"></span>
-						</p>
-					</div>
-					<div class="line"><span class="ln" aria-hidden="true">4</span></div>
-				</div>
-			</div>
-
-			<div class="diff" data-diff>
-				<div class="diff-head">
-					<span aria-hidden="true">$ git diff antes..ahora</span>
-					{diff.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
-				</div>
-				<p class="diff-hunk" aria-hidden="true">@@ {diff.title} @@</p>
-				<ul>
+		<div class="mt-8 grid items-end gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
+			<h2 class="manifesto" data-manifesto>
+				<span class="sr-only">{manifesto.sr}</span>
+				<span aria-hidden="true">
 					{
-						diff.rows.map((row) => (
-							<>
-								<li class="diff-row diff-del" data-diff-row>
-									<span class="gut" aria-hidden="true">−</span>
-									<span class="txt"><span class="sr-only">Antes: </span>{row.del}</span>
-								</li>
-								<li class="diff-row diff-add" data-diff-row>
-									<span class="gut" aria-hidden="true">+</span>
-									<span class="txt"><span class="sr-only">Con la ASO: </span>{row.add}</span>
-								</li>
-							</>
+						manifesto.lines.map((line) => (
+							<span class="m-line">
+								<span class="m-in" data-m-in>{line}</span>
+							</span>
 						))
 					}
-				</ul>
-			</div>
+					<span class="m-line">
+						<span class="m-in" data-m-in>
+							<span class="rotor" data-rotor>
+								{manifesto.rotor.map((word) => <span class="rotor-word">{word}</span>)}
+							</span>
+						</span>
+					</span>
+				</span>
+			</h2>
+
+			<p class="about-text" data-statement>
+				{
+					parts.map((part) =>
+						aboutHighlights.includes(part) ? (
+							<span class="text-sky">
+								{words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))}
+							</span>
+						) : (
+							words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))
+						),
+					)
+				}
+			</p>
 		</div>
 
-		<div id="sumarte" class="editor mt-14 lg:mt-20">
-			<div class="editor-bar">
-				<span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-				<a class="tab" href="#nosotros">README.md</a>
-				<span class="tab tab-active" aria-current="true"><span class="tab-dot" aria-hidden="true"></span>CONTRIBUTING.md</span>
-			</div>
-			<div class="p-6 font-sans sm:p-10 lg:p-14">
-				<div class="flex flex-wrap items-center gap-3">
-					<h3 class="font-display text-2xl text-white lg:text-3xl">
-						<span class="syn" aria-hidden="true">##</span> Cómo sumarte
-					</h3>
-					{join.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
-				</div>
-				<ol class="mt-8 grid gap-10 md:grid-cols-3 md:gap-8 lg:mt-12 lg:gap-12">
-					{
-						join.steps.map((step, index) => (
-							<li class="border-t-2 border-sky pt-4">
-								<span
-									class="block font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.95] text-sky"
-									aria-hidden="true"
-									data-numeral={index + 1}
-								>
-									{index + 1}
-								</span>
-								<h4 class="mt-4 font-display text-xl text-white lg:text-2xl">{step.title}</h4>
-								<p class="mt-2 max-w-[34ch] text-lg text-mist">{step.text}</p>
-							</li>
-						))
-					}
-				</ol>
-			</div>
-		</div>
+		<ul class="bento mt-14 lg:mt-20">
+			{
+				pillars.map((pillar, index) => (
+					<li class:list={['tile', `tile-${index}`]} data-tile>
+						{
+							pillar.image && (
+								<div class="duo tile-photo">
+									<Image
+										src={pillar.image}
+										alt={pillar.imageAlt ?? ''}
+										width={720}
+										height={540}
+										widths={[480, 720]}
+										sizes="(min-width: 1024px) 40rem, 90vw"
+										loading="lazy"
+									/>
+								</div>
+							)
+						}
+						{
+							pillar.faces && (
+								<div class="tile-faces" aria-hidden="true">
+									{team.slice(0, 5).map((member) => (
+										<div class="duo face-card">
+											<Image src={member.photo} alt="" width={240} height={300} fit="cover" position="top" widths={[160, 240]} sizes="10rem" loading="lazy" />
+										</div>
+									))}
+								</div>
+							)
+						}
+						<div class="tile-body">
+							<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
+							<h3 class="tile-title">{pillar.title}</h3>
+							<p class="tile-text">{pillar.text}</p>
+							{pillar.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
+						</div>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </section>

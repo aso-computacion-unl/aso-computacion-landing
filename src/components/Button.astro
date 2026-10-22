@@ -1,0 +1,24 @@
+---
+// Flat two-layer button: a face that presses down onto an offset darker base layer.
+interface Props {
+	href: string;
+	variant?: 'primary' | 'ghost';
+	size?: 'md' | 'xl';
+	external?: boolean;
+}
+
+const { href, variant = 'primary', size = 'md', external = false } = Astro.props;
+---
+
+<a
+	href={href}
+	class:list={['btn', `btn-${variant}`, `btn-${size}`]}
+	target={external ? '_blank' : undefined}
+	rel={external ? 'me noopener' : undefined}
+>
+	<span class="btn-face">
+		<span><slot /></span>
+		<span class="btn-glyph" aria-hidden="true">→</span>
+	</span>
+	{external && <span class="sr-only"> (se abre en otra pestaña)</span>}
+</a>

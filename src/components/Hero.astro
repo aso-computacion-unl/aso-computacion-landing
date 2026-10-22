@@ -1,6 +1,6 @@
 ---
-import Logo from '../assets/brand/logo-white-sky.svg';
 import { site, socials, timeline } from '../data/site';
+import Button from './Button.astro';
 import Commit from './Commit.astro';
 import HeroMark from './HeroMark.astro';
 
@@ -27,10 +27,10 @@ const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'u
 	</div>
 
 	<div
-		class="relative z-10 px-5 pb-16 pt-10 sm:px-[4vw] lg:flex lg:flex-col lg:justify-center lg:py-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10"
+		class="relative z-10 px-5 pb-16 pt-[10rem] sm:px-[4vw] sm:pt-[12.5rem] lg:flex lg:flex-col lg:justify-end lg:pb-20 lg:pt-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10"
 	>
-		<Logo class="w-36 sm:w-44" role="img" aria-label={site.name} data-hero-fade />
-		<h1 class="hero-title mt-8 lg:mt-12">
+		<h1 class="hero-title">
+			<span class="sr-only">{site.name}: </span>
 			{
 				site.headline.map((line, index) => (
 					<span class:list={['hero-line', { 'text-sky': index === site.headlineAccent }]} data-hero-line>
@@ -40,24 +40,13 @@ const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'u
 			}
 		</h1>
 		<p class="hero-lede mt-7" data-hero-fade>{site.description}</p>
-		<div class="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4" data-hero-fade>
-			<a
-				href="#actividades"
-				class="inline-flex h-14 items-center rounded-[4px] bg-sky px-8 text-lg font-semibold text-navy hover:bg-white"
-			>
-				Ver actividades
-			</a>
+		<div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-5" data-hero-fade>
+			<Button href="#actividades" size="xl">Ver actividades</Button>
 			{
 				instagram && (
-					<a
-						href={instagram.href}
-						target="_blank"
-						rel="me noopener"
-						class="text-lg font-semibold text-white underline decoration-sky decoration-2 underline-offset-4 hover:text-sky"
-					>
+					<Button href={instagram.href} variant="ghost" size="xl" external>
 						Síguenos en Instagram
-						<span class="sr-only"> (se abre en otra pestaña)</span>
-					</a>
+					</Button>
 				)
 			}
 		</div>

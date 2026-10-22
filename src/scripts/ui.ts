@@ -60,3 +60,20 @@ members.forEach((member) => {
 		if (event.key === 'Escape') member.classList.remove('is-open');
 	});
 });
+
+// Rail end: the main rail of the history graph stops exactly at the centre of the root node. The CSS mask under
+// the root node is the fallback; with JS the rail itself is shortened so nothing is left below the root.
+const history = document.querySelector<HTMLElement>('[data-history]');
+const rootNode = history?.querySelector<HTMLElement>('[data-root-node]');
+const mainRail = history?.querySelector<HTMLElement>(':scope > [data-rail]');
+if (history && rootNode && mainRail) {
+	const fitRail = () => {
+		const graph = history.getBoundingClientRect();
+		const node = rootNode.getBoundingClientRect();
+		mainRail.style.bottom = `${Math.max(0, graph.bottom - (node.top + node.height / 2))}px`;
+	};
+	fitRail();
+	window.addEventListener('load', fitRail);
+	document.fonts?.ready.then(fitRail);
+	new ResizeObserver(fitRail).observe(history);
+}

@@ -56,7 +56,7 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 					{
 						activityTypes.map((type) => (
 							<button type="button" class="chip" data-filter={type} aria-pressed="false">
-								{type} ({typedCount(type)})
+								{type}<span class="chip-count">{typedCount(type)}</span>
 							</button>
 						))
 					}
@@ -87,7 +87,7 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 						{planned.map((entry) => <Commit entry={entry} />)}
 					</ol>
 				</div>
-				<div class="graph">
+				<div class="graph" data-history>
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
