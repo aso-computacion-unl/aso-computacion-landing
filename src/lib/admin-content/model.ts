@@ -22,6 +22,8 @@ export interface TimelineEntry {
 	description?: string;
 	// ISO date (YYYY-MM-DD). The nearest upcoming one feeds the countdown panel.
 	date?: string;
+	// "month": only the month is confirmed. `date` is then the first of that month, used to order the entry only.
+	datePrecision?: 'month';
 	// Category used by the activity filter chips. Entries without a type are never dimmed.
 	type?: ActivityType;
 	// Playful conventional-commit message shown in mono under the title. Never a factual claim.

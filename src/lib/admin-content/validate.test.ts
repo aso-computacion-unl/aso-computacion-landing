@@ -58,6 +58,30 @@ describe('parsePublicContent', () => {
 		expect(reason(payload({ events: [{ ...event, slug: '' }] }))).toContain('slug');
 	});
 
+	describe('datePrecision (month-only dates, additive to version 1)', () => {
+		const event = payload().events[0];
+		const { datePrecision: _datePrecision, ...legacy } = event;
+
+		it('defaults to "day" when the payload does not carry it (an older admin stays valid)', () => {
+			expect(ok(payload({ events: [legacy as never] })).events[0].datePrecision).toBe('day');
+		});
+
+		it('accepts "day" and "month"', () => {
+			expect(ok(payload({ events: [{ ...event, datePrecision: 'month' }] })).events[0].datePrecision).toBe('month');
+			expect(ok(payload({ events: [{ ...event, datePrecision: 'day' }] })).events[0].datePrecision).toBe('day');
+		});
+
+		it('rejects any other value, null included', () => {
+			for (const datePrecision of ['year', 'Month', 'DAY', '', null, 1, true]) {
+				expect(reason(payload({ events: [{ ...event, datePrecision: datePrecision as never }] })), String(datePrecision)).toContain('datePrecision');
+			}
+		});
+
+		it('keeps a month-precision event without a date valid (the chip is simply omitted)', () => {
+			expect(ok(payload({ events: [{ ...event, date: null, datePrecision: 'month' }] })).events[0]).toMatchObject({ date: null, datePrecision: 'month' });
+		});
+	});
+
 	it('accepts null optional event fields', () => {
 		const event = payload().events[0];
 		const nulls = { description: null, date: null, type: null, commitMessage: null, hora: null, lugar: null, para: null, linkUrl: null, linkLabel: null };

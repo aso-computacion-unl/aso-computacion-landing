@@ -1,6 +1,8 @@
 import {
 	PUBLIC_CONTENT_VERSION,
+	datePrecisions,
 	eventTypes,
+	type DatePrecision,
 	type EventType,
 	type PublicBoardMember,
 	type PublicContent,
@@ -85,6 +87,9 @@ const calendarDate = (value: unknown, path: string): string => {
 	return fail(path, 'expected a calendar date (YYYY-MM-DD)');
 };
 
+const datePrecision = (value: unknown, path: string): DatePrecision =>
+	(datePrecisions as readonly unknown[]).includes(value) ? (value as DatePrecision) : fail(path, `expected one of ${datePrecisions.join(', ')}`);
+
 const eventType = (value: unknown, path: string): EventType =>
 	(eventTypes as readonly unknown[]).includes(value) ? (value as EventType) : fail(path, `expected one of ${eventTypes.join(', ')}`);
 
@@ -130,6 +135,8 @@ const readers = (options: ParseOptions) => {
 			title: nonEmpty(raw.title, `${path}.title`, LIMIT.title),
 			description: nullable(raw.description, `${path}.description`, body),
 			date: nullable(raw.date, `${path}.date`, calendarDate),
+			// Added after version 1 shipped: a payload without it is a day-precision one.
+			datePrecision: raw.datePrecision === undefined ? 'day' : datePrecision(raw.datePrecision, `${path}.datePrecision`),
 			type: nullable(raw.type, `${path}.type`, eventType),
 			commitMessage: nullable(raw.commitMessage, `${path}.commitMessage`, short),
 			hora: nullable(raw.hora, `${path}.hora`, short),

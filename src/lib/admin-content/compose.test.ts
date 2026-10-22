@@ -40,6 +40,32 @@ const api = (content = payload()): LoadedContent => ({ source: 'api', content })
 const fallback = (content = payload({ events: [], faqs: [], pillars: [] })): LoadedContent => ({ source: 'fallback', content, reason: 'test' });
 const compose = (loaded: LoadedContent, now = NOW) => composeSiteContent({ loaded, baseline, now, resolveLocal });
 
+describe('composeSiteContent: month-only dates', () => {
+	const e = payload().events[0];
+
+	it('shows the month chip and orders by the first of the month', () => {
+		const events = [
+			{ ...e, slug: 'dated', date: '2026-02-05', datePrecision: 'day' as const, highlights: [] },
+			{ ...e, slug: 'month', date: '2026-02-01', datePrecision: 'month' as const, highlights: [] },
+		];
+		const timeline = compose(api(payload({ events }))).timeline;
+		const month = timeline.find((entry) => entry.id === 'month');
+		expect(month?.stamp).toBe('feb 2026');
+		expect(timeline.map((entry) => entry.id).filter((id) => id === 'dated' || id === 'month')).toEqual(['dated', 'month']);
+	});
+
+	it('never feeds the countdown with a month-only event, even when it is the nearest upcoming one', () => {
+		const events = [
+			{ ...e, slug: 'month', date: '2026-11-01', datePrecision: 'month' as const },
+			{ ...e, slug: 'dated', date: '2026-12-12', datePrecision: 'day' as const },
+		];
+		const result = compose(api(payload({ events })));
+		expect(result.nextEvent?.id).toBe('dated');
+		expect(result.timeline.find((entry) => entry.id === 'month')?.kind).toBe('upcoming');
+		expect(compose(api(payload({ events: [events[0]] }))).nextEvent).toBeUndefined();
+	});
+});
+
 describe('composeSiteContent: API path', () => {
 	it('never adds demo content', () => {
 		const result = compose(api(payload({ events: [], faqs: [], pillars: [] })));

@@ -18,6 +18,7 @@ export const payload = (overrides: Partial<PublicContent> = {}): PublicContent =
 			title: 'Taller de Git',
 			description: 'Control de versiones desde cero.',
 			date: '2026-11-12',
+			datePrecision: 'day',
 			type: 'taller',
 			commitMessage: 'feat(taller): git init',
 			hora: '15:00',

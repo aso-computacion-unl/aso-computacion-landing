@@ -78,6 +78,10 @@ section with nothing to show is left out.
   `highlights` is a `merge` (the highlights are its feature branch), and an event without a
   date is a `commit` listed last. The `next`, `HEAD` and `initial` entries stay in
   `src/data/site.ts`.
+- **Month-only dates**: an event may carry `datePrecision: "month"` (optional, default
+  `"day"`; any other value makes the payload invalid). Its chip reads "feb 2026", never a day.
+  For ordering and for upcoming/past it counts as the first of that month, and it never feeds
+  the countdown panel. The `date` still has to be a full `YYYY-MM-DD`; its day is ignored.
 - **FAQ** `topic` (`git help <topic>`) is the question as a slug, cut at 28 characters.
 - **Socials** `platform` picks a Simple Icons glyph; an unknown platform gets a generic one.
 - **Pillars** without an image show the isotype tile.

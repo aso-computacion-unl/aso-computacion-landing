@@ -17,6 +17,13 @@ describe('dates', () => {
 		expect(formatStamp('2026-09-18')).toBe('18 sep 2026');
 	});
 
+	it('formats a month-only stamp as month and year, never a day', () => {
+		expect(formatStamp('2026-02-01', 'month')).toBe('feb 2026');
+		expect(formatStamp('2026-02-20', 'month')).toBe('feb 2026');
+		expect(formatStamp('2026-12-31', 'month')).toBe('dic 2026');
+		expect(formatStamp('2026-02-20', 'day')).toBe('20 feb 2026');
+	});
+
 	it('takes today in Ecuador time, not UTC', () => {
 		expect(todayInEcuador(new Date('2026-10-23T03:00:00Z'))).toBe('2026-10-22');
 		expect(todayInEcuador(new Date('2026-10-23T05:00:00Z'))).toBe('2026-10-23');
@@ -31,6 +38,17 @@ describe('eventKind', () => {
 		expect(eventKind(event({ date: null }), TODAY)).toBe('commit');
 	});
 
+	it('treats a month-only event as the first day of its month', () => {
+		const month = (date: string, extra: Partial<PublicEvent> = {}) => event({ date, datePrecision: 'month', ...extra });
+		expect(eventKind(month('2026-11-20'), TODAY)).toBe('upcoming');
+		expect(eventKind(month('2026-11-01'), TODAY)).toBe('upcoming');
+		// This month's first day is already behind us, so the month-only event is no longer upcoming.
+		expect(eventKind(month('2026-10-30'), TODAY)).toBe('commit');
+		expect(eventKind(month('2026-10-01'), '2026-10-01'), 'on the first of the month').toBe('upcoming');
+		expect(eventKind(month('2026-02-20', { highlights: ['FLISOL'] }), TODAY)).toBe('merge');
+		expect(eventKind(month(null as never), TODAY)).toBe('commit');
+	});
+
 	it('makes a past event with highlights a merge, but an upcoming one stays upcoming', () => {
 		expect(eventKind(event({ date: '2026-02-10', highlights: ['FLISOL'] }), TODAY)).toBe('merge');
 		expect(eventKind(event({ date: '2026-12-10', highlights: ['FLISOL'] }), TODAY)).toBe('upcoming');
@@ -41,6 +59,15 @@ describe('sortEvents', () => {
 	it('orders by date descending with undated last, keeping ties stable', () => {
 		const list = [event({ slug: 'a', date: null }), event({ slug: 'b', date: '2026-01-01' }), event({ slug: 'c', date: '2026-06-01' }), event({ slug: 'd', date: '2026-06-01' })];
 		expect(sortEvents(list).map((e) => e.slug)).toEqual(['c', 'd', 'b', 'a']);
+	});
+
+	it('sorts a month-only event as the first of its month', () => {
+		const list = [
+			event({ slug: 'feb-month', date: '2026-02-28', datePrecision: 'month' }),
+			event({ slug: 'feb-5', date: '2026-02-05', datePrecision: 'day' }),
+			event({ slug: 'jan-31', date: '2026-01-31', datePrecision: 'day' }),
+		];
+		expect(sortEvents(list).map((e) => e.slug)).toEqual(['feb-5', 'feb-month', 'jan-31']);
 	});
 
 	it('does not mutate its input', () => {
@@ -68,6 +95,14 @@ describe('toTimelineEntry', () => {
 		});
 		expect(entry.meta).toEqual({ hora: '15:00', lugar: 'Laboratorio', para: 'primer ciclo' });
 		expect(entry.demo).toBeUndefined();
+	});
+
+	it('shows a month-only event as "feb 2026", keeps a sortable first-of-month date and never claims a day', () => {
+		const entry = toTimelineEntry(event({ date: '2026-02-20', datePrecision: 'month', highlights: ['FLISOL'] }), ctx);
+		expect(entry).toMatchObject({ stamp: 'feb 2026', date: '2026-02-01', datePrecision: 'month', kind: 'merge' });
+		expect(JSON.stringify(entry)).not.toMatch(/20 feb|2026-02-20/);
+		expect(toTimelineEntry(event({ date: '2026-02-20' }), ctx)).toMatchObject({ stamp: '20 feb 2026', date: '2026-02-20' });
+		expect(toTimelineEntry(event({ date: '2026-02-20' }), ctx).datePrecision).toBeUndefined();
 	});
 
 	it('drops null optionals instead of rendering them', () => {
