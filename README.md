@@ -36,6 +36,9 @@ ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 On Cloudflare Pages, set it under Settings → Environment variables. It is read once when the
 build (or `pnpm dev`) starts, so restart the dev server to fetch again.
 
+See [docs/DEPLOY.md](docs/DEPLOY.md) for the Cloudflare Pages setup, the deploy hook, the daily
+rebuild workflow and a first-deploy checklist.
+
 ### The build never fails because of the admin
 
 The fetch has a 10 second timeout and the payload is validated against the version 1 shape
