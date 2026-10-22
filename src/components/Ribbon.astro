@@ -1,0 +1,22 @@
+---
+import { ribbon } from '../data/site';
+---
+
+<div class="ribbon" aria-hidden="true">
+	<div class="ribbon-band">
+		<div class="ribbon-track">
+			{
+				[0, 1].map(() => (
+					<div class="ribbon-group">
+						{ribbon.map((text) => (
+							<>
+								<span>{text}</span>
+								<span class="ribbon-dot" />
+							</>
+						))}
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>

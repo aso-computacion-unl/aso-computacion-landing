@@ -71,6 +71,25 @@
  * (drawn in a 56x48 viewBox) stay aligned with the CSS rails at every breakpoint.
  */
 @layer components {
+	/* Fluid container: wide on big screens, never capped near 1150px. */
+	.wrap {
+		width: min(100% - 2.5rem, 1600px);
+		margin-inline: auto;
+	}
+
+	@media (min-width: 40rem) {
+		.wrap {
+			width: min(92%, 1600px);
+		}
+	}
+
+	.h2-xl {
+		font-family: var(--font-display);
+		font-size: clamp(2.75rem, 6.5vw, 6rem);
+		line-height: 1;
+		letter-spacing: -0.02em;
+	}
+
 	.graph {
 		--s: 1;
 		--lane: calc(56px * var(--s));
@@ -106,6 +125,20 @@
 		bottom: 0;
 	}
 
+	/* Planned lane: dashed, and it runs down into the HEAD node of the solid graph below it. */
+	.plan .rail-main {
+		bottom: calc(var(--node-y) * -1);
+		width: 0;
+		background: none;
+		border-left: var(--line) dashed var(--color-sky);
+	}
+
+	.plan .link {
+		height: 0;
+		background: none;
+		border-top: var(--line) dashed var(--color-sky);
+	}
+
 	.rail-feat {
 		top: var(--bend);
 		bottom: var(--bend);
@@ -117,6 +150,11 @@
 		display: grid;
 		grid-template-columns: var(--lane) minmax(0, 1fr);
 		padding-block: 1rem;
+		transition: opacity 250ms ease-out;
+	}
+
+	.is-dim {
+		opacity: 0.2;
 	}
 
 	.node {
@@ -165,6 +203,44 @@
 		background: var(--color-navy-lift);
 	}
 
+	.card-main {
+		min-width: 0;
+		flex: 1;
+	}
+
+	.card-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1.25rem;
+		margin-top: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+	}
+
+	.card-meta div {
+		display: flex;
+		gap: 0.375rem;
+	}
+
+	.card-meta dt {
+		color: var(--color-mist);
+	}
+
+	.card-meta dd {
+		color: #fff;
+	}
+
+	/* Commit message: the playful line of the entry. */
+	.msg {
+		margin-top: 0.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.4;
+		color: var(--color-sky);
+		overflow-wrap: anywhere;
+	}
+
 	/* The stamp overhangs the card edge so the date sits on the same line as its node. */
 	.stamp {
 		display: inline-flex;
@@ -203,6 +279,20 @@
 		line-height: 1;
 	}
 
+	/* Flat rotated sticker. Use sparingly: the next event and the newcomer block. */
+	.sticker {
+		position: absolute;
+		z-index: 3;
+		padding: 0.375rem 0.75rem;
+		background: var(--color-signal);
+		color: #fff;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		line-height: 1;
+		transform: rotate(6deg);
+	}
+
 	/* Duotone: grayscale plus a flat navy layer keeps every photo in the palette. */
 	.duo {
 		position: relative;
@@ -227,7 +317,7 @@
 		pointer-events: none;
 	}
 
-	/* Large photo bleeds to the card edges. */
+	/* Large photo bleeds to the card edges (bottom on phones, right side on desktop). */
 	.photo {
 		margin: 1.25rem -1.25rem -1.5rem;
 		border-radius: 0 0 4px 4px;
@@ -237,7 +327,7 @@
 		aspect-ratio: 2 / 1;
 	}
 
-	/* Small square thumbnail beside the text (below it on narrow screens). */
+	/* Small square thumbnail below the text on phones, beside it on desktop. */
 	.thumb {
 		flex: none;
 		width: 5rem;
@@ -246,45 +336,323 @@
 		border-radius: 4px;
 	}
 
-	.card-split {
-		display: flex;
-		flex-direction: column;
-	}
+	@media (min-width: 64rem) {
+		.card-row {
+			display: flex;
+			align-items: stretch;
+			gap: 1.75rem;
+		}
 
-	@media (min-width: 40rem) {
-		.card-split {
-			flex-direction: row;
-			align-items: flex-start;
-			gap: 1.25rem;
+		.card-meta {
+			flex: none;
+			flex-direction: column;
+			align-self: center;
+			gap: 0.25rem;
+			width: 15rem;
+			margin-top: 0;
+			padding-left: 1.5rem;
+			border-left: 1px solid color-mix(in srgb, var(--color-sky) 30%, transparent);
 		}
 
 		.thumb {
+			align-self: center;
 			width: 7rem;
 			height: 7rem;
 			margin-top: 0;
 		}
+
+		.photo {
+			align-self: stretch;
+			flex: none;
+			width: 34%;
+			min-height: 13rem;
+			margin: -1.25rem -1.25rem -1.5rem 0;
+			border-radius: 0 4px 4px 0;
+		}
+
+		.photo img {
+			position: absolute;
+			inset: 0;
+			aspect-ratio: auto;
+		}
 	}
 
-	/* Board portraits: colour returns on hover where hover exists; touch keeps the duotone. */
-	.portrait {
+	/* Board: each card slides a "git show" panel over the photo (hover, focus, tap). */
+	.member {
+		--show-h: 80%;
+		position: relative;
+		overflow: hidden;
+		container-type: inline-size;
 		border-radius: 4px;
+		background: var(--color-navy-deep);
+		cursor: default;
 	}
 
-	.portrait img {
-		aspect-ratio: 4 / 5;
+	.member .portrait {
+		position: absolute;
+		inset: 0;
+	}
+
+	.rest-hint {
+		display: none;
+	}
+
+	.member-lg {
+		--show-h: 62%;
+	}
+
+	@media (min-width: 64rem) {
+		.member {
+			--show-h: 70%;
+		}
+
+		.member-lg {
+			--show-h: 62%;
+		}
+	}
+
+	.plate {
+		position: absolute;
+		z-index: 2;
+		inset: auto 0.625rem 0.625rem 0.625rem;
+		padding: 0.5rem 0.75rem;
+		background: var(--color-navy-lift);
+	}
+
+	.plate p:first-child {
+		font-weight: 600;
+		line-height: 1.25;
+		color: #fff;
+	}
+
+	.plate p:last-child {
+		margin-top: 0.125rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		line-height: 1.25;
+		color: var(--color-mist);
+	}
+
+	.hint {
+		position: absolute;
+		z-index: 2;
+		top: 0.625rem;
+		left: 0.625rem;
+		padding: 0.25rem 0.5rem;
+		background: var(--color-sky);
+		color: var(--color-navy);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1;
+	}
+
+	.show {
+		position: absolute;
+		z-index: 3;
+		inset: auto 0 0 0;
+		height: var(--show-h);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		background: var(--color-navy-lift);
+		transform: translateY(101%);
+	}
+
+	.show-cmd {
+		flex: none;
+		padding: 0.375rem 0.75rem;
+		background: var(--color-sky);
+		color: var(--color-navy);
+		font-family: var(--font-mono);
+		font-size: clamp(0.6875rem, 4.6cqw, 0.8125rem);
+		font-weight: 700;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.show-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-height: 0;
+		padding: clamp(0.5rem, 4cqw, 1rem) clamp(0.625rem, 5cqw, 1.25rem);
+	}
+
+	.show-role {
+		font-family: var(--font-display);
+		font-size: clamp(1rem, 9.5cqw, 2.75rem);
+		line-height: 1.1;
+		color: #fff;
+	}
+
+	.show-name {
+		margin-top: 0.25rem;
+		font-size: clamp(0.8125rem, 5cqw, 1.25rem);
+		font-weight: 600;
+		line-height: 1.25;
+		color: var(--color-mist);
+	}
+
+	.show-fun {
+		margin-top: auto;
+		display: grid;
+		gap: 0.25rem;
+		font-family: var(--font-mono);
+		font-size: clamp(0.6875rem, 4cqw, 0.875rem);
+		line-height: 1.3;
+	}
+
+	.show-fun dt {
+		color: var(--color-sky);
+	}
+
+	.show-fun dd {
+		color: #fff;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.show {
+			transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+		}
+	}
+
+	.member:focus-visible {
+		outline: 2px solid var(--color-sky);
+		outline-offset: 3px;
+	}
+
+	.member:focus-visible .show,
+	.member.is-open .show {
+		transform: none !important;
+	}
+
+	.member:focus-visible .hint,
+	.member.is-open .hint,
+	.member:focus-visible .plate,
+	.member.is-open .plate {
+		visibility: hidden;
 	}
 
 	@media (hover: hover) {
-		.portrait img {
-			transition: filter 200ms var(--ease-out, ease-out);
+		.member {
+			cursor: pointer;
 		}
 
-		li:hover > .portrait img {
-			filter: none;
+		.member:hover .show {
+			transform: none !important;
 		}
 
-		li:hover > .portrait::after {
-			opacity: 0;
+		.member:hover .hint,
+		.member:hover .plate {
+			visibility: hidden;
+		}
+	}
+
+	/* Wide desktop: the two large cards split in two (photo left, role and name right); the panel slides over the right half. */
+	@media (min-width: 80rem) {
+		.rest-hint {
+			display: flex;
+			position: absolute;
+			z-index: 3;
+			top: 1.5rem;
+			left: calc(40% + 2rem);
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			font-family: var(--font-mono);
+			font-size: 0.8125rem;
+			line-height: 1.3;
+			color: var(--color-mist);
+		}
+
+		.rest-hint span:first-child {
+			align-self: flex-start;
+			padding: 0.25rem 0.5rem;
+			background: var(--color-sky);
+			color: var(--color-navy);
+			font-weight: 700;
+		}
+
+		.member:hover .rest-hint,
+		.member:focus-visible .rest-hint,
+		.member.is-open .rest-hint {
+			visibility: hidden;
+		}
+
+		.member-lg .portrait {
+			right: auto;
+			width: 40%;
+		}
+
+		.member-lg .plate {
+			inset: 0 0 0 40%;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			padding: 1.5rem 2rem;
+		}
+
+		.member-lg .plate p:first-child {
+			order: 1;
+			margin-top: 0.5rem;
+			font-size: 1.25rem;
+			font-weight: 500;
+			color: var(--color-mist);
+		}
+
+		.member-lg .plate p:last-child {
+			order: 0;
+			margin-top: 0;
+			font-family: var(--font-display);
+			font-size: max(1.375rem, calc((60cqw - 4rem) / 11.5));
+			line-height: 1.05;
+			color: #fff;
+		}
+
+		.member-lg .show {
+			inset: 0 0 0 40%;
+			height: auto;
+			transform: translateX(101%);
+		}
+
+		.member-lg .show-body {
+			padding: 1.5rem 2rem;
+		}
+
+		.member-lg .show-fun {
+			font-size: 1rem;
+			gap: 0.625rem;
+		}
+	}
+
+	/* Team face strip on the HEAD card: the seven real board photos, in duotone. */
+	.faces {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin-top: 1rem;
+	}
+
+	.face {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 4px;
+	}
+
+	@media (min-width: 64rem) {
+		.faces {
+			flex: none;
+			flex-wrap: nowrap;
+			align-self: center;
+			margin-top: 0;
+		}
+
+		.face {
+			width: 3.75rem;
+			height: 3.75rem;
 		}
 	}
 
@@ -298,6 +666,51 @@
 		background: var(--color-sky);
 	}
 
+	.swatch-dash {
+		width: 1.25rem;
+		height: 0;
+		border-radius: 0;
+		background: none;
+		border-top: 2px dashed var(--color-sky);
+	}
+
+	@media (min-width: 64rem) and (max-height: 860px) {
+		.legend {
+			display: none;
+		}
+	}
+
+	/* Filter chips: `git log --grep=` style. Only shown when JS can run them. */
+	.js-only {
+		display: none;
+	}
+
+	html.js .js-only {
+		display: block;
+	}
+
+	.chip {
+		padding: 0.5rem 0.75rem;
+		background: transparent;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-sky) 60%, transparent);
+		color: var(--color-mist);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.chip:hover {
+		color: #fff;
+	}
+
+	.chip[aria-pressed="true"] {
+		background: var(--color-sky);
+		box-shadow: none;
+		color: var(--color-navy);
+		font-weight: 700;
+	}
+
 	.tag {
 		display: inline-block;
 		padding: 0.25rem 0.625rem;
@@ -307,6 +720,12 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		line-height: 1.25rem;
+	}
+
+	.tag-plan {
+		background: transparent;
+		box-shadow: inset 0 0 0 1px var(--color-sky);
+		color: var(--color-sky);
 	}
 
 	.ref {
@@ -382,12 +801,117 @@
 		--node-y: 3rem;
 	}
 
-	.log .commit:last-child {
-		padding-bottom: 3rem;
-	}
-
 	.deep {
 		--bg: var(--color-navy-deep);
+	}
+
+	/* Flat file-tab panels (README.md, CONTRIBUTING.md, git remote -v). */
+	.file-tab {
+		display: inline-block;
+		border-radius: 4px 4px 0 0;
+		background: var(--color-navy-lift);
+		padding: 0.5rem 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--color-sky);
+	}
+
+	.panel {
+		border-radius: 0 4px 4px 4px;
+		background: var(--color-navy-lift);
+	}
+
+	/* Hero: huge headline, big isotype outline bleeding off the left edge as a flat layer. */
+	.hero-title {
+		font-family: var(--font-display);
+		font-size: clamp(2.75rem, 7.2vw, 7.5rem);
+		line-height: 0.98;
+		letter-spacing: -0.02em;
+	}
+
+	@media (min-width: 64rem) {
+		.hero-title {
+			font-size: clamp(3rem, 5.6vw, 7.5rem);
+		}
+	}
+
+	.iso-outline {
+		position: absolute;
+		z-index: 0;
+		pointer-events: none;
+		left: -9%;
+		bottom: -22%;
+		height: 120%;
+		width: auto;
+		color: var(--color-sky);
+		opacity: 0.22;
+	}
+
+	.iso-outline path {
+		fill: none !important;
+		stroke: currentColor !important;
+		stroke-width: 2px !important;
+		vector-effect: non-scaling-stroke;
+	}
+
+	/* Diagonal ribbon: sky band, navy mono text. Scrolls only when motion is allowed. */
+	.ribbon {
+		position: relative;
+		z-index: 5;
+		height: 8rem;
+		margin-block: -3.5rem;
+		overflow: clip;
+		pointer-events: none;
+	}
+
+	.ribbon-band {
+		position: absolute;
+		top: 50%;
+		left: -10%;
+		width: 120%;
+		margin-top: -1.5rem;
+		overflow: hidden;
+		background: var(--color-sky);
+		transform: rotate(-2deg);
+	}
+
+	.ribbon-track {
+		display: flex;
+		width: max-content;
+	}
+
+	.ribbon-group {
+		display: flex;
+		flex: none;
+		align-items: center;
+		gap: 2rem;
+		padding-right: 2rem;
+		height: 3rem;
+		color: var(--color-navy);
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.ribbon-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 9999px;
+		background: var(--color-navy);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.ribbon-track {
+			animation: ribbon 48s linear infinite;
+		}
+	}
+
+	@keyframes ribbon {
+		to {
+			transform: translateX(-50%);
+		}
 	}
 }
 
@@ -407,4 +931,17 @@ html.motion [data-link] {
 html.motion [data-bend] {
 	stroke-dasharray: 1;
 	stroke-dashoffset: 1;
+}
+
+/* Unlayered on purpose: these must beat the aspect utilities used for the phone and tablet shapes. */
+@media (min-width: 64rem) {
+	.member-lg {
+		aspect-ratio: 4 / 3;
+	}
+}
+
+@media (min-width: 80rem) {
+	.member-lg {
+		aspect-ratio: 2.3 / 1;
+	}
 }

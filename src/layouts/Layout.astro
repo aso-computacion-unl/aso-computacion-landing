@@ -26,6 +26,7 @@ const { title, description } = Astro.props;
 			// Opt in to the pre-motion state only when motion is allowed; fall back to visible if the motion script never starts.
 			(function () {
 				var root = document.documentElement;
+				root.classList.add('js');
 				if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 				root.classList.add('motion');
 				setTimeout(function () {
@@ -37,6 +38,7 @@ const { title, description } = Astro.props;
 	<body class="bg-navy font-sans text-white antialiased">
 		<slot />
 		<script>
+			import '../scripts/ui';
 			import '../scripts/motion';
 		</script>
 	</body>

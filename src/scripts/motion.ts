@@ -17,14 +17,14 @@ async function init() {
 	gsap.ticker.add((time) => lenis.raf(time * 1000));
 	gsap.ticker.lagSmoothing(0);
 
-	// Hero preview: draw the rail once on load, nodes settle as the line passes them.
-	const heroRail = document.querySelector('[data-hero-rail]');
-	const heroItems = gsap.utils.toArray<HTMLElement>('[data-hero-log] > li');
-	if (heroRail) {
+	// Hero preview: the planned (dashed) rail draws first, then the solid one; nodes settle as the line passes.
+	const heroRails = gsap.utils.toArray<HTMLElement>('[data-hero] [data-rail]');
+	const heroItems = gsap.utils.toArray<HTMLElement>('[data-hero] li');
+	if (heroRails.length) {
 		const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-		tl.fromTo(heroRail, { scaleY: 0 }, { scaleY: 1, duration: 1.8 });
+		heroRails.forEach((rail, i) => tl.fromTo(rail, { scaleY: 0 }, { scaleY: 1, duration: 1.4 }, i * 0.9));
 		heroItems.forEach((item, i) => {
-			const at = 0.15 + i * 0.3;
+			const at = 0.15 + i * 0.35;
 			tl.fromTo(item.querySelector('[data-node]'), { scale: 0 }, { scale: 1, duration: 0.6 }, at);
 			tl.fromTo(item.querySelector('[data-link]'), { scaleX: 0 }, { scaleX: 1, duration: 0.6 }, at + 0.1);
 		});

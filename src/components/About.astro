@@ -1,52 +1,47 @@
 ---
-import { join, site } from '../data/site';
+import { aboutHighlights, join, site } from '../data/site';
+
+// Split the statement so the highlighted phrases can be drawn in sky blue.
+const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
+const parts = site.about.split(pattern);
 ---
 
-<section id="nosotros" class="deep bg-navy-deep py-20 lg:py-28">
-	<div class="mx-auto grid max-w-6xl gap-12 px-5 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-16">
-		<h2 class="font-display text-3xl lg:text-4xl">Nosotros</h2>
-		<div>
-			<p
-				class="inline-block rounded-t-[4px] bg-navy-lift px-4 py-2 font-mono text-[0.8125rem] font-semibold text-sky"
-				aria-hidden="true"
-			>
-				README.md
-			</p>
-			<div class="rounded-[4px] rounded-tl-none bg-navy-lift p-6 sm:p-10">
-				<p class="max-w-[58ch] text-lg leading-relaxed text-white sm:text-xl">{site.about}</p>
-			</div>
+<section id="nosotros" class="deep bg-navy-deep py-24 lg:py-32">
+	<div class="wrap">
+		<h2 class="h2-xl">Nosotros</h2>
 
-			<div class="mt-10">
-				<p
-					class="inline-block rounded-t-[4px] bg-navy-lift px-4 py-2 font-mono text-[0.8125rem] font-semibold text-sky"
-					aria-hidden="true"
-				>
-					CONTRIBUTING.md
+		<div class="mt-10 lg:mt-14">
+			<p class="file-tab" aria-hidden="true">README.md</p>
+			<div class="panel p-6 sm:p-10 lg:p-14">
+				<p class="max-w-[46em] text-[clamp(1.375rem,2.5vw,2.75rem)] font-semibold leading-[1.25] text-white">
+					{parts.map((part) => (aboutHighlights.includes(part) ? <span class="text-sky">{part}</span> : part))}
 				</p>
-				<div class="rounded-[4px] rounded-tl-none bg-navy-lift p-6 sm:p-10">
-					<div class="flex flex-wrap items-center gap-3">
-						<h3 class="font-display text-xl text-white">Cómo sumarte</h3>
-						{join.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
-					</div>
-					<ol class="mt-6 grid gap-6 md:grid-cols-3">
-						{
-							join.steps.map((step, index) => (
-								<li class="flex gap-4 md:block">
-									<span
-										class="mt-1 grid size-6 shrink-0 place-items-center bg-sky font-mono text-xs font-semibold leading-none text-navy md:mb-4"
-										aria-hidden="true"
-									>
-										{index + 1}
-									</span>
-									<div>
-										<p class="font-semibold text-white">{step.title}</p>
-										<p class="mt-1 text-mist">{step.text}</p>
-									</div>
-								</li>
-							))
-						}
-					</ol>
+			</div>
+		</div>
+
+		<div class="mt-14 lg:mt-20">
+			<p class="file-tab" aria-hidden="true">CONTRIBUTING.md</p>
+			<div class="panel p-6 sm:p-10 lg:p-14">
+				<div class="flex flex-wrap items-center gap-3">
+					<h3 class="font-display text-2xl text-white lg:text-3xl">Cómo sumarte</h3>
+					{join.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
 				</div>
+				<ol class="mt-8 grid gap-10 md:grid-cols-3 md:gap-8 lg:mt-12 lg:gap-12">
+					{
+						join.steps.map((step, index) => (
+							<li class="border-t-2 border-sky pt-4">
+								<span
+									class="block font-display text-[clamp(4.5rem,9vw,8.5rem)] leading-[0.95] text-sky"
+									aria-hidden="true"
+								>
+									{index + 1}
+								</span>
+								<h4 class="mt-4 font-display text-xl text-white lg:text-2xl">{step.title}</h4>
+								<p class="mt-2 max-w-[34ch] text-lg text-mist">{step.text}</p>
+							</li>
+						))
+					}
+				</ol>
 			</div>
 		</div>
 	</div>

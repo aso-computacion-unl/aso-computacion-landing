@@ -1,74 +1,132 @@
 ---
-import { timeline } from '../data/site';
+import { activityTypes, nextEvent, timeline } from '../data/site';
 import { shortHash } from './shortHash';
 import Commit from './Commit.astro';
 
-const last = timeline.length - 1;
+const headIndex = timeline.findIndex((entry) => entry.kind === 'head');
+const planned = timeline.slice(0, headIndex);
+const history = timeline.slice(headIndex);
+const last = history.length - 1;
+const typedCount = (type: string) => timeline.filter((entry) => entry.type === type).length;
 ---
 
-<section id="actividades" class="bg-navy py-20 lg:py-28">
-	<div class="mx-auto grid max-w-6xl gap-12 px-5 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-16">
-		<div class="lg:sticky lg:top-24 lg:self-start">
-			<h2 class="font-display text-3xl lg:text-4xl">Actividades</h2>
-			<p class="mt-5 max-w-[34ch] text-lg text-mist">
-				Cada punto es algo que hicimos juntos. Arriba, lo más reciente; abajo, cómo empezó todo.
+<section id="actividades" class="bg-navy pb-20 pt-24 lg:pb-28 lg:pt-32">
+	<div class="wrap">
+		<div class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
+			<h2 class="h2-xl">Actividades</h2>
+			<p class="text-lg text-mist">
+				Arriba, lo que viene (línea punteada: todavía no ocurre). Abajo, lo que ya hicimos, hasta el primer día.
+				<span class="mt-3 block font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</span>
 			</p>
-			<p class="mt-6 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
-			<ul class="mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label="Leyenda">
-				<li class="flex items-center gap-3">
-					<span class="swatch bg-signal" aria-hidden="true"></span>próximo
-				</li>
-				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch bg-white" aria-hidden="true"></span>rama: evento con varias actividades
-				</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy
-				</li>
-			</ul>
 		</div>
 
-		<div class="graph">
-			<p class="tag mb-1">main</p>
-			<span class="rail rail-main" data-rail data-rail-scrub></span>
-			<ol>
+		<div class="mt-12 grid gap-10 lg:mt-16 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
+			<aside
+				class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
+				aria-label="Próxima actividad y filtros"
+			>
 				{
-					timeline.map((entry, index) => (
-						<Commit entry={entry} last={index === last}>
-							{entry.branch && (
-								<div class="branch">
-									<div class="bend">
-										<svg viewBox="0 0 56 48" aria-hidden="true">
-											<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
-										</svg>
-										<p class="px-3">
-											<span class="tag">{entry.branch.name}</span>
-										</p>
-									</div>
-									<span class="rail rail-feat" data-rail data-rail-scrub></span>
-									<ol aria-label={`Actividades de ${entry.title}`}>
-										{entry.branch.commits.map((sub) => (
-											<li class="commit">
-												<span class="node" data-node aria-hidden="true" />
-												<span class="link" data-link aria-hidden="true" />
-												<div class="card">
-													<h4 class="font-semibold leading-6 text-white">{sub.title}</h4>
-													<p class="ref" aria-hidden="true">{shortHash(`${entry.id}/${sub.id}`)}</p>
-												</div>
-											</li>
-										))}
-									</ol>
-									<div class="bend">
-										<svg viewBox="0 0 56 48" aria-hidden="true">
-											<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
-										</svg>
-									</div>
-								</div>
-							)}
-						</Commit>
-					))
+					nextEvent && (
+						<div class="panel p-5 sm:p-6" data-countdown={nextEvent.date}>
+							<p class="leading-none">
+								<span class="stamp" style="margin-left:0">Próxima actividad</span>
+								{nextEvent.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+							</p>
+							<div data-static>
+								<p class="mt-5 font-mono text-[0.8125rem] text-mist">fecha</p>
+								<p class="font-display text-5xl leading-none text-white">{nextEvent.stamp}</p>
+							</div>
+							<div data-live hidden>
+								<p class="mt-5 font-mono text-[0.8125rem] text-mist" data-count-label>faltan</p>
+								<p class="flex items-baseline gap-3 leading-none">
+									<span class="font-display text-[7rem] leading-[0.9] text-white" data-count-num>00</span>
+									<span class="font-display text-3xl text-sky" data-count-unit>días</span>
+								</p>
+							</div>
+							<p class="mt-4 text-lg font-semibold leading-snug text-white">{nextEvent.title}</p>
+							<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
+								{nextEvent.stamp}
+								{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
+								{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
+							</p>
+						</div>
+					)
 				}
-			</ol>
+
+				<div class="js-only mt-8" data-filters>
+					<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">git log --grep=</p>
+					<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrar actividades por tipo">
+						<button type="button" class="chip" data-filter="all" aria-pressed="true">todo</button>
+						{
+							activityTypes.map((type) => (
+								<button type="button" class="chip" data-filter={type} aria-pressed="false">
+									{type} ({typedCount(type)})
+								</button>
+							))
+						}
+					</div>
+					<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
+				</div>
+
+				<ul class="legend mt-8 hidden space-y-3 lg:block font-mono text-[0.8125rem] leading-5 text-mist" aria-label="Leyenda">
+					<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>próximo</li>
+					<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>línea punteada: planeado</li>
+					<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
+					<li class="flex items-center gap-3"><span class="swatch bg-white" aria-hidden="true"></span>rama: evento con varias actividades</li>
+					<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy</li>
+				</ul>
+			</aside>
+
+			<div data-timeline>
+				<p class="tag tag-plan mb-1">próximamente</p>
+				<div class="graph plan">
+					<span class="rail rail-main" data-rail data-rail-scrub></span>
+					<ol>
+						{planned.map((entry) => <Commit entry={entry} />)}
+					</ol>
+				</div>
+				<div class="graph">
+					<span class="rail rail-main" data-rail data-rail-scrub></span>
+					<ol>
+						{
+							history.map((entry, index) => (
+								<Commit entry={entry} last={index === last}>
+									{entry.branch && (
+										<div class="branch">
+											<div class="bend">
+												<svg viewBox="0 0 56 48" aria-hidden="true">
+													<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
+												</svg>
+												<p class="px-3">
+													<span class="tag">{entry.branch.name}</span>
+												</p>
+											</div>
+											<span class="rail rail-feat" data-rail data-rail-scrub></span>
+											<ol aria-label={`Actividades de ${entry.title}`}>
+												{entry.branch.commits.map((sub) => (
+													<li class="commit">
+														<span class="node" data-node aria-hidden="true" />
+														<span class="link" data-link aria-hidden="true" />
+														<div class="card">
+															<h4 class="font-semibold leading-6 text-white">{sub.title}</h4>
+															<p class="ref" aria-hidden="true">{shortHash(`${entry.id}/${sub.id}`)}</p>
+														</div>
+													</li>
+												))}
+											</ol>
+											<div class="bend">
+												<svg viewBox="0 0 56 48" aria-hidden="true">
+													<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
+												</svg>
+											</div>
+										</div>
+									)}
+								</Commit>
+							))
+						}
+					</ol>
+				</div>
+			</div>
 		</div>
 	</div>
 </section>

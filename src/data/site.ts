@@ -20,6 +20,8 @@ export const site = {
 	name: 'ASO Computación',
 	tagline: 'Asociación Estudiantil de la carrera de Computación',
 	headline: 'Entérate de lo que pasa en Computación.',
+	// Word(s) of the headline drawn in sky blue.
+	headlineAccent: 'Computación.',
 	description:
 		'ASO Computación es la asociación estudiantil de la carrera. Aquí está nuestro historial, actividad por actividad.',
 	// Verbatim from the ASO's own LinkedIn page.
@@ -27,12 +29,28 @@ export const site = {
 		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
 };
 
+// Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
+export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
+
+// Text of the diagonal ribbon: ASO verbs written as commit messages. Playful, no claims or numbers.
+export const ribbon = [
+	'feat: representar a los estudiantes',
+	'fix: aprender en equipo',
+	'chore: construir comunidad',
+	'docs: compartir lo que sabemos',
+	'feat: primer ciclo, bienvenido',
+	'refactor: hacer la carrera más llevadera',
+];
+
 export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
 	{ label: 'Síguenos', href: '#redes' },
 ];
+
+export const activityTypes = ['taller', 'charla', 'evento', 'comunidad'] as const;
+export type ActivityType = (typeof activityTypes)[number];
 
 export type TimelineKind = 'next' | 'upcoming' | 'head' | 'commit' | 'merge' | 'initial';
 
@@ -44,6 +62,12 @@ interface TimelineEntry {
 	stamp?: string;
 	title: string;
 	description?: string;
+	// ISO date (YYYY-MM-DD) of dated upcoming entries. The nearest one feeds the countdown panel.
+	date?: string;
+	// Category used by the activity filter chips. Entries without a type are never dimmed.
+	type?: ActivityType;
+	// Playful conventional-commit message shown in mono under the title. Never a factual claim.
+	msg?: string;
 	// Optional feature branch drawn as a second lane between this entry and the next one.
 	branch?: {
 		name: string;
@@ -70,6 +94,7 @@ interface TimelineEntry {
 export const timeline: TimelineEntry[] = [
 	{
 		id: 'proxima-actividad',
+		msg: 'chore: pronto en tu feed',
 		kind: 'next',
 		stamp: 'Lo que sigue',
 		title: 'La próxima actividad se anuncia primero en Instagram',
@@ -80,6 +105,9 @@ export const timeline: TimelineEntry[] = [
 	// DEMO: upcoming events (dates invented).
 	{
 		id: 'feria-de-proyectos',
+		date: '2026-12-11',
+		type: 'evento',
+		msg: 'feat(feria): demo day, esta vez sin demo en vivo que falle (ojalá)',
 		kind: 'upcoming',
 		demo: true,
 		stamp: '11 dic 2026',
@@ -91,6 +119,9 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'hackaton',
+		date: '2026-11-28',
+		type: 'evento',
+		msg: 'feat(hackaton): mucho café, cero bugs (ojalá)',
 		kind: 'upcoming',
 		demo: true,
 		stamp: '28 nov 2026',
@@ -102,6 +133,9 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'taller-python',
+		date: '2026-11-12',
+		type: 'taller',
+		msg: 'feat(taller): print("hola, primer ciclo")',
 		kind: 'upcoming',
 		demo: true,
 		stamp: '12 nov 2026',
@@ -114,6 +148,7 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'directiva-actual',
+		msg: 'docs(directiva): conoce a quienes hacen que esto pase',
 		kind: 'head',
 		stamp: 'HEAD',
 		title: 'Directiva actual',
@@ -124,6 +159,8 @@ export const timeline: TimelineEntry[] = [
 	// DEMO: past activities (titles and dates invented).
 	{
 		id: 'charla-ciberseguridad',
+		type: 'charla',
+		msg: 'fix(charla): no, "123456" no es una contraseña segura',
 		kind: 'commit',
 		demo: true,
 		stamp: '18 sep 2026',
@@ -136,6 +173,8 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'torneo-programacion',
+		type: 'evento',
+		msg: 'feat(torneo): resolver, equivocarse, resolver otra vez',
 		kind: 'commit',
 		demo: true,
 		stamp: '25 jun 2026',
@@ -148,6 +187,8 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'taller-git',
+		type: 'taller',
+		msg: 'chore(taller): git commit -m "ahora sí guardé"',
 		kind: 'commit',
 		demo: true,
 		stamp: '20 may 2026',
@@ -159,6 +200,8 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'bienvenida-primer-ciclo',
+		type: 'comunidad',
+		msg: 'feat(bienvenida): aquí nadie empieza solo',
 		kind: 'commit',
 		stamp: '14 abr 2026',
 		title: 'Bienvenida a primer ciclo',
@@ -168,6 +211,8 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'semana-del-estudiante-2026',
+		type: 'evento',
+		msg: 'merge(semana-del-estudiante): FLISOL, ponencias, talleres y casas abiertas',
 		kind: 'merge',
 		stamp: 'feb 2026',
 		title: 'Semana del Estudiante 2026',
@@ -184,12 +229,18 @@ export const timeline: TimelineEntry[] = [
 	},
 	{
 		id: 'fundacion',
+		msg: 'init: hola, mundo',
 		kind: 'initial',
 		stamp: '2020',
 		title: 'Nace ASO Computación',
 		description: 'Se funda la asociación estudiantil de la carrera de Computación.',
 	},
 ];
+
+// Nearest dated upcoming entry (feeds the countdown panel and the "¡nuevo!" sticker).
+export const nextEvent = timeline
+	.filter((entry) => entry.kind === 'upcoming' && entry.date)
+	.sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))[0];
 
 // DEMO: ways to get involved (invented copy). Replace with the board's real invitation, then drop `demo`.
 export const join = {
@@ -229,17 +280,21 @@ interface TeamMember {
 	name: string;
 	role: string;
 	photo: ImageMetadata;
+	// DEMO: playful fields shown in the "git show" panel. Invented placeholders, not real answers;
+	// each member (or the board) must provide their own before publishing. Never add age, phone,
+	// email, ciclo or personal handles here.
+	fun: { language: string; motto: string; demo: true };
 }
 
 // Official board order and roles, as provided by the board.
 export const team: TeamMember[] = [
-	{ name: 'Emilio Jaramillo', role: 'Presidente', photo: emilioJaramillo },
-	{ name: 'Viviana Córdova', role: 'Vicepresidenta', photo: vivianaCordova },
-	{ name: 'Miguel Armas', role: 'Secretario', photo: miguelArmas },
-	{ name: 'Kiara Condoy', role: 'Tesorera', photo: kiaraCondoy },
-	{ name: 'Marco Chiliguano', role: 'Alterno de Vicepresidente', photo: marcoChiliguano },
-	{ name: 'Alejandro Padilla', role: 'Alterno de Tesorero', photo: alejandroPadilla },
-	{ name: 'Melissa Contento', role: 'Alterna de Secretaria', photo: melissaContento },
+	{ name: 'Emilio Jaramillo', role: 'Presidente', photo: emilioJaramillo, fun: { language: 'TypeScript', motto: 'fix: dormir también es un feature', demo: true } },
+	{ name: 'Viviana Córdova', role: 'Vicepresidenta', photo: vivianaCordova, fun: { language: 'Python', motto: 'feat: más café, menos bugs', demo: true } },
+	{ name: 'Miguel Armas', role: 'Secretario', photo: miguelArmas, fun: { language: 'Java', motto: 'docs: si no está en el acta, no pasó', demo: true } },
+	{ name: 'Kiara Condoy', role: 'Tesorera', photo: kiaraCondoy, fun: { language: 'Rust', motto: 'chore: cuadrar las cuentas, otra vez', demo: true } },
+	{ name: 'Marco Chiliguano', role: 'Alterno de Vicepresidente', photo: marcoChiliguano, fun: { language: 'JavaScript', motto: 'feat: pulgar arriba para este PR', demo: true } },
+	{ name: 'Alejandro Padilla', role: 'Alterno de Tesorero', photo: alejandroPadilla, fun: { language: 'C++', motto: 'style: código limpio, camisa planchada', demo: true } },
+	{ name: 'Melissa Contento', role: 'Alterna de Secretaria', photo: melissaContento, fun: { language: 'Go', motto: 'fix: el bug era un punto y coma', demo: true } },
 ];
 
 interface Social {

@@ -1,30 +1,37 @@
 ---
+import Isotype from '../assets/brand/isotype-white.svg';
 import Logo from '../assets/brand/logo-white-sky.svg';
 import { site, socials, timeline } from '../data/site';
 import Commit from './Commit.astro';
 
 const instagram = socials.find((social) => social.remote === 'instagram');
-// Preview of the timeline, upcoming first: the two nearest upcoming entries (in log order), then HEAD.
-// Past activities live in the full activity graph below; the rail keeps running into them.
+// Preview of the timeline, upcoming first: the two nearest upcoming entries (in log order) on the dashed
+// planned lane, then HEAD on the solid lane. The full list lives in the activity graph below.
 const head = timeline.find((entry) => entry.kind === 'head');
 const headIndex = head ? timeline.indexOf(head) : timeline.length;
-const upcoming = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'upcoming').slice(-2);
-const latest = [...upcoming, head].filter((entry) => entry !== undefined);
+const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'upcoming').slice(-2);
+const [before, after] = site.headline.split(site.headlineAccent);
 ---
 
-<section id="top" class="bg-navy lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(26rem,38%)]">
+<section
+	id="top"
+	data-hero
+	class="relative isolate overflow-clip bg-navy lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(26rem,34%)]"
+>
+	<Isotype class="iso-outline" aria-hidden="true" />
+
 	<div
-		class="px-5 pb-14 pt-10 sm:px-10 lg:flex lg:flex-col lg:justify-center lg:py-16 lg:pl-[max(2.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-12"
+		class="relative z-10 px-5 pb-16 pt-10 sm:px-[4vw] lg:flex lg:flex-col lg:justify-center lg:py-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10"
 	>
-		<Logo class="w-56 sm:w-64 lg:w-[19rem]" role="img" aria-label={site.name} />
-		<h1 class="mt-10 max-w-[20ch] font-display text-3xl leading-tight sm:text-4xl lg:text-[2.75rem]">
-			{site.headline}
+		<Logo class="w-36 sm:w-44" role="img" aria-label={site.name} />
+		<h1 class="hero-title mt-8 lg:mt-12">
+			{before}<span class="text-sky">{site.headlineAccent}</span>
 		</h1>
-		<p class="mt-5 max-w-[46ch] text-lg text-mist">{site.description}</p>
+		<p class="mt-6 max-w-[42ch] text-lg text-mist lg:text-xl">{site.description}</p>
 		<div class="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
 			<a
 				href="#actividades"
-				class="inline-flex h-12 items-center rounded-[4px] bg-sky px-6 font-semibold text-navy hover:bg-white"
+				class="inline-flex h-14 items-center rounded-[4px] bg-sky px-8 text-lg font-semibold text-navy hover:bg-white"
 			>
 				Ver actividades
 			</a>
@@ -34,7 +41,7 @@ const latest = [...upcoming, head].filter((entry) => entry !== undefined);
 						href={instagram.href}
 						target="_blank"
 						rel="me noopener"
-						class="font-semibold text-white underline decoration-sky decoration-2 underline-offset-4 hover:text-sky"
+						class="text-lg font-semibold text-white underline decoration-sky decoration-2 underline-offset-4 hover:text-sky"
 					>
 						Síguenos en Instagram
 						<span class="sr-only"> (se abre en otra pestaña)</span>
@@ -44,12 +51,18 @@ const latest = [...upcoming, head].filter((entry) => entry !== undefined);
 		</div>
 	</div>
 
-	<div class="deep flex flex-col bg-navy-deep px-5 pt-10 sm:px-10 lg:pr-10 lg:pt-16" aria-hidden="true">
-		<p class="tag self-start">main</p>
-		<div class="graph log mt-5 flex-1">
-			<span class="rail rail-main" data-rail data-hero-rail></span>
-			<ol data-hero-log>
-				{latest.map((entry) => <Commit entry={entry} compact />)}
+	<div class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16" aria-hidden="true">
+		<p class="tag tag-plan self-start">próximamente</p>
+		<div class="graph log plan mt-5">
+			<span class="rail rail-main" data-rail></span>
+			<ol>
+				{planned.map((entry) => <Commit entry={entry} compact />)}
+			</ol>
+		</div>
+		<div class="graph log flex-1">
+			<span class="rail rail-main" data-rail></span>
+			<ol>
+				{head && <Commit entry={head} compact />}
 			</ol>
 		</div>
 	</div>

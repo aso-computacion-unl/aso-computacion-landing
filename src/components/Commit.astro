@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import { type TimelineKind, timeline } from '../data/site';
+import { type TimelineKind, nextEvent, team, timeline } from '../data/site';
 import { shortHash } from './shortHash';
 
 type Entry = (typeof timeline)[number];
@@ -33,59 +33,77 @@ const hash = entry.kind === 'next' || entry.kind === 'upcoming' ? undefined : sh
 const deco = entry.branch ? `Merge ${entry.branch.name}` : decoration[entry.kind];
 const upcoming = entry.kind === 'next' || entry.kind === 'upcoming' || entry.kind === 'head';
 const external = entry.href ? /^https?:/.test(entry.href) : false;
+const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
+const showPhoto = !compact && entry.image && entry.featured;
+const showThumb = !compact && entry.image && !entry.featured;
+const showFaces = !compact && entry.kind === 'head';
+const isNext = !compact && entry === nextEvent;
 ---
 
-<li class:list={['commit', { 'is-last': last }]}>
+<li class:list={['commit', { 'is-last': last }]} data-type={entry.type}>
 	<span class:list={['node', nodeClass[entry.kind]]} data-node aria-hidden="true"></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class:list={['card', { 'card-split': entry.image && !entry.featured && !compact }]}>
-		<div class="min-w-0 flex-1">
+	<div class:list={['card', 'card-row']}>
+		{isNext && <span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">¡nuevo!</span>}
+		<div class="card-main">
+			{
+				entry.stamp && (
+					<p class="leading-none">
+						<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
+						{entry.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+					</p>
+				)
+			}
+			<h3 class="mt-3 font-display text-lg leading-snug text-white md:text-xl xl:text-2xl">{entry.title}</h3>
+			{entry.msg && <p class="msg">{entry.msg}</p>}
+			{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
+			{
+				!compact && entry.href && (
+					<a
+						href={entry.href}
+						class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-white"
+						target={external ? '_blank' : undefined}
+						rel={external ? 'me noopener' : undefined}
+					>
+						{entry.hrefLabel}
+						{external && <span class="sr-only"> (se abre en otra pestaña)</span>}
+					</a>
+				)
+			}
+			{
+				(hash || deco) && (
+					<p class="ref" aria-hidden="true">
+						{hash}
+						{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
+					</p>
+				)
+			}
+		</div>
 		{
-			entry.stamp && (
-				<p class="leading-none">
-					<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
-					{entry.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
-				</p>
-			)
-		}
-		<h3 class="mt-3 font-display text-lg leading-snug text-white md:text-xl">{entry.title}</h3>
-		{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
-		{
-			!compact && entry.meta && (
-				<dl class="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[0.8125rem] leading-5">
-					{Object.entries(entry.meta).map(([label, value]) => (
-						<div class="flex gap-1.5">
-							<dt class="text-mist">{label}</dt>
-							<dd class="text-white">{value}</dd>
+			!compact && metaEntries.length > 0 && (
+				<dl class="card-meta">
+					{metaEntries.map(([label, value]) => (
+						<div>
+							<dt>{label}</dt>
+							<dd>{value}</dd>
 						</div>
 					))}
 				</dl>
 			)
 		}
 		{
-			!compact && entry.href && (
-				<a
-					href={entry.href}
-					class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-white"
-					target={external ? '_blank' : undefined}
-					rel={external ? 'me noopener' : undefined}
-				>
-					{entry.hrefLabel}
-					{external && <span class="sr-only"> (se abre en otra pestaña)</span>}
-				</a>
+			showFaces && (
+				<div class="faces" aria-hidden="true">
+					{team.map((member) => (
+						<div class="duo face">
+							<Image src={member.photo} alt="" width={120} height={120} fit="cover" position="top" loading="lazy" />
+						</div>
+					))}
+				</div>
 			)
 		}
 		{
-			(hash || deco) && (
-				<p class="ref" aria-hidden="true">
-					{hash}
-					{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
-				</p>
-			)
-		}
-		</div>
-		{
-			!compact && entry.image && entry.featured && (
+			showPhoto && entry.image && (
 				<div class="duo photo">
 					<Image
 						src={entry.image}
@@ -93,14 +111,14 @@ const external = entry.href ? /^https?:/.test(entry.href) : false;
 						width={720}
 						height={360}
 						widths={[480, 720, 960]}
-						sizes="(min-width: 1024px) 40rem, 90vw"
+						sizes="(min-width: 1024px) 28rem, 90vw"
 						loading="lazy"
 					/>
 				</div>
 			)
 		}
 		{
-			!compact && entry.image && !entry.featured && (
+			showThumb && entry.image && (
 				<div class="duo thumb">
 					<Image
 						src={entry.image}
