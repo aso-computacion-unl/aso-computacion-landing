@@ -1,7 +1,9 @@
 ---
 import { Image } from 'astro:assets';
 import Isotype from '../assets/brand/isotype-white.svg';
-import { aboutHighlights, manifesto, pillars, site } from '../data/site';
+import { pillars, site } from '../data/content';
+import { aboutHighlights, manifesto } from '../data/site';
+import { imageProps } from '../lib/admin-content/map';
 
 // The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
@@ -53,35 +55,34 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 			</div>
 		</div>
 
-		<ul class="bento mt-14 lg:mt-20">
-			{
-				pillars.map((pillar, index) => (
-					<li class:list={['tile', `tile-${index}`]} data-tile>
-						{
-							pillar.image && (
-								<div class="duo tile-photo">
-									<Image
-										src={pillar.image}
-										alt={pillar.imageAlt ?? ''}
-										width={720}
-										height={540}
-										widths={[480, 720]}
-										sizes="(min-width: 1024px) 40rem, 90vw"
-										loading="lazy"
-									/>
-								</div>
-							)
-						}
-						{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
-						<div class="tile-body">
-							<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
-							<h3 class="tile-title">{pillar.title}</h3>
-							<p class="tile-text">{pillar.text}</p>
-							{pillar.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
-						</div>
-					</li>
-				))
-			}
-		</ul>
+		{pillars.length > 0 && (
+			<ul class="bento mt-14 lg:mt-20">
+				{
+					pillars.map((pillar, index) => (
+						<li class:list={['tile', `tile-${index}`]} data-tile>
+							{
+								pillar.image && (
+									<div class="duo tile-photo">
+										<Image
+											{...imageProps(pillar.image, { width: 720, height: 540 })}
+											widths={[480, 720]}
+											sizes="(min-width: 1024px) 40rem, 90vw"
+											loading="lazy"
+										/>
+									</div>
+								)
+							}
+							{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
+							<div class="tile-body">
+								<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
+								<h3 class="tile-title">{pillar.title}</h3>
+								<p class="tile-text">{pillar.text}</p>
+								{pillar.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
+							</div>
+						</li>
+					))
+				}
+			</ul>
+		)}
 	</div>
 </section>

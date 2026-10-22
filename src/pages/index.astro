@@ -10,7 +10,7 @@ import Ribbon from '../components/Ribbon.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import Layout from '../layouts/Layout.astro';
-import { site } from '../data/site';
+import { faq, site, socials, team } from '../data/content';
 ---
 
 <Layout title={`${site.name} · ${site.tagline}`} description={site.description}>
@@ -20,10 +20,10 @@ import { site } from '../data/site';
 		<Ribbon />
 		<ActivityGraph />
 		<About />
-		<Board />
+		{team.length > 0 && <Board />}
 		<Join />
-		<Faq />
-		<Socials />
+		{faq.items.length > 0 && <Faq />}
+		{socials.length > 0 && <Socials />}
 	</main>
 	<SiteFooter />
 </Layout>

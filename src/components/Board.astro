@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import { team } from '../data/site';
+import { team } from '../data/content';
+import { imageProps, isRemote } from '../lib/admin-content/map';
 import SectionHead from './SectionHead.astro';
 
 // Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
@@ -14,6 +15,9 @@ const layout = [
 	'aspect-[3/4] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4]',
 	'col-span-2 aspect-[2/1] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4] [&_img]:object-[50%_30%] lg:[&_img]:object-top',
 ];
+
+// Boards of any other size still get a sensible card: extra members use the small portrait.
+const extraLayout = 'aspect-[3/4] md:col-span-2 lg:col-span-2';
 
 // Handle shown in the "git show" panel: first name only, no accents. Not a real social handle.
 const handle = (name: string) =>
@@ -45,13 +49,11 @@ const handle = (name: string) =>
 		<ul class="mt-12 grid grid-cols-2 gap-2.5 md:grid-cols-6 md:gap-4 lg:mt-16 lg:grid-cols-10 lg:gap-5">
 			{
 				team.map((member, index) => (
-					<li class:list={['member', layout[index]]} tabindex="0" data-member>
+					<li class:list={['member', layout[index] ?? extraLayout]} tabindex="0" data-member>
 						<div class="duo portrait">
 							<Image
-								src={member.photo}
-								alt={`Foto de ${member.name}`}
-								width={index < 2 ? 960 : 480}
-								height={index < 2 ? 720 : 640}
+								{...imageProps(member.photo, { width: index < 2 ? 960 : 480, height: index < 2 ? 720 : 640 })}
+								{...(isRemote(member.photo) ? { widths: [480, 960], sizes: index < 2 ? '(min-width: 1024px) 28rem, 50vw' : '(min-width: 1024px) 14rem, 50vw' } : {})}
 								fit="cover"
 								position="top"
 								loading="lazy"
@@ -63,19 +65,21 @@ const handle = (name: string) =>
 							<div class="rest-hint" aria-hidden="true">
 								<span>git show @{handle(member.name)}</span>
 								<span>pasa el cursor o toca para ver más</span>
-								<dl class="rest-fun">
-									<div>
-										<dt>lenguaje favorito</dt>
-										<dd>{member.fun.language}</dd>
-									</div>
-									<div>
-										<dt>commit message</dt>
-										<dd>"{member.fun.motto}"</dd>
-									</div>
-									<div>
-										<span class="demo-tag" style="margin-left:0">demo</span>
-									</div>
-								</dl>
+								{member.fun && (
+									<dl class="rest-fun">
+										<div>
+											<dt>lenguaje favorito</dt>
+											<dd>{member.fun.language}</dd>
+										</div>
+										<div>
+											<dt>commit message</dt>
+											<dd>"{member.fun.motto}"</dd>
+										</div>
+										<div>
+											<span class="demo-tag" style="margin-left:0">demo</span>
+										</div>
+									</dl>
+								)}
 							</div>
 						)}
 						<div class="plate" aria-hidden="true">
@@ -87,19 +91,21 @@ const handle = (name: string) =>
 							<div class="show-body">
 								<p class="show-role">{member.role}</p>
 								<p class="show-name">{member.name}</p>
-								<dl class="show-fun">
-									<div>
-										<dt>lenguaje favorito</dt>
-										<dd>{member.fun.language}</dd>
-									</div>
-									<div>
-										<dt>commit message</dt>
-										<dd>"{member.fun.motto}"</dd>
-									</div>
-									<div>
-										<span class="demo-tag" style="margin-left:0" title="Dato de ejemplo">demo</span>
-									</div>
-								</dl>
+								{member.fun && (
+									<dl class="show-fun">
+										<div>
+											<dt>lenguaje favorito</dt>
+											<dd>{member.fun.language}</dd>
+										</div>
+										<div>
+											<dt>commit message</dt>
+											<dd>"{member.fun.motto}"</dd>
+										</div>
+										<div>
+											<span class="demo-tag" style="margin-left:0" title="Dato de ejemplo">demo</span>
+										</div>
+									</dl>
+								)}
 							</div>
 						</div>
 					</li>
