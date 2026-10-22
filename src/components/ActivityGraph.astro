@@ -14,6 +14,18 @@ const last = timeline.length - 1;
 				Cada punto es algo que hicimos juntos. Arriba, lo más reciente; abajo, cómo empezó todo.
 			</p>
 			<p class="mt-6 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
+			<ul class="mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label="Leyenda">
+				<li class="flex items-center gap-3">
+					<span class="swatch bg-signal" aria-hidden="true"></span>próximo
+				</li>
+				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch bg-white" aria-hidden="true"></span>rama: evento con varias actividades
+				</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy
+				</li>
+			</ul>
 		</div>
 
 		<div class="graph">

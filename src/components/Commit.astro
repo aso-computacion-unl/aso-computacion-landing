@@ -31,17 +31,19 @@ const decoration: Partial<Record<TimelineKind, string>> = {
 
 const hash = entry.kind === 'next' || entry.kind === 'upcoming' ? undefined : shortHash(entry.id);
 const deco = entry.branch ? `Merge ${entry.branch.name}` : decoration[entry.kind];
+const upcoming = entry.kind === 'next' || entry.kind === 'upcoming' || entry.kind === 'head';
 const external = entry.href ? /^https?:/.test(entry.href) : false;
 ---
 
 <li class:list={['commit', { 'is-last': last }]}>
 	<span class:list={['node', nodeClass[entry.kind]]} data-node aria-hidden="true"></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class="card">
+	<div class:list={['card', { 'card-split': entry.image && !entry.featured && !compact }]}>
+		<div class="min-w-0 flex-1">
 		{
 			entry.stamp && (
 				<p class="leading-none">
-					<span class="stamp">{entry.stamp}</span>
+					<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
 					{entry.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
 				</p>
 			)
@@ -81,9 +83,10 @@ const external = entry.href ? /^https?:/.test(entry.href) : false;
 				</p>
 			)
 		}
+		</div>
 		{
-			!compact && entry.image && (
-				<div class="photo">
+			!compact && entry.image && entry.featured && (
+				<div class="duo photo">
 					<Image
 						src={entry.image}
 						alt={entry.imageAlt ?? ''}
@@ -91,6 +94,21 @@ const external = entry.href ? /^https?:/.test(entry.href) : false;
 						height={360}
 						widths={[480, 720, 960]}
 						sizes="(min-width: 1024px) 40rem, 90vw"
+						loading="lazy"
+					/>
+				</div>
+			)
+		}
+		{
+			!compact && entry.image && !entry.featured && (
+				<div class="duo thumb">
+					<Image
+						src={entry.image}
+						alt={entry.imageAlt ?? ''}
+						width={224}
+						height={224}
+						widths={[112, 224]}
+						sizes="7rem"
 						loading="lazy"
 					/>
 				</div>

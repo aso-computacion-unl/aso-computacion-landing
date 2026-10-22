@@ -54,7 +54,10 @@ interface TimelineEntry {
 	demo?: boolean;
 	// Optional practical details, shown in mono. Only include what is actually known for real entries.
 	meta?: { hora?: string; lugar?: string; para?: string };
-	// Optional photo shown at the bottom of the card. Demo photos live in src/assets/demo (see SOURCES.md).
+	// Large photo at the bottom of the card. Without it the photo renders as a small square thumbnail.
+	// Keep it for the next upcoming event and at most two past highlights so the graph keeps its rhythm.
+	featured?: boolean;
+	// Optional photo shown with the card. Demo photos live in src/assets/demo (see SOURCES.md).
 	image?: ImageMetadata;
 	imageAlt?: string;
 	// Optional link. External URLs (http...) open in a new tab.
@@ -105,6 +108,7 @@ export const timeline: TimelineEntry[] = [
 		title: 'Taller de Python para primer ciclo',
 		description: 'Tu primer programa, paso a paso y sin experiencia previa.',
 		meta: { hora: '15:00', lugar: 'Laboratorio de cómputo', para: 'primer ciclo' },
+		featured: true,
 		image: tallerPython,
 		imageAlt: 'Foto de ejemplo: dos personas revisan código en una laptop',
 	},
@@ -126,6 +130,7 @@ export const timeline: TimelineEntry[] = [
 		title: 'Charla: introducción a la ciberseguridad',
 		description: 'Cómo se protege la información hoy y por dónde puedes empezar a aprender.',
 		meta: { hora: '16:00', lugar: 'Auditorio de la facultad', para: 'todos los ciclos' },
+		featured: true,
 		image: charlaCiberseguridad,
 		imageAlt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro',
 	},
@@ -137,6 +142,7 @@ export const timeline: TimelineEntry[] = [
 		title: 'Torneo de programación',
 		description: 'Resolver problemas contra el reloj, en equipo, para cerrar el semestre.',
 		meta: { hora: '14:00', lugar: 'Laboratorios de la carrera', para: 'todos los ciclos' },
+		featured: true,
 		image: torneoProgramacion,
 		imageAlt: 'Foto de ejemplo: laptops, cuadernos y manos trabajando sobre una mesa vista desde arriba',
 	},

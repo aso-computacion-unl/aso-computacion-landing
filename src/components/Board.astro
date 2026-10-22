@@ -15,6 +15,7 @@ import { team } from '../data/site';
 			{
 				team.map((member) => (
 					<li>
+						<div class="duo portrait">
 						<Image
 							src={member.photo}
 							alt={`Foto de ${member.name}`}
@@ -23,8 +24,9 @@ import { team } from '../data/site';
 							fit="cover"
 							position="top"
 							loading="lazy"
-							class="aspect-[4/5] w-full rounded-[4px] object-cover object-top"
+							class="object-top"
 						/>
+						</div>
 						<div class="relative z-10 -mt-7 ml-3 mr-3 rounded-[4px] bg-navy-lift p-3 sm:p-4">
 							<p class="font-semibold leading-snug text-white">{member.name}</p>
 							<p class="mt-1 font-mono text-xs leading-snug text-mist">{member.role}</p>
