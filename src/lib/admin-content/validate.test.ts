@@ -140,6 +140,52 @@ describe('parsePublicContent', () => {
 		expect(reason(foreign, { allowLocalImages: true })).toContain('url');
 	});
 
+	it('rejects stored Cloudinary transformations: only an optional version and comma-free segments follow /image/upload/', () => {
+		const event = payload().events[0];
+		const photoWith = (url: string) => payload({ events: [{ ...event, photos: [image({ url })] }] });
+		for (const url of [
+			'https://res.cloudinary.com/demo/image/upload/c_fill,w_100/v99/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/c_fill,w_100/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/w_100,h_50/a.jpg',
+		]) {
+			expect(reason(photoWith(url)), url).toContain('url');
+		}
+		for (const url of [
+			'https://res.cloudinary.com/demo/image/upload/v1712345/aso/eventos/foto%20uno.jpg',
+			'https://res.cloudinary.com/demo/image/upload/aso/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/a.jpg',
+		]) {
+			expect(ok(photoWith(url)).events[0].photos[0].url, url).toBe(url);
+		}
+	});
+
+	it('rejects dot segments, encoded dots, query strings and fragments anywhere in the image path', () => {
+		const event = payload().events[0];
+		const photoWith = (url: string) => payload({ events: [{ ...event, photos: [image({ url })] }] });
+		const base = 'https://res.cloudinary.com/demo/image/upload/';
+		const cases: Record<string, string[]> = {
+			'..': [`${base}v1/../../video/upload/a.mp4`, `${base}../other/image/upload/a.jpg`, `${base}v1/a/..`],
+			'%2e': [`${base}v1/%2e%2e/a.jpg`, `${base}v1/%2e./a.jpg`, `${base}v1/.%2e/a.jpg`],
+			'%2E': [`${base}v1/%2E%2E/a.jpg`, `${base}v1/a/%2E%2e/b.jpg`],
+			'?': [`${base}v1/a.jpg?x=1`, `${base}v1/a?b/c.jpg`],
+			'#': [`${base}v1/a.jpg#frag`, `${base}v1/a#b/c.jpg`],
+		};
+		for (const [label, urls] of Object.entries(cases)) {
+			for (const url of urls) expect(reason(photoWith(url)), `${label} ${url}`).toContain('url');
+		}
+	});
+
+	it('caps image width and height at 10000 positive integers', () => {
+		const event = payload().events[0];
+		const photoWith = (overrides: Parameters<typeof image>[0]) => payload({ events: [{ ...event, photos: [image(overrides)] }] });
+		for (const value of [1e21, 10001, Infinity, NaN, 1.5, 0, -5]) {
+			expect(reason(photoWith({ width: value })), `width ${value}`).toContain('width');
+			expect(reason(photoWith({ height: value })), `height ${value}`).toContain('height');
+		}
+		const photo = ok(photoWith({ width: 10000, height: 10000 })).events[0].photos[0];
+		expect([photo.width, photo.height]).toEqual([10000, 10000]);
+	});
+
 	describe('size caps (a hostile or buggy payload cannot bloat the page)', () => {
 		const long = (length: number) => 'x'.repeat(length);
 		const event = payload().events[0];

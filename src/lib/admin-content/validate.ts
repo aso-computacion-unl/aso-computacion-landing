@@ -68,8 +68,13 @@ const nullable = <T>(value: unknown, path: string, read: (value: unknown, path: 
 
 const bool = (value: unknown, path: string): boolean => (typeof value === 'boolean' ? value : fail(path, 'expected a boolean'));
 
+// Cloudinary's own ceiling is far above any photo the landing shows; the cap keeps a buggy value (1e21) out of the markup.
+const MAX_DIMENSION = 10_000;
+
 const dimension = (value: unknown, path: string): number =>
-	typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : fail(path, 'expected a positive integer');
+	typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= MAX_DIMENSION
+		? value
+		: fail(path, `expected a positive integer of at most ${MAX_DIMENSION}`);
 
 const httpsUrl = (value: unknown, path: string): string => {
 	const url = text(value, path, LIMIT.url);
@@ -99,15 +104,19 @@ const body = (value: unknown, path: string) => text(value, path, LIMIT.text);
 
 const LOCAL_IMAGE = /^\/src\/assets\/[\w./-]+$/;
 // Images are served by Cloudinary only, and only as image uploads: a `/video/upload/` or `/raw/upload/` URL (or any
-// other host) would otherwise end up in an <img> that never renders.
-const CLOUDINARY_IMAGE = /^https:\/\/res\.cloudinary\.com\/[^/\s]+\/image\/upload\/\S+$/;
+// other host) would otherwise end up in an <img> that never renders. After `/image/upload/` come an optional version
+// and comma-free segments: a comma would be a stored transformation (`c_fill,w_100`), which makes the srcset widths lie
+// because the landing inserts its own. `?` and `#` never belong in a public id.
+const CLOUDINARY_IMAGE = /^https:\/\/res\.cloudinary\.com\/[^/\s]+\/image\/upload\/(?:v\d+\/)?[^/\s,?#]+(?:\/[^/\s,?#]+)*$/;
+// `..` and its encoded forms would climb out of `/image/upload/` (to `/video/upload/` or another account).
+const PATH_ESCAPE = /\.\.|%2e/i;
 
 // Every reader below copies key by key instead of spreading: whatever the payload carries beyond the documented
 // keys is dropped here, which is what keeps S4 true even if the admin ever leaks a field.
 const readers = (options: ParseOptions) => {
 	const imageUrl = (value: unknown, path: string): string => {
 		const url = text(value, path, LIMIT.url);
-		if (CLOUDINARY_IMAGE.test(url)) return url;
+		if (CLOUDINARY_IMAGE.test(url) && !PATH_ESCAPE.test(url)) return url;
 		if (options.allowLocalImages && LOCAL_IMAGE.test(url) && !url.includes('..')) return url;
 		return fail(path, options.allowLocalImages ? 'expected a Cloudinary image URL or a /src/assets/ path' : 'expected a Cloudinary image URL (https://res.cloudinary.com/<cloud>/image/upload/...)');
 	};

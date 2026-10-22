@@ -47,8 +47,9 @@ The fetch has a 10 second timeout and the payload is validated against the versi
 - network error or timeout
 - a status other than 200
 - invalid JSON, a payload that does not match the shape, or a `version` other than `1`
-- an image URL that is not `https://res.cloudinary.com/<cloud>/image/upload/...` (another host,
-  `/video/upload/`, `http`...)
+- an image URL that is not `https://res.cloudinary.com/<cloud>/image/upload/[v<digits>/]<path>`
+  (another host, `/video/upload/`, `http`, a stored transformation such as `c_fill,w_100`, or `..`,
+  `%2e`, `?` or `#` in the path), or an image `width`/`height` that is not an integer from 1 to 10000
 - a `linkUrl` or social `url` that is not `https`
 - a string or an array over its cap (text up to 2000 characters, titles 240, at most 100
   events, 12 photos per event and 50 FAQs, pillars, socials or board members)
