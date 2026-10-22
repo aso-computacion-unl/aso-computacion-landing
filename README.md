@@ -21,6 +21,10 @@ Events, FAQ, pillars, socials, the board and the site copy are managed in the ad
 bakes it into the HTML, so a change in the admin shows up after the next build (the admin
 triggers one through a deploy hook, plus a daily rebuild as a safety net).
 
+> **Schedule the daily rebuild after 05:00 UTC.** "Today" (which decides what is an upcoming
+> event) is fixed at build time, in Ecuador time (UTC-5). A rebuild before 05:00 UTC still sees
+> the previous day in Ecuador, so an event would stay "upcoming" a day too long.
+
 | Variable | Where | What |
 | --- | --- | --- |
 | `ADMIN_CONTENT_URL` | build environment | Full URL of the admin's `GET /api/public/content`, for example `https://your-admin.vercel.app/api/public/content`. See `.env.example`. |
@@ -43,8 +47,13 @@ The fetch has a 10 second timeout and the payload is validated against the versi
 - network error or timeout
 - a status other than 200
 - invalid JSON, a payload that does not match the shape, or a `version` other than `1`
-- a remote image that does not answer 200 (Astro would otherwise fail the build while
-  optimizing it, so every image is checked first)
+- an image URL that is not `https://res.cloudinary.com/<cloud>/image/upload/...` (another host,
+  `/video/upload/`, `http`...)
+- a `linkUrl` or social `url` that is not `https`
+- a string or an array over its cap (text up to 2000 characters, titles 240, at most 100
+  events, 12 photos per event and 50 FAQs, pillars, socials or board members)
+
+Images are never downloaded at build time, so no image can fail the build (see Photos below).
 
 Only keys in the documented shape are kept; anything else in the response is dropped. In
 particular a board member is rebuilt from `name`, `role` and `photo` and nothing more.
@@ -73,9 +82,14 @@ section with nothing to show is left out.
 - **Socials** `platform` picks a Simple Icons glyph; an unknown platform gets a generic one.
 - **Pillars** without an image show the isotype tile.
 - **Settings** `tagline`, `description` and `about` replace the landing copy when present.
-- **Photos**: Cloudinary images (`res.cloudinary.com`, allowed in `astro.config.mjs`) are
-  optimized by Astro with the width and height the admin reports. Board photos appear only in
-  the Directiva section.
+- **Photos**: admin images are plain `<img>` tags served by Cloudinary. The build inserts a
+  delivery transformation after `/image/upload/` (`f_auto,q_auto,c_limit,w_<n>`, see
+  `src/lib/admin-content/cloudinary.ts`) and writes a `srcset` with two or three widths, the
+  `width`/`height` the admin reports, `loading="lazy"` and `decoding="async"`. Cloudinary
+  resizes and re-encodes on first request, so the build downloads nothing. Bundled images (the
+  fallback snapshot and the demo placeholders) still go through Astro's image pipeline. Both
+  paths render through `src/components/Photo.astro`. Board photos appear only in the Directiva
+  section.
 
 ## Tests
 

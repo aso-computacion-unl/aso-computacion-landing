@@ -1,8 +1,8 @@
 // What the landing components render. The admin payload (types.ts) is mapped into these in map.ts / compose.ts.
 import type { ImageMetadata } from 'astro';
 
-// A bundled image (Astro optimizes it from its metadata) or a remote one, which carries the width and height the
-// admin reported so Astro never has to download it to measure it.
+// A bundled image (Astro optimizes it from its metadata) or a remote Cloudinary one, which carries the width and
+// height the admin reported (see cloudinary.ts and components/Photo.astro).
 export type Photo =
 	| { src: ImageMetadata; alt: string }
 	| { src: string; width: number; height: number; alt: string };

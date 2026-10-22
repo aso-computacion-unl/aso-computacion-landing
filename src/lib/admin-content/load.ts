@@ -54,42 +54,8 @@ const fetchJson = (url: string, doFetch: typeof fetch, timeoutMs: number): Promi
 		}
 	}, timeoutMs);
 
-const remoteImageUrls = (content: PublicContent): string[] => {
-	const images = [
-		...content.events.flatMap((event) => event.photos),
-		...content.pillars.flatMap((pillar) => (pillar.image ? [pillar.image] : [])),
-		...content.board.map((member) => member.photo),
-	];
-	return [...new Set(images.map((image) => image.url))];
-};
-
-const PROBE_CONCURRENCY = 8;
-
-// Astro downloads every remote image to optimize it, and fails the whole build if one is unreachable. So the images
-// are probed here first (status only, the body is never read): an unreachable one rejects the payload like any other
-// failure. Returns the reason, or null when every image answers 200.
-async function unreachableImage(content: PublicContent, doFetch: typeof fetch, timeoutMs: number): Promise<string | null> {
-	const queue = remoteImageUrls(content);
-	let failure: string | null = null;
-	const worker = async () => {
-		for (let url = queue.shift(); url !== undefined && failure === null; url = queue.shift()) {
-			try {
-				await withDeadline(async (signal) => {
-					const response = await doFetch(url, { signal });
-					void response.body?.cancel().catch(() => {});
-					if (response.status !== 200) throw new Unavailable(`HTTP ${response.status}`);
-				}, timeoutMs);
-			} catch (error) {
-				failure ??= `an image is unreachable (${describe(error)}): ${url}`;
-			}
-		}
-	};
-	await Promise.all(Array.from({ length: PROBE_CONCURRENCY }, worker));
-	return failure;
-}
-
 // Resolves the content the landing is built from. It never throws because of the admin: any failure (unset URL,
-// network, timeout, non-200, invalid JSON, invalid shape, unknown version, unreachable image) logs ONE warning and returns the committed
+// network, timeout, non-200, invalid JSON, invalid shape, unknown version) logs ONE warning and returns the committed
 // fallback. It only throws if the committed fallback.json itself is invalid, which is a bug in this repo.
 export async function loadPublicContent(options: LoadOptions): Promise<LoadedContent> {
 	const { url, fallback, fetch: doFetch = fetch, timeoutMs = DEFAULT_TIMEOUT_MS, warn = console.warn } = options;
@@ -118,7 +84,5 @@ export async function loadPublicContent(options: LoadOptions): Promise<LoadedCon
 
 	const parsed = parsePublicContent(raw);
 	if (!parsed.ok) return useFallback(`the response was rejected (${parsed.reason})`);
-	const unreachable = await unreachableImage(parsed.content, doFetch, timeoutMs);
-	if (unreachable) return useFallback(unreachable);
 	return { source: 'api', content: parsed.content };
 }

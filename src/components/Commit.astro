@@ -1,7 +1,6 @@
 ---
-import { Image } from 'astro:assets';
+import Photo from './Photo.astro';
 import { nextEvent, timeline } from '../data/content';
-import { imageProps } from '../lib/admin-content/map';
 import type { TimelineKind } from '../lib/admin-content/model';
 import { shortHash } from './shortHash';
 
@@ -99,8 +98,9 @@ const isNext = !compact && entry === nextEvent;
 		{
 			showPhoto && entry.image && (
 				<div class="duo photo">
-					<Image
-						{...imageProps(entry.image, { width: 720, height: 360 })}
+					<Photo
+						photo={entry.image}
+						box={{ width: 720, height: 360 }}
 						widths={[480, 720, 960]}
 						sizes="(min-width: 1024px) 28rem, 90vw"
 						loading="lazy"
@@ -111,8 +111,9 @@ const isNext = !compact && entry === nextEvent;
 		{
 			showThumb && entry.image && (
 				<div class="duo thumb">
-					<Image
-						{...imageProps(entry.image, { width: 224, height: 224 })}
+					<Photo
+						photo={entry.image}
+						box={{ width: 224, height: 224 }}
 						widths={[112, 224]}
 						sizes="7rem"
 						loading="lazy"

@@ -126,59 +126,41 @@ describe('loadPublicContent', () => {
 		expect(viaApi.source).toBe('fallback');
 	});
 
-	describe('remote image preflight (Astro fails the build on an unreachable remote image)', () => {
-		const IMAGE = 'https://res.cloudinary.com/demo/image/upload/v1/aso/photo.jpg';
-
-		// Answers the API URL with the payload and every image URL with `imageStatus` (or a custom handler).
-		const router = (imageHandler: (url: string) => Response | Promise<Response> = () => new Response('img', { status: 200 })) =>
-			vi.fn(async (url: string) => (url === URL_OK ? new Response(JSON.stringify(api), { status: 200 }) : imageHandler(url)));
-
-		it('keeps the API content when every image answers 200, asking for each distinct image once', async () => {
-			const fetchMock = router();
-			const { run, warn } = setup({ fetch: fetchMock as unknown as typeof fetch });
+	describe('images are never fetched at build time (they are delivered by Cloudinary)', () => {
+		it('asks only for the API: no image request, however many images the payload has', async () => {
+			const { run, warn, fetchMock } = setup();
 			const result = await run();
 			expect(result.source).toBe('api');
 			expect(warn).not.toHaveBeenCalled();
-			const imageCalls = fetchMock.mock.calls.filter(([url]) => url !== URL_OK);
-			expect(imageCalls.length).toBeGreaterThan(0);
-			expect(new Set(imageCalls.map(([url]) => url)).size).toBe(imageCalls.length);
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+			expect(fetchMock.mock.calls[0][0]).toBe(URL_OK);
 		});
 
-		it('falls back, with one warning naming the image, when an image is 404', async () => {
-			const { run, warn } = setup({ fetch: router(() => new Response('nope', { status: 404 })) as unknown as typeof fetch });
+		it('falls back when an image is not hosted on Cloudinary', async () => {
+			const bad = payload({ board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: 'https://images.example.com/image/upload/a.jpg' } }] });
+			const { run, warn } = setup({ fetch: respond(bad) as unknown as typeof fetch });
 			const result = await run();
 			expect(result.source).toBe('fallback');
 			expect(result.content).toEqual(fallback);
 			expect(warn).toHaveBeenCalledTimes(1);
-			expect(warn.mock.calls[0][0]).toContain(IMAGE);
-			expect(warn.mock.calls[0][0]).toContain('404');
+			expect(warn.mock.calls[0][0]).toContain('url');
 		});
 
-		it('falls back when an image request fails at the network level', async () => {
-			const { run, warn } = setup({ fetch: router(() => Promise.reject(new TypeError('socket hang up'))) as unknown as typeof fetch });
+		it('falls back on a Cloudinary video URL (it answers 200 but is not an image)', async () => {
+			const video = payload({ board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: 'https://res.cloudinary.com/demo/video/upload/dog.mp4' } }] });
+			const { run, warn } = setup({ fetch: respond(video) as unknown as typeof fetch });
 			expect((await run()).source).toBe('fallback');
 			expect(warn).toHaveBeenCalledTimes(1);
-			expect(warn.mock.calls[0][0]).toMatch(/socket hang up/);
 		});
 
-		it('falls back when an image request outlives the timeout', async () => {
-			const { run, warn } = setup({ fetch: router(() => new Promise<Response>(() => {})) as unknown as typeof fetch, timeoutMs: 20 });
-			expect((await run()).source).toBe('fallback');
-			expect(warn.mock.calls[0][0]).toMatch(/timed out/);
-		});
-
-		it('does not touch the network for images when the content has none', async () => {
-			const bare = payload({ events: [], pillars: [], board: [] });
-			const fetchMock = vi.fn(async () => new Response(JSON.stringify(bare), { status: 200 }));
-			const result = await setup({ fetch: fetchMock as unknown as typeof fetch }).run();
-			expect(result.source).toBe('api');
-			expect(fetchMock).toHaveBeenCalledTimes(1);
-		});
-
-		it('never probes images on the fallback path (they are bundled)', async () => {
-			const fetchMock = router();
-			await setup({ url: undefined, fetch: fetchMock as unknown as typeof fetch }).run();
-			expect(fetchMock).not.toHaveBeenCalled();
+		it('falls back on an http link and on an oversize payload', async () => {
+			const http = payload({ events: [{ ...api.events[0], linkUrl: 'http://example.com/x' }] });
+			const huge = payload({ faqs: [{ question: 'q', answer: 'x'.repeat(5_000_000) }] });
+			for (const body of [http, huge]) {
+				const { run, warn } = setup({ fetch: respond(body) as unknown as typeof fetch });
+				expect((await run()).source).toBe('fallback');
+				expect(warn).toHaveBeenCalledTimes(1);
+			}
 		});
 	});
 });

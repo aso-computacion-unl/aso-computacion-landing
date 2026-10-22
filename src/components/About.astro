@@ -1,9 +1,8 @@
 ---
-import { Image } from 'astro:assets';
+import Photo from './Photo.astro';
 import Isotype from '../assets/brand/isotype-white.svg';
 import { pillars, site } from '../data/content';
 import { aboutHighlights, manifesto } from '../data/site';
-import { imageProps } from '../lib/admin-content/map';
 
 // The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
@@ -63,8 +62,9 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 							{
 								pillar.image && (
 									<div class="duo tile-photo">
-										<Image
-											{...imageProps(pillar.image, { width: 720, height: 540 })}
+										<Photo
+											photo={pillar.image}
+											box={{ width: 720, height: 540 }}
 											widths={[480, 720]}
 											sizes="(min-width: 1024px) 40rem, 90vw"
 											loading="lazy"
