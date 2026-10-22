@@ -15,11 +15,29 @@ const { title, description } = Astro.props;
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
+		<meta name="theme-color" content="#053066" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<script is:inline>
+			// Opt in to the pre-motion state only when motion is allowed; fall back to visible if the motion script never starts.
+			(function () {
+				var root = document.documentElement;
+				if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+				root.classList.add('motion');
+				setTimeout(function () {
+					if (!root.dataset.motionReady) root.classList.remove('motion');
+				}, 5000);
+			})();
+		</script>
 	</head>
 	<body class="bg-navy font-sans text-white antialiased">
 		<slot />
+		<script>
+			import '../scripts/motion';
+		</script>
 	</body>
 </html>

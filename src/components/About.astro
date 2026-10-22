@@ -1,0 +1,53 @@
+---
+import { join, site } from '../data/site';
+---
+
+<section id="nosotros" class="deep bg-navy-deep py-20 lg:py-28">
+	<div class="mx-auto grid max-w-6xl gap-12 px-5 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-16">
+		<h2 class="font-display text-3xl lg:text-4xl">Nosotros</h2>
+		<div>
+			<p
+				class="inline-block rounded-t-[4px] bg-navy-lift px-4 py-2 font-mono text-[0.8125rem] font-semibold text-sky"
+				aria-hidden="true"
+			>
+				README.md
+			</p>
+			<div class="rounded-[4px] rounded-tl-none bg-navy-lift p-6 sm:p-10">
+				<p class="max-w-[58ch] text-lg leading-relaxed text-white sm:text-xl">{site.about}</p>
+			</div>
+
+			<div class="mt-10">
+				<p
+					class="inline-block rounded-t-[4px] bg-navy-lift px-4 py-2 font-mono text-[0.8125rem] font-semibold text-sky"
+					aria-hidden="true"
+				>
+					CONTRIBUTING.md
+				</p>
+				<div class="rounded-[4px] rounded-tl-none bg-navy-lift p-6 sm:p-10">
+					<div class="flex flex-wrap items-center gap-3">
+						<h3 class="font-display text-xl text-white">Cómo sumarte</h3>
+						{join.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
+					</div>
+					<ol class="mt-6 grid gap-6 md:grid-cols-3">
+						{
+							join.steps.map((step, index) => (
+								<li class="flex gap-4 md:block">
+									<span
+										class="mt-1 grid size-6 shrink-0 place-items-center bg-sky font-mono text-xs font-semibold leading-none text-navy md:mb-4"
+										aria-hidden="true"
+									>
+										{index + 1}
+									</span>
+									<div>
+										<p class="font-semibold text-white">{step.title}</p>
+										<p class="mt-1 text-mist">{step.text}</p>
+									</div>
+								</li>
+							))
+						}
+					</ol>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

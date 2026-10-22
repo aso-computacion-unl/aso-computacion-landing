@@ -1,0 +1,62 @@
+---
+import { timeline } from '../data/site';
+import { shortHash } from './shortHash';
+import Commit from './Commit.astro';
+
+const last = timeline.length - 1;
+---
+
+<section id="actividades" class="bg-navy py-20 lg:py-28">
+	<div class="mx-auto grid max-w-6xl gap-12 px-5 sm:px-6 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-16">
+		<div class="lg:sticky lg:top-24 lg:self-start">
+			<h2 class="font-display text-3xl lg:text-4xl">Actividades</h2>
+			<p class="mt-5 max-w-[34ch] text-lg text-mist">
+				Cada punto es algo que hicimos juntos. Arriba, lo más reciente; abajo, cómo empezó todo.
+			</p>
+			<p class="mt-6 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
+		</div>
+
+		<div class="graph">
+			<p class="tag mb-1">main</p>
+			<span class="rail rail-main" data-rail data-rail-scrub></span>
+			<ol>
+				{
+					timeline.map((entry, index) => (
+						<Commit entry={entry} last={index === last}>
+							{entry.branch && (
+								<div class="branch">
+									<div class="bend">
+										<svg viewBox="0 0 56 48" aria-hidden="true">
+											<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
+										</svg>
+										<p class="px-3">
+											<span class="tag">{entry.branch.name}</span>
+										</p>
+									</div>
+									<span class="rail rail-feat" data-rail data-rail-scrub></span>
+									<ol aria-label={`Actividades de ${entry.title}`}>
+										{entry.branch.commits.map((sub) => (
+											<li class="commit">
+												<span class="node" data-node aria-hidden="true" />
+												<span class="link" data-link aria-hidden="true" />
+												<div class="card">
+													<h4 class="font-semibold leading-6 text-white">{sub.title}</h4>
+													<p class="ref" aria-hidden="true">{shortHash(`${entry.id}/${sub.id}`)}</p>
+												</div>
+											</li>
+										))}
+									</ol>
+									<div class="bend">
+										<svg viewBox="0 0 56 48" aria-hidden="true">
+											<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
+										</svg>
+									</div>
+								</div>
+							)}
+						</Commit>
+					))
+				}
+			</ol>
+		</div>
+	</div>
+</section>

@@ -1,0 +1,50 @@
+---
+import Isotype from '../assets/brand/isotype-white.svg';
+import { navLinks, site } from '../data/site';
+---
+
+<header class="sticky top-0 z-50 border-b border-sky/30 bg-navy">
+	<a
+		href="#contenido"
+		class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-sky focus:px-4 focus:py-2 focus:font-semibold focus:text-navy"
+	>
+		Saltar al contenido
+	</a>
+	<nav
+		aria-label="Principal"
+		class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-3 sm:px-6"
+	>
+		<a href="#top" class="flex shrink-0 items-center gap-3" aria-label={`${site.name}, inicio`}>
+			<Isotype class="h-7 w-auto sm:h-8" aria-hidden="true" />
+			<span class="hidden font-display text-base text-white md:inline">{site.name}</span>
+		</a>
+		<ul class="flex items-center gap-2.5 font-mono text-xs min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
+			{
+				navLinks.map((link) => (
+					<li class="nav-item flex items-center">
+						<a
+							href={link.href}
+							class="group flex items-center gap-2 py-3 text-mist hover:text-white sm:px-1"
+						>
+							<span class="hidden size-2 rounded-full bg-sky group-hover:bg-white sm:block" aria-hidden="true" />
+							{link.label.toLowerCase()}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+</header>
+
+<style>
+	/* Short sky segment between items: the nav reads as a tiny branch. */
+	@media (min-width: 40rem) {
+		.nav-item:not(:last-child)::after {
+			content: '';
+			width: 1.25rem;
+			height: 2px;
+			margin-inline: 0.25rem;
+			background: var(--color-sky);
+		}
+	}
+</style>

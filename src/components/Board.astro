@@ -1,0 +1,37 @@
+---
+import { Image } from 'astro:assets';
+import { team } from '../data/site';
+---
+
+<section id="directiva" class="bg-navy py-20 lg:py-28">
+	<div class="mx-auto max-w-6xl px-5 sm:px-6">
+		<h2 class="font-display text-3xl lg:text-4xl">Directiva</h2>
+		<p class="mt-5 max-w-[46ch] text-lg text-mist">
+			Las personas que hoy representan a los estudiantes de Computación.
+		</p>
+		<p class="mt-4 font-mono text-[0.8125rem] text-sky" aria-hidden="true">contributors ({team.length})</p>
+
+		<ul class="mt-12 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 lg:grid-cols-4 lg:[&>li:nth-child(even)]:mt-10">
+			{
+				team.map((member) => (
+					<li>
+						<Image
+							src={member.photo}
+							alt={`Foto de ${member.name}`}
+							width={480}
+							height={600}
+							fit="cover"
+							position="top"
+							loading="lazy"
+							class="aspect-[4/5] w-full rounded-[4px] object-cover object-top"
+						/>
+						<div class="relative z-10 -mt-7 ml-3 mr-3 rounded-[4px] bg-navy-lift p-3 sm:p-4">
+							<p class="font-semibold leading-snug text-white">{member.name}</p>
+							<p class="mt-1 font-mono text-xs leading-snug text-mist">{member.role}</p>
+						</div>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>

@@ -1,22 +1,334 @@
 @import "tailwindcss";
 @import "@fontsource/audiowide";
 @import "@fontsource-variable/inter";
+@import "lenis/dist/lenis.css";
 
 /*
  * Official ASO Computación brand tokens.
  * - navy:   primary. Backgrounds, titles, institutional elements, text.
- * - sky:    primary complement. Tech details, icons, accents.
- * - mist:   neutral. Secondary backgrounds, dividers, visual rest.
- * - signal: accent. Alerts, key dates, one-off calls to attention.
- *           Low contrast on navy (~2:1): use it on light surfaces or as a fill, never as text on navy.
+ * - sky:    primary complement. Branch lines, nodes, links, icons.
+ * - mist:   neutral. Metadata and secondary text.
+ * - signal: accent. Dates and "what comes next" only.
+ *           Low contrast on navy (~2:1): use it as a fill with white text, never as text on navy.
+ * - navy-deep / navy-lift: darker and lighter steps of the same navy, used as flat overlapping layers.
  */
 @theme {
 	--color-navy: #053066;
+	--color-navy-deep: #03224a;
+	--color-navy-lift: #083572;
 	--color-sky: #2bb2e4;
 	--color-mist: #d9d9d9;
 	--color-signal: #b7353e;
 
-	/* Display: titles, headers, hero, promotional pieces only. Body: long-form text. */
+	/* Display: titles and headers only. Body: long-form text. Mono: dates, branch names, short hashes. */
 	--font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
 	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+
+@layer base {
+	html {
+		color-scheme: dark;
+		background: var(--color-navy);
+		scroll-padding-top: 4.5rem;
+		scrollbar-color: var(--color-sky) var(--color-navy-deep);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		html {
+			scroll-behavior: smooth;
+		}
+	}
+
+	body {
+		caret-color: var(--color-sky);
+	}
+
+	::selection {
+		background: var(--color-sky);
+		color: var(--color-navy);
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-sky);
+		outline-offset: 3px;
+	}
+
+	h1,
+	h2,
+	h3 {
+		text-wrap: balance;
+	}
+
+	p {
+		text-wrap: pretty;
+	}
+}
+
+/*
+ * Repository-history graph.
+ * One scale variable (--s) drives lane geometry, line weight and node size, so the SVG bends
+ * (drawn in a 56x48 viewBox) stay aligned with the CSS rails at every breakpoint.
+ */
+@layer components {
+	.graph {
+		--s: 1;
+		--lane: calc(56px * var(--s));
+		--main-x: calc(14px * var(--s));
+		--feat-x: calc(42px * var(--s));
+		--line: calc(2px * var(--s));
+		--node: calc(16px * var(--s));
+		--node-y: 3rem;
+		--bend: calc(48px * var(--s));
+		--bg: var(--color-navy);
+		position: relative;
+		isolation: isolate;
+	}
+
+	@media (min-width: 48rem) {
+		.graph {
+			--s: 1.5;
+		}
+	}
+
+	.rail {
+		position: absolute;
+		z-index: 0;
+		left: calc(var(--x) - var(--line) / 2);
+		width: var(--line);
+		background: var(--color-sky);
+		transform-origin: top;
+	}
+
+	.rail-main {
+		--x: var(--main-x);
+		top: var(--node-y);
+		bottom: 0;
+	}
+
+	.rail-feat {
+		top: var(--bend);
+		bottom: var(--bend);
+	}
+
+	.commit {
+		--x: var(--main-x);
+		position: relative;
+		display: grid;
+		grid-template-columns: var(--lane) minmax(0, 1fr);
+		padding-block: 1rem;
+	}
+
+	.node {
+		position: absolute;
+		z-index: 2;
+		left: calc(var(--x) - var(--node) / 2);
+		top: calc(var(--node-y) - var(--node) / 2);
+		box-sizing: border-box;
+		width: var(--node);
+		height: var(--node);
+		border: calc(3px * var(--s)) solid var(--bg);
+		border-radius: 9999px;
+		background: var(--color-sky);
+	}
+
+	.node-next,
+	.node-upcoming {
+		background: var(--color-signal);
+	}
+
+	.node-merge {
+		background: #fff;
+	}
+
+	.node-head {
+		--node: calc(24px * var(--s));
+	}
+
+	.link {
+		position: absolute;
+		z-index: 0;
+		left: var(--x);
+		top: calc(var(--node-y) - var(--line) / 2);
+		width: calc(var(--lane) - var(--x) + 0.75rem);
+		height: var(--line);
+		background: var(--color-sky);
+		transform-origin: left;
+	}
+
+	.card {
+		grid-column: 2;
+		position: relative;
+		z-index: 1;
+		padding: 1.25rem 1.25rem 1.5rem;
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+	}
+
+	/* The stamp overhangs the card edge so the date sits on the same line as its node. */
+	.stamp {
+		display: inline-flex;
+		align-items: center;
+		height: 1.5rem;
+		margin-left: -1.75rem;
+		padding-inline: 0.625rem;
+		background: var(--color-signal);
+		color: #fff;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Quiet marker for placeholder content, so demo items are never shipped by mistake. */
+	.demo-tag {
+		display: inline-flex;
+		align-items: center;
+		height: 1.5rem;
+		margin-left: 0.5rem;
+		padding-inline: 0.5rem;
+		border: 1px solid color-mix(in srgb, var(--color-mist) 45%, transparent);
+		color: var(--color-mist);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		line-height: 1;
+	}
+
+	/* Photo bleeds to the card edges. Grayscale plus a flat navy layer keeps every photo in the palette. */
+	.photo {
+		position: relative;
+		margin: 1.25rem -1.25rem -1.5rem;
+		overflow: hidden;
+		border-radius: 0 0 4px 4px;
+		background: var(--color-navy);
+	}
+
+	.photo img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 2 / 1;
+		object-fit: cover;
+		filter: grayscale(1) contrast(1.05);
+	}
+
+	.photo::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: var(--color-navy);
+		mix-blend-mode: screen;
+		pointer-events: none;
+	}
+
+	.tag {
+		display: inline-block;
+		padding: 0.25rem 0.625rem;
+		background: var(--color-sky);
+		color: var(--color-navy);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		line-height: 1.25rem;
+	}
+
+	.ref {
+		margin-top: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-mist);
+		overflow-wrap: anywhere;
+	}
+
+	.ref-deco {
+		color: var(--color-sky);
+	}
+
+	/* Feature branch: second lane between the merge commit and the point where it forked. */
+	.branch {
+		--x: var(--feat-x);
+		grid-column: 1 / -1;
+		position: relative;
+	}
+
+	.branch .commit {
+		--x: var(--feat-x);
+		--node-y: 1.875rem;
+		padding-block: 0.375rem;
+	}
+
+	.branch .card {
+		max-width: 38rem;
+		padding: 0.75rem 1rem;
+	}
+
+	.branch .card .ref {
+		margin-top: 0.25rem;
+	}
+
+	.bend {
+		display: grid;
+		grid-template-columns: var(--lane) minmax(0, 1fr);
+		align-items: center;
+		height: var(--bend);
+	}
+
+	.bend svg {
+		display: block;
+		width: var(--lane);
+		height: var(--bend);
+		overflow: visible;
+	}
+
+	.bend path {
+		fill: none;
+		stroke: var(--color-sky);
+		stroke-width: 2;
+	}
+
+	/* The main rail stops at the last node: the initial commit has nothing before it. */
+	.commit.is-last::after {
+		content: "";
+		position: absolute;
+		z-index: 1;
+		left: 0;
+		width: var(--lane);
+		top: calc(var(--node-y) + var(--node) / 2);
+		bottom: 0;
+		background: var(--bg);
+	}
+
+	/* Hero preview: same graph on the deeper navy layer. */
+	.log {
+		--bg: var(--color-navy-deep);
+		--node-y: 3rem;
+	}
+
+	.log .commit:last-child {
+		padding-bottom: 3rem;
+	}
+
+	.deep {
+		--bg: var(--color-navy-deep);
+	}
+}
+
+/* Pre-motion state: only applied when JS runs and the visitor accepts motion. */
+html.motion [data-rail] {
+	transform: scaleY(0);
+}
+
+html.motion [data-node] {
+	transform: scale(0);
+}
+
+html.motion [data-link] {
+	transform: scaleX(0);
+}
+
+html.motion [data-bend] {
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
 }
