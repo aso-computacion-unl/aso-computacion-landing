@@ -22,12 +22,21 @@ Public landing page for ASO Computación, the student association of the Compute
 
 - Single landing page; content is edited in `src/data/site.ts`.
 - Page copy is in Spanish (audience language); code, comments, and docs are in English.
-- Open: university name, official contact email, deploy target and domain.
+- University: Universidad Nacional de Loja (UNL), Loja, Ecuador.
+- Socials (from the board): Instagram @aso_computacion, TikTok @aso_computacion_unl, Twitch ASO_Computacion, LinkedIn company page `aso-computacion-unl`. No Facebook and no contact email: contact happens through social DMs.
+- Open: deploy target and domain.
 
 ## Brand Commitments
 
 - Name: "ASO Computación".
-- The association has an official logo (pending delivery into `public/`).
+- Official logo in `src/assets/brand/` (cropped to content; originals were 720x720 UTF-16 Illustrator exports): `logo-color` (light backgrounds), `logo-white` and `logo-white-sky` (navy backgrounds), `isotype-color`, `isotype-white`. `public/favicon.svg` is `isotype-color`. Original logo navy is `#062e5f`, a hair off the palette's `#053066`; do not recolor brand assets.
+- Official palette (tokens in `src/styles/global.css`):
+  - Navy `#053066` (`navy`): primary. Backgrounds, titles, institutional elements, text.
+  - Tech Sky `#2bb2e4` (`sky`): primary complement. Details, tech elements, icons, accents.
+  - Light Gray `#d9d9d9` (`mist`): neutral. Secondary backgrounds, dividers, visual rest.
+  - Red `#b7353e` (`signal`): accent. Alerts, key dates, one-off calls to attention. Fails contrast as text on navy; use on light surfaces or as a fill.
+- Typography: the brand display face (named "Audiowave" in the brand brief; implemented as Audiowide, pending confirmation) for titles, covers, headers, and promotional pieces only (`font-display`). Long-form text uses Inter (`font-sans`); the brief allows Inter or Montserrat.
+- Board photos live in `src/assets/team/` with metadata stripped. Board order and roles come from the board's roster. Publish only display name and role; the roster's phones, ages, emails, and personal Instagram handles stay out of the repository.
 
 ## Evidence on Hand
 

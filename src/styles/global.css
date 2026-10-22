@@ -1,1 +1,22 @@
 @import "tailwindcss";
+@import "@fontsource/audiowide";
+@import "@fontsource-variable/inter";
+
+/*
+ * Official ASO Computación brand tokens.
+ * - navy:   primary. Backgrounds, titles, institutional elements, text.
+ * - sky:    primary complement. Tech details, icons, accents.
+ * - mist:   neutral. Secondary backgrounds, dividers, visual rest.
+ * - signal: accent. Alerts, key dates, one-off calls to attention.
+ *           Low contrast on navy (~2:1): use it on light surfaces or as a fill, never as text on navy.
+ */
+@theme {
+	--color-navy: #053066;
+	--color-sky: #2bb2e4;
+	--color-mist: #d9d9d9;
+	--color-signal: #b7353e;
+
+	/* Display: titles, headers, hero, promotional pieces only. Body: long-form text. */
+	--font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
