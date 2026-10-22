@@ -2,16 +2,16 @@
 import { Image } from 'astro:assets';
 import { team } from '../data/site';
 
-// Grid math (7 people, no holes): phones 2 cols (2 wide, 4 small, 1 wide), tablets 6 cols
+// Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
 // (2 wide, 3 small, 2 half), desktop 10 cols (2 wide of 5, then 5 small of 2).
 const layout = [
-	'member-lg col-span-2 aspect-square md:col-span-3 lg:col-span-5',
-	'member-lg col-span-2 aspect-square md:col-span-3 lg:col-span-5',
+	'member-lg md:col-span-3 md:aspect-square lg:col-span-5',
+	'member-lg md:col-span-3 md:aspect-square lg:col-span-5',
 	'aspect-[3/4] md:col-span-2 lg:col-span-2',
 	'aspect-[3/4] md:col-span-2 lg:col-span-2',
 	'aspect-[3/4] md:col-span-2 lg:col-span-2',
 	'aspect-[3/4] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4]',
-	'col-span-2 aspect-square md:col-span-3 lg:col-span-2 lg:aspect-[3/4]',
+	'col-span-2 aspect-[2/1] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4] [&_img]:object-[50%_30%] lg:[&_img]:object-top',
 ];
 
 // Handle shown in the "git show" panel: first name only, no accents. Not a real social handle.
@@ -23,7 +23,7 @@ const handle = (name: string) =>
 		.toLowerCase();
 ---
 
-<section id="directiva" class="bg-navy py-24 lg:py-32">
+<section id="directiva" class="bg-navy py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
 		<div class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
 			<h2 class="h2-xl">Directiva</h2>
@@ -33,7 +33,7 @@ const handle = (name: string) =>
 			</p>
 		</div>
 
-		<ul class="mt-12 grid grid-cols-2 gap-3 md:grid-cols-6 md:gap-4 lg:mt-16 lg:grid-cols-10 lg:gap-5">
+		<ul class="mt-12 grid grid-cols-2 gap-2.5 md:grid-cols-6 md:gap-4 lg:mt-16 lg:grid-cols-10 lg:gap-5">
 			{
 				team.map((member, index) => (
 					<li class:list={['member', layout[index]]} tabindex="0" data-member>
@@ -51,10 +51,23 @@ const handle = (name: string) =>
 						</div>
 						<p class="hint" aria-hidden="true">¿quién es?</p>
 						{index < 2 && (
-							<p class="rest-hint" aria-hidden="true">
+							<div class="rest-hint" aria-hidden="true">
 								<span>git show @{handle(member.name)}</span>
 								<span>pasa el cursor o toca para ver más</span>
-							</p>
+								<dl class="rest-fun">
+									<div>
+										<dt>lenguaje favorito</dt>
+										<dd>{member.fun.language}</dd>
+									</div>
+									<div>
+										<dt>commit message</dt>
+										<dd>"{member.fun.motto}"</dd>
+									</div>
+									<div>
+										<span class="demo-tag" style="margin-left:0">demo</span>
+									</div>
+								</dl>
+							</div>
 						)}
 						<div class="plate" aria-hidden="true">
 							<p>{member.name}</p>

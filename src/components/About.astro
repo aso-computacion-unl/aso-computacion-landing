@@ -1,29 +1,91 @@
 ---
-import { aboutHighlights, join, site } from '../data/site';
+import { aboutHighlights, diff, join, site } from '../data/site';
 
-// Split the statement so the highlighted phrases can be drawn in sky blue.
+// Split the statement so the key phrases can be drawn in Audiowide + sky between visible ** markers.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
-const parts = site.about.split(pattern);
+const parts = site.about.split(pattern).filter(Boolean);
+// Each word is its own span so the scroll scrub can light the statement up word by word.
+const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.length > 0);
 ---
 
-<section id="nosotros" class="deep bg-navy-deep py-24 lg:py-32">
+<section id="nosotros" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
 		<h2 class="h2-xl">Nosotros</h2>
 
-		<div class="mt-10 lg:mt-14">
-			<p class="file-tab" aria-hidden="true">README.md</p>
-			<div class="panel p-6 sm:p-10 lg:p-14">
-				<p class="max-w-[46em] text-[clamp(1.375rem,2.5vw,2.75rem)] font-semibold leading-[1.25] text-white">
-					{parts.map((part) => (aboutHighlights.includes(part) ? <span class="text-sky">{part}</span> : part))}
-				</p>
+		<div class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:mt-14 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-12">
+			<div class="editor" data-editor>
+				<div class="editor-bar">
+					<span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+					<span class="tab tab-active" aria-current="true"><span class="tab-dot" aria-hidden="true"></span>README.md</span>
+					<a class="tab" href="#sumarte">CONTRIBUTING.md</a>
+				</div>
+				<div class="editor-body">
+					<div class="line">
+						<span class="ln" aria-hidden="true">1</span>
+						<h3 class="line-code font-display text-[clamp(1.5rem,2.4vw,2.5rem)] leading-tight text-white">
+							<span class="syn" aria-hidden="true">#</span> ASO Computación
+						</h3>
+					</div>
+					<div class="line"><span class="ln" aria-hidden="true">2</span></div>
+					<div class="line">
+						<span class="ln" aria-hidden="true">3</span>
+						<p class="line-code statement" data-statement>
+							<span class="syn" aria-hidden="true">&gt; </span>
+							{
+								parts.map((part) =>
+									aboutHighlights.includes(part) ? (
+										<span class="key">
+											<span class="syn" aria-hidden="true">**</span>
+											{words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))}
+											<span class="syn" aria-hidden="true">**</span>
+										</span>
+									) : (
+										words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))
+									),
+								)
+							}<span class="caret" aria-hidden="true"></span>
+						</p>
+					</div>
+					<div class="line"><span class="ln" aria-hidden="true">4</span></div>
+				</div>
+			</div>
+
+			<div class="diff" data-diff>
+				<div class="diff-head">
+					<span aria-hidden="true">$ git diff antes..ahora</span>
+					{diff.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
+				</div>
+				<p class="diff-hunk" aria-hidden="true">@@ {diff.title} @@</p>
+				<ul>
+					{
+						diff.rows.map((row) => (
+							<>
+								<li class="diff-row diff-del" data-diff-row>
+									<span class="gut" aria-hidden="true">−</span>
+									<span class="txt"><span class="sr-only">Antes: </span>{row.del}</span>
+								</li>
+								<li class="diff-row diff-add" data-diff-row>
+									<span class="gut" aria-hidden="true">+</span>
+									<span class="txt"><span class="sr-only">Con la ASO: </span>{row.add}</span>
+								</li>
+							</>
+						))
+					}
+				</ul>
 			</div>
 		</div>
 
-		<div class="mt-14 lg:mt-20">
-			<p class="file-tab" aria-hidden="true">CONTRIBUTING.md</p>
-			<div class="panel p-6 sm:p-10 lg:p-14">
+		<div id="sumarte" class="editor mt-14 lg:mt-20">
+			<div class="editor-bar">
+				<span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+				<a class="tab" href="#nosotros">README.md</a>
+				<span class="tab tab-active" aria-current="true"><span class="tab-dot" aria-hidden="true"></span>CONTRIBUTING.md</span>
+			</div>
+			<div class="p-6 font-sans sm:p-10 lg:p-14">
 				<div class="flex flex-wrap items-center gap-3">
-					<h3 class="font-display text-2xl text-white lg:text-3xl">Cómo sumarte</h3>
+					<h3 class="font-display text-2xl text-white lg:text-3xl">
+						<span class="syn" aria-hidden="true">##</span> Cómo sumarte
+					</h3>
 					{join.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
 				</div>
 				<ol class="mt-8 grid gap-10 md:grid-cols-3 md:gap-8 lg:mt-12 lg:gap-12">
@@ -31,8 +93,9 @@ const parts = site.about.split(pattern);
 						join.steps.map((step, index) => (
 							<li class="border-t-2 border-sky pt-4">
 								<span
-									class="block font-display text-[clamp(4.5rem,9vw,8.5rem)] leading-[0.95] text-sky"
+									class="block font-display text-[clamp(3.5rem,9vw,8.5rem)] leading-[0.95] text-sky"
 									aria-hidden="true"
+									data-numeral={index + 1}
 								>
 									{index + 1}
 								</span>

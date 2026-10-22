@@ -1,8 +1,8 @@
 ---
-import Isotype from '../assets/brand/isotype-white.svg';
 import Logo from '../assets/brand/logo-white-sky.svg';
 import { site, socials, timeline } from '../data/site';
 import Commit from './Commit.astro';
+import HeroMark from './HeroMark.astro';
 
 const instagram = socials.find((social) => social.remote === 'instagram');
 // Preview of the timeline, upcoming first: the two nearest upcoming entries (in log order) on the dashed
@@ -10,7 +10,6 @@ const instagram = socials.find((social) => social.remote === 'instagram');
 const head = timeline.find((entry) => entry.kind === 'head');
 const headIndex = head ? timeline.indexOf(head) : timeline.length;
 const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'upcoming').slice(-2);
-const [before, after] = site.headline.split(site.headlineAccent);
 ---
 
 <section
@@ -18,17 +17,30 @@ const [before, after] = site.headline.split(site.headlineAccent);
 	data-hero
 	class="relative isolate overflow-clip bg-navy lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(26rem,34%)]"
 >
-	<Isotype class="iso-outline" aria-hidden="true" />
+	<div class="hero-mark" data-hero-mark aria-hidden="true">
+		<HeroMark />
+	</div>
+	<span class="hero-stem" data-hero-stem aria-hidden="true"></span>
+	<div class="hero-cue" data-hero-cue aria-hidden="true">
+		<p class="font-mono text-[0.8125rem] text-sky">$ git log --graph main</p>
+		<p class="mt-3 font-display text-[clamp(1.5rem,2.6vw,2.75rem)] leading-tight text-white">{site.heroCue}</p>
+	</div>
 
 	<div
 		class="relative z-10 px-5 pb-16 pt-10 sm:px-[4vw] lg:flex lg:flex-col lg:justify-center lg:py-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10"
 	>
-		<Logo class="w-36 sm:w-44" role="img" aria-label={site.name} />
+		<Logo class="w-36 sm:w-44" role="img" aria-label={site.name} data-hero-fade />
 		<h1 class="hero-title mt-8 lg:mt-12">
-			{before}<span class="text-sky">{site.headlineAccent}</span>
+			{
+				site.headline.map((line, index) => (
+					<span class:list={['hero-line', { 'text-sky': index === site.headlineAccent }]} data-hero-line>
+						{line}
+					</span>
+				))
+			}
 		</h1>
-		<p class="mt-6 max-w-[42ch] text-lg text-mist lg:text-xl">{site.description}</p>
-		<div class="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+		<p class="hero-lede mt-7" data-hero-fade>{site.description}</p>
+		<div class="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4" data-hero-fade>
 			<a
 				href="#actividades"
 				class="inline-flex h-14 items-center rounded-[4px] bg-sky px-8 text-lg font-semibold text-navy hover:bg-white"
@@ -51,7 +63,7 @@ const [before, after] = site.headline.split(site.headlineAccent);
 		</div>
 	</div>
 
-	<div class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16" aria-hidden="true">
+	<div data-hero-slab class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16" aria-hidden="true">
 		<p class="tag tag-plan self-start">próximamente</p>
 		<div class="graph log plan mt-5">
 			<span class="rail rail-main" data-rail></span>

@@ -43,7 +43,7 @@ const isNext = !compact && entry === nextEvent;
 <li class:list={['commit', { 'is-last': last }]} data-type={entry.type}>
 	<span class:list={['node', nodeClass[entry.kind]]} data-node aria-hidden="true"></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class:list={['card', 'card-row']}>
+	<div class:list={['card', 'card-row']} data-card={compact ? undefined : ''}>
 		{isNext && <span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">¡nuevo!</span>}
 		<div class="card-main">
 			{

@@ -19,9 +19,11 @@ import melissaContento from '../assets/team/melissa-contento.jpg';
 export const site = {
 	name: 'ASO Computación',
 	tagline: 'Asociación Estudiantil de la carrera de Computación',
-	headline: 'Entérate de lo que pasa en Computación.',
-	// Word(s) of the headline drawn in sky blue.
-	headlineAccent: 'Computación.',
+	// The hero headline, one entry per line so each line can move on its own. `headlineAccent` is the line drawn in sky.
+	headline: ['Entérate de', 'lo que pasa en', 'Computación.'],
+	headlineAccent: 2,
+	// Caption that appears at the end of the hero scroll moment, beside the branch.
+	heroCue: 'Baja por la rama: este es nuestro historial.',
 	description:
 		'ASO Computación es la asociación estudiantil de la carrera. Aquí está nuestro historial, actividad por actividad.',
 	// Verbatim from the ASO's own LinkedIn page.
@@ -41,6 +43,17 @@ export const ribbon = [
 	'feat: primer ciclo, bienvenido',
 	'refactor: hacer la carrera más llevadera',
 ];
+
+// DEMO: what the ASO changes for a student, shown as a git diff. Invented copy; replace with the board's words.
+export const diff = {
+	demo: true,
+	title: 'lo que cambia para ti',
+	rows: [
+		{ del: 'llegar a primer ciclo sin conocer a nadie', add: 'una comunidad que te recibe' },
+		{ del: 'enterarte tarde de los eventos', add: 'todo anunciado primero en Instagram' },
+		{ del: 'estudiar solo', add: 'talleres, charlas y hackatones con tu carrera' },
+	],
+};
 
 export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },

@@ -10,83 +10,86 @@ const last = history.length - 1;
 const typedCount = (type: string) => timeline.filter((entry) => entry.type === type).length;
 ---
 
-<section id="actividades" class="bg-navy pb-20 pt-24 lg:pb-28 lg:pt-32">
-	<div class="wrap">
-		<div class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
-			<h2 class="h2-xl">Actividades</h2>
-			<p class="text-lg text-mist">
+<section id="actividades" class="bg-navy pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-28 lg:pt-32">
+	<div class="wrap grid gap-10 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
+		<aside
+			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
+			aria-label="Próxima actividad y filtros"
+		>
+			<p class="max-w-[34ch] text-lg text-mist">
 				Arriba, lo que viene (línea punteada: todavía no ocurre). Abajo, lo que ya hicimos, hasta el primer día.
-				<span class="mt-3 block font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</span>
 			</p>
-		</div>
+			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
 
-		<div class="mt-12 grid gap-10 lg:mt-16 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
-			<aside
-				class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
-				aria-label="Próxima actividad y filtros"
-			>
-				{
-					nextEvent && (
-						<div class="panel p-5 sm:p-6" data-countdown={nextEvent.date}>
-							<p class="leading-none">
-								<span class="stamp" style="margin-left:0">Próxima actividad</span>
-								{nextEvent.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
-							</p>
-							<div data-static>
-								<p class="mt-5 font-mono text-[0.8125rem] text-mist">fecha</p>
-								<p class="font-display text-5xl leading-none text-white">{nextEvent.stamp}</p>
-							</div>
-							<div data-live hidden>
-								<p class="mt-5 font-mono text-[0.8125rem] text-mist" data-count-label>faltan</p>
-								<p class="flex items-baseline gap-3 leading-none">
-									<span class="font-display text-[7rem] leading-[0.9] text-white" data-count-num>00</span>
-									<span class="font-display text-3xl text-sky" data-count-unit>días</span>
-								</p>
-							</div>
-							<p class="mt-4 text-lg font-semibold leading-snug text-white">{nextEvent.title}</p>
-							<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
-								{nextEvent.stamp}
-								{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
-								{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
+			{
+				nextEvent && (
+					<div class="panel mt-8 p-4 sm:p-6" data-countdown={nextEvent.date}>
+						<p class="leading-none">
+							<span class="stamp" style="margin-left:0">Próxima actividad</span>
+							{nextEvent.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+						</p>
+						<div data-static>
+							<p class="mt-5 font-mono text-[0.8125rem] text-mist">fecha</p>
+							<p class="font-display text-4xl leading-none text-white sm:text-5xl">{nextEvent.stamp}</p>
+						</div>
+						<div data-live hidden>
+							<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>faltan</p>
+							<p class="flex items-baseline gap-3 leading-none">
+								<span class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-white sm:text-[7rem]" data-count-num>00</span>
+								<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>días</span>
 							</p>
 						</div>
-					)
-				}
-
-				<div class="js-only mt-8" data-filters>
-					<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">git log --grep=</p>
-					<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrar actividades por tipo">
-						<button type="button" class="chip" data-filter="all" aria-pressed="true">todo</button>
-						{
-							activityTypes.map((type) => (
-								<button type="button" class="chip" data-filter={type} aria-pressed="false">
-									{type} ({typedCount(type)})
-								</button>
-							))
-						}
+						<p class="mt-4 text-lg font-semibold leading-snug text-white">{nextEvent.title}</p>
+						<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
+							{nextEvent.stamp}
+							{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
+							{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
+						</p>
 					</div>
-					<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
+				)
+			}
+
+			<div class="js-only mt-8" data-filters>
+				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">git log --grep=</p>
+				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrar actividades por tipo">
+					<button type="button" class="chip" data-filter="all" aria-pressed="true">todo</button>
+					{
+						activityTypes.map((type) => (
+							<button type="button" class="chip" data-filter={type} aria-pressed="false">
+								{type} ({typedCount(type)})
+							</button>
+						))
+					}
 				</div>
+				<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
+			</div>
 
-				<ul class="legend mt-8 hidden space-y-3 lg:block font-mono text-[0.8125rem] leading-5 text-mist" aria-label="Leyenda">
-					<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>próximo</li>
-					<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>línea punteada: planeado</li>
-					<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
-					<li class="flex items-center gap-3"><span class="swatch bg-white" aria-hidden="true"></span>rama: evento con varias actividades</li>
-					<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy</li>
-				</ul>
-			</aside>
+			<ul class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label="Leyenda">
+				<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>próximo</li>
+				<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>línea punteada: planeado</li>
+				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
+				<li class="flex items-center gap-3"><span class="swatch bg-white" aria-hidden="true"></span>rama: evento con varias actividades</li>
+				<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy</li>
+			</ul>
+		</aside>
 
+		<div class="lane-vars contents lg:block">
+			<div class="trunk-head order-first">
+				<span class="trunk" data-trunk data-rail-trunk aria-hidden="true"></span>
+				<h2 class="h2-xl">Actividades</h2>
+			</div>
 			<div data-timeline>
-				<p class="tag tag-plan mb-1">próximamente</p>
+				<p class="tag tag-plan lane-tag mb-1">próximamente</p>
 				<div class="graph plan">
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
+					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
 						{planned.map((entry) => <Commit entry={entry} />)}
 					</ol>
 				</div>
 				<div class="graph">
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
+					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
 						{
 							history.map((entry, index) => (
@@ -107,7 +110,7 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 													<li class="commit">
 														<span class="node" data-node aria-hidden="true" />
 														<span class="link" data-link aria-hidden="true" />
-														<div class="card">
+														<div class="card" data-card>
 															<h4 class="font-semibold leading-6 text-white">{sub.title}</h4>
 															<p class="ref" aria-hidden="true">{shortHash(`${entry.id}/${sub.id}`)}</p>
 														</div>
