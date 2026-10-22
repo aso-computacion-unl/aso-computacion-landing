@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource/audiowide";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/mona-sans/wdth.css";
 @import "@fontsource-variable/geist-mono";
 @import "lenis/dist/lenis.css";
 
@@ -23,7 +23,7 @@
 
 	/* Display: titles and headers only. Body: long-form text. Mono: dates, branch names, short hashes. */
 	--font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
-	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
 	--font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -66,10 +66,16 @@
 		text-wrap: pretty;
 	}
 
-	/* Geist: 400 for reading, 500 for emphasis; slightly tighter tracking as the size grows. */
+	/* Mona Sans (variable, width + weight axes). Body: normal width, 400-450. Leads: 112% wide. Buttons, FAQ questions
+	   and small bold UI: 118% wide, 700-750. Tracking tightens as the size grows. */
 	body {
-		font-weight: 400;
-		letter-spacing: -0.006em;
+		font-weight: 420;
+		font-stretch: 100%;
+		letter-spacing: -0.005em;
+	}
+
+	button {
+		font-family: inherit;
 	}
 }
 
@@ -907,6 +913,8 @@
 	.hero-lede {
 		max-width: 58ch;
 		font-size: clamp(1.125rem, 1.25vw + 0.5rem, 1.4rem);
+		font-stretch: 112%;
+		font-weight: 450;
 		line-height: 1.5;
 		color: var(--color-mist);
 		text-wrap: pretty;
@@ -1043,7 +1051,8 @@
 		color: var(--ink);
 		font-family: var(--font-sans);
 		font-size: 1.0625rem;
-		font-weight: 600;
+		font-stretch: 118%;
+		font-weight: 720;
 		line-height: 1;
 		transform: translateY(calc(var(--lift) * -1));
 	}
@@ -1152,6 +1161,8 @@
 	.about-text {
 		font-family: var(--font-sans);
 		font-size: clamp(1.1875rem, 1.2vw + 0.6rem, 1.625rem);
+		font-stretch: 108%;
+		font-weight: 440;
 		line-height: 1.5;
 		letter-spacing: -0.012em;
 		color: #fff;
@@ -1296,7 +1307,7 @@
 
 	.join-title {
 		font-family: var(--font-display);
-		font-size: clamp(3rem, 8.4vw, 7.5rem);
+		font-size: clamp(2.75rem, 6.3vw, 7rem);
 		line-height: 1;
 		letter-spacing: -0.02em;
 		color: var(--color-navy);
@@ -1461,7 +1472,8 @@
 		margin-top: 1.5rem;
 		max-width: 56ch;
 		font-size: clamp(1.1875rem, 0.9vw + 0.85rem, 1.625rem);
-		font-weight: 400;
+		font-stretch: 112%;
+		font-weight: 450;
 		line-height: 1.45;
 		letter-spacing: -0.015em;
 		color: var(--color-mist);
@@ -1469,7 +1481,7 @@
 
 	.on-sky .lead {
 		color: var(--color-navy);
-		font-weight: 500;
+		font-weight: 520;
 	}
 
 	.section-head {
@@ -1671,7 +1683,8 @@
 		display: block;
 		margin-top: 0.25rem;
 		font-size: clamp(1.0625rem, 0.5vw + 0.95rem, 1.3125rem);
-		font-weight: 500;
+		font-stretch: 118%;
+		font-weight: 700;
 		line-height: 1.3;
 		letter-spacing: -0.01em;
 		color: #fff;
@@ -1853,7 +1866,8 @@
 
 	.social-handle {
 		font-size: 1.125rem;
-		font-weight: 500;
+		font-stretch: 118%;
+		font-weight: 700;
 	}
 
 	.social-url {

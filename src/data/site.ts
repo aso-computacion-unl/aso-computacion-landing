@@ -287,28 +287,30 @@ export const nextEvent = timeline
 	.filter((entry) => entry.kind === 'upcoming' && entry.date)
 	.sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))[0];
 
-// DEMO: the "join" call to action, including the newcomer line for first-cycle students (invented copy; the
-// Instagram DM channel is real). No statistics, no certificates. Replace with the board's own words, then drop `demo`.
+// DEMO: the "contribute" call to action (invented copy; the Instagram DM channel is real). The board has no open
+// seats, so this never invites people to join the ASO: it invites ideas, feedback and community. No statistics, no
+// certificates. Replace with the board's own words, then drop `demo`.
 export const join = {
 	demo: true,
-	headline: ['Tu carrera', 'es más que', 'clases'],
-	lead: 'Súmate a la ASO y vive la carrera con gente que está en lo mismo que tú.',
-	stickers: ['¡únete!', 'sin experiencia previa'],
+	eyebrow: 'CONTRIBUTING.md',
+	headline: ['Tus ideas', 'también hacen', 'commit'],
+	lead: 'La carrera la mejoramos entre todos. Cuéntanos qué cambiarías y ayúdanos a fortalecer la comunidad.',
+	stickers: ['¡propón!', 'ideas de todos los ciclos'],
 	reasons: [
-		{ title: 'Conoce gente de todos los ciclos', text: 'Desde primer ciclo hasta quienes ya casi terminan: aquí todos se mezclan.' },
-		{ title: 'Aprende fuera del aula', text: 'Talleres, charlas y retos que no vienen en el pensum.' },
-		{ title: 'Organiza eventos y gana experiencia', text: 'Ayuda a armar actividades reales de principio a fin.' },
-		{ title: 'Haz que tu voz llegue a la carrera', text: 'Lo que piensas se lleva a quienes toman las decisiones.' },
+		{ title: 'Propón un taller o una charla', text: 'Si hay algo que quieres aprender o enseñar, escríbenos y lo armamos juntos.' },
+		{ title: 'Cuéntanos qué mejorar en la carrera', text: 'Lo que ves desde tu ciclo ayuda a que la ASO lleve mejor la voz de todos.' },
+		{ title: 'Ayúdanos a difundir y participa', text: 'Ven a las actividades, comparte los anuncios y trae a tus compañeros.' },
+		{ title: 'Comparte lo que sabes con otros ciclos', text: 'Lo que aprendiste hace un año le sirve a quien está empezando.' },
 	],
 	newcomer: {
-		title: 'Tu primer commit',
+		title: 'Tu primera idea',
 		lead: 'Al principio nadie conoce a nadie.',
 		steps: [
-			'Es normal: llega, saluda y quédate a ver. Nadie espera que ya sepas cómo funciona todo.',
-			'No necesitas experiencia previa. Escríbenos por mensaje directo y te contamos cuál es la próxima actividad.',
+			'Es normal: llega a una actividad, saluda y quédate a ver. Todas están abiertas a cualquier estudiante de Computación.',
+			'No necesitas experiencia previa para opinar. Escríbenos por mensaje directo y te contamos cuál es la próxima actividad.',
 		],
 	},
-	cta: 'Escríbenos por Instagram',
+	cta: 'Envíanos tu idea',
 	// Second collage row: activity-type tags (no photos of people here; board photos live only in Directiva).
 	tags: ['#talleres', '#charlas', '#hackatones', '#comunidad', '#primer-ciclo', '#todos-los-ciclos', '#voz-estudiantil', '#aprender-haciendo'],
 };
@@ -325,13 +327,13 @@ export const collagePhotos: { image: ImageMetadata }[] = [
 export const faq = {
 	demo: true,
 	title: 'Preguntas frecuentes',
-	lead: 'Lo que más nos preguntan antes de sumarse. Si falta algo, escríbenos por mensaje directo.',
+	lead: 'Lo que más nos preguntan sobre la ASO y sus actividades. Si falta algo, escríbenos por mensaje directo.',
 	items: [
-		{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante de la carrera de Computación, de primer ciclo a último. No necesitas experiencia previa.' },
+		{ topic: 'participar', q: '¿Quién puede participar?', a: 'Las actividades están abiertas a cualquier estudiante de Computación, de primer ciclo a último, sin experiencia previa. La directiva, en cambio, es elegida: aquí lo que sí puedes hacer es aportar ideas.' },
 		{ topic: 'costo', q: '¿Tiene algún costo?', a: 'Participar en las actividades de la ASO es gratis. Si alguna actividad necesitara un aporte, se avisa de antemano en Instagram.' },
 		{ topic: 'avisos', q: '¿Cómo me entero de las actividades?', a: 'Todo se anuncia primero en nuestro Instagram. También publicamos en TikTok y LinkedIn.' },
-		{ topic: 'proponer', q: '¿Puedo proponer un taller o una charla?', a: 'Claro. Escríbenos por mensaje directo con tu idea y la revisamos con la directiva.' },
-		{ topic: 'aso', q: '¿Qué hace la ASO por mí?', a: 'Representamos a los estudiantes, organizamos actividades para aprender fuera del aula y acompañamos a quienes llegan a primer ciclo.' },
+		{ topic: 'proponer', q: '¿Puedo proponer un taller o una charla?', a: 'Claro, nos encantan. Envíanos tu idea por mensaje directo y la revisamos con la directiva.' },
+		{ topic: 'aso', q: '¿Qué hace la ASO por mí?', a: 'Representamos a los estudiantes, organizamos actividades para aprender fuera del aula y acompañamos a quienes llegan a primer ciclo. Tus ideas nos ayudan a hacerlo mejor.' },
 		{ topic: 'contacto', q: '¿Cómo contacto a la directiva?', a: 'Por mensaje directo en nuestras redes, sobre todo Instagram. No tenemos correo público.' },
 	],
 };

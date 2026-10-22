@@ -10,11 +10,11 @@ const instagram = socials.find((social) => social.remote === 'instagram');
 const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : [])), ...collagePhotos.map((item) => item.image)];
 ---
 
-<section id="sumarte" class="on-sky relative overflow-clip bg-sky py-16 text-navy sm:py-24 lg:py-32">
+<section id="ideas" class="on-sky relative overflow-clip bg-sky py-16 text-navy sm:py-24 lg:py-32">
 	<div class="wrap grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
 		<div>
 			<p class="eyebrow" aria-hidden="true">
-				<span>CONTRIBUTING.md</span>
+				<span>{join.eyebrow}</span>
 				{join.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
 			</p>
 			<h2 class="join-title">
@@ -27,7 +27,7 @@ const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : []
 					))
 				}
 			</h2>
-			<p class="lead mt-6 max-w-[34ch]">{join.lead}</p>
+			<p class="lead mt-6 max-w-[40ch]">{join.lead}</p>
 			{
 				instagram && (
 					<div class="mt-8">

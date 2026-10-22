@@ -35,7 +35,7 @@ Public landing page for ASO Computación, the student association of the Compute
   - Tech Sky `#2bb2e4` (`sky`): primary complement. Details, tech elements, icons, accents.
   - Light Gray `#d9d9d9` (`mist`): neutral. Secondary backgrounds, dividers, visual rest.
   - Red `#b7353e` (`signal`): accent. Alerts, key dates, one-off calls to attention. Fails contrast as text on navy; use on light surfaces or as a fill.
-- Typography: the brand display face (named "Audiowave" in the brand brief; implemented as Audiowide, pending confirmation) for titles, covers, headers, and promotional pieces only (`font-display`). Body and UI text use Geist (`font-sans`) and short labels/metadata use Geist Mono (`font-mono`). The brand guide recommends Inter or Montserrat; the user chose Geist as a more modern face.
+- Typography: the brand display face (named "Audiowave" in the brand brief; implemented as Audiowide, pending confirmation) for titles, covers, headers, and promotional pieces only (`font-display`). Body and UI text use Mona Sans, GitHub's variable typeface (`font-sans`; width axis: leads 112%, buttons and FAQ questions 118%), and short labels/metadata use Geist Mono (`font-mono`). The brand guide recommends Inter or Montserrat; the user chose Mona Sans over both after comparing specimens.
 - Board photos live in `src/assets/team/` with metadata stripped. Board order and roles come from the board's roster. Publish only display name and role; the roster's phones, ages, emails, and personal Instagram handles stay out of the repository.
 
 ## Evidence on Hand
