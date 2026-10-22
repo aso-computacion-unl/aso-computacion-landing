@@ -22,6 +22,7 @@ const display = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, 
 							<svg class="social-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 								<path d={social.icon} fill="currentColor" />
 							</svg>
+							{social.blurb && <span class="social-blurb">{social.blurb}</span>}
 							<span class="social-body">
 								<span class="social-name">{social.label}</span>
 								<span class="social-handle">{social.handle}</span>

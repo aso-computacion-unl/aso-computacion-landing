@@ -2,7 +2,8 @@
 // Flat two-layer button: a face that presses down onto an offset darker base layer.
 interface Props {
 	href: string;
-	variant?: 'primary' | 'ghost';
+	// primary: sky face (for navy surfaces). ghost: outlined (navy surfaces). inverse: navy face (for sky surfaces).
+	variant?: 'primary' | 'ghost' | 'inverse';
 	size?: 'md' | 'xl';
 	external?: boolean;
 }

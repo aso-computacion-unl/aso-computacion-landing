@@ -1021,6 +1021,13 @@
 		--base: color-mix(in srgb, var(--color-sky) 38%, var(--color-navy-deep));
 	}
 
+	/* Inverse: navy face with white text, for buttons placed on sky surfaces. */
+	.btn-inverse {
+		--face: var(--color-navy);
+		--ink: #fff;
+		--base: var(--color-navy-deep);
+	}
+
 	.btn-xl {
 		--lift: 8px;
 	}
@@ -1280,12 +1287,6 @@
 	/* Join: full-bleed sky section. Navy text on sky; stickers and the photo collage carry the energy. */
 	.on-sky :focus-visible {
 		outline-color: var(--color-navy);
-	}
-
-	.on-sky .btn {
-		--face: var(--color-navy);
-		--ink: #fff;
-		--base: var(--color-navy-deep);
 	}
 
 	.on-sky .demo-tag {
@@ -1754,6 +1755,8 @@
 	@media (min-width: 64rem) {
 		.socials {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
+			grid-template-rows: repeat(2, minmax(15rem, 1fr));
+			align-items: stretch;
 			gap: 1.25rem;
 		}
 
@@ -1764,6 +1767,7 @@
 
 		.social-twitch {
 			grid-column: 3 / 5;
+			grid-row: 2;
 		}
 	}
 
@@ -1774,6 +1778,7 @@
 
 	.social-link {
 		position: relative;
+		overflow: clip;
 		display: flex;
 		flex: 1;
 		flex-direction: column;
@@ -1802,10 +1807,33 @@
 		transform-origin: 50% 60%;
 	}
 
+	/* Instagram: the logo is a huge flat layer cropped by the tile edge; the blurb carries the message. */
 	.social-instagram .social-logo {
-		width: clamp(6rem, 9vw, 9rem);
-		height: clamp(6rem, 9vw, 9rem);
+		position: absolute;
+		z-index: 0;
+		right: -14%;
+		top: -12%;
+		width: 78%;
+		height: auto;
 		color: var(--color-navy);
+		opacity: 0.16;
+		transform-origin: 50% 50%;
+	}
+
+	.social-blurb {
+		position: relative;
+		z-index: 1;
+		max-width: 14ch;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 3.6vw, 3.75rem);
+		line-height: 1.05;
+		letter-spacing: -0.01em;
+		color: var(--color-navy);
+	}
+
+	.social-instagram .social-body {
+		position: relative;
+		z-index: 1;
 	}
 
 	.social-body {
@@ -1820,7 +1848,7 @@
 	}
 
 	.social-instagram .social-name {
-		font-size: clamp(2.25rem, 4vw, 4rem);
+		font-size: clamp(1.5rem, 2vw, 2rem);
 	}
 
 	.social-handle {
@@ -1854,10 +1882,10 @@
 	}
 
 	.social-sticker {
-		top: -0.875rem;
-		right: auto;
-		bottom: auto;
-		left: 1.5rem;
+		top: auto;
+		right: 2rem;
+		bottom: 2rem;
+		left: auto;
 		transform: rotate(-4deg);
 	}
 

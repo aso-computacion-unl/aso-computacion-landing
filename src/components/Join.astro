@@ -31,7 +31,7 @@ const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : []
 			{
 				instagram && (
 					<div class="mt-8">
-						<Button href={instagram.href} size="xl" external>
+						<Button href={instagram.href} variant="inverse" size="xl" external>
 							{join.cta}
 						</Button>
 					</div>
