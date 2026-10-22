@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-22T00:00:00.000Z",
+  "events": [
+    {
+      "slug": "bienvenida-primer-ciclo",
+      "title": "Bienvenida a primer ciclo",
+      "description": "Recibimos a los estudiantes de primer ciclo. Nuestra misión como representantes es asegurar que se sientan escuchados y apoyados desde el primer día.",
+      "date": "2026-04-14",
+      "type": "comunidad",
+      "commitMessage": "feat(bienvenida): aquí nadie empieza solo",
+      "hora": null,
+      "lugar": null,
+      "para": "primer ciclo",
+      "featured": false,
+      "linkUrl": null,
+      "linkLabel": null,
+      "highlights": [],
+      "photos": []
+    },
+    {
+      "slug": "semana-del-estudiante-2026",
+      "title": "Semana del Estudiante 2026",
+      "description": "Esto es lo que vivimos durante la semana:",
+      "date": null,
+      "type": "evento",
+      "commitMessage": "merge(semana-del-estudiante): FLISOL, ponencias, talleres y casas abiertas",
+      "hora": null,
+      "lugar": null,
+      "para": null,
+      "featured": false,
+      "linkUrl": null,
+      "linkLabel": null,
+      "highlights": [
+        "FLISOL",
+        "Ponencias sobre las últimas tendencias tecnológicas",
+        "Talleres prácticos: impuestos y cómo potenciar tu CV",
+        "Casas abiertas"
+      ],
+      "photos": []
+    }
+  ],
+  "faqs": [],
+  "pillars": [],
+  "socials": [
+    {
+      "platform": "instagram",
+      "label": "Instagram",
+      "handle": "@aso_computacion",
+      "url": "https://www.instagram.com/aso_computacion/",
+      "note": "Anunciamos primero aquí",
+      "blurb": "Eventos, fotos y anuncios, primero aquí."
+    },
+    {
+      "platform": "tiktok",
+      "label": "TikTok",
+      "handle": "@aso_computacion_unl",
+      "url": "https://www.tiktok.com/@aso_computacion_unl",
+      "note": null,
+      "blurb": null
+    },
+    {
+      "platform": "linkedin",
+      "label": "LinkedIn",
+      "handle": "ASO Computación",
+      "url": "https://www.linkedin.com/company/aso-computacion-unl/",
+      "note": null,
+      "blurb": null
+    },
+    {
+      "platform": "twitch",
+      "label": "Twitch",
+      "handle": "ASO_Computacion",
+      "url": "https://www.twitch.tv/aso_computacion",
+      "note": null,
+      "blurb": null
+    }
+  ],
+  "board": [
+    {
+      "name": "Emilio Jaramillo",
+      "role": "Presidente",
+      "photo": { "url": "/src/assets/team/emilio-jaramillo.jpg", "width": 577, "height": 1024, "alt": "Foto de Emilio Jaramillo" }
+    },
+    {
+      "name": "Viviana Córdova",
+      "role": "Vicepresidenta",
+      "photo": { "url": "/src/assets/team/viviana-cordova.jpg", "width": 1200, "height": 1600, "alt": "Foto de Viviana Córdova" }
+    },
+    {
+      "name": "Miguel Armas",
+      "role": "Secretario",
+      "photo": { "url": "/src/assets/team/miguel-armas.jpg", "width": 722, "height": 1280, "alt": "Foto de Miguel Armas" }
+    },
+    {
+      "name": "Kiara Condoy",
+      "role": "Tesorera",
+      "photo": { "url": "/src/assets/team/kiara-condoy.jpg", "width": 1200, "height": 1600, "alt": "Foto de Kiara Condoy" }
+    },
+    {
+      "name": "Marco Chiliguano",
+      "role": "Alterno de Vicepresidente",
+      "photo": { "url": "/src/assets/team/marco-chiliguano.jpg", "width": 720, "height": 1280, "alt": "Foto de Marco Chiliguano" }
+    },
+    {
+      "name": "Alejandro Padilla",
+      "role": "Alterno de Tesorero",
+      "photo": { "url": "/src/assets/team/alejandro-padilla.jpg", "width": 1200, "height": 1600, "alt": "Foto de Alejandro Padilla" }
+    },
+    {
+      "name": "Melissa Contento",
+      "role": "Alterna de Secretaria",
+      "photo": { "url": "/src/assets/team/melissa-contento.jpg", "width": 1086, "height": 1448, "alt": "Foto de Melissa Contento" }
+    }
+  ],
+  "settings": null
+}
