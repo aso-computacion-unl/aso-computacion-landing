@@ -1,7 +1,11 @@
 // Single source of truth for landing content. Edit this file to update the page.
 
 import type { ImageMetadata } from 'astro';
+import { siInstagram, siTiktok, siTwitch } from 'simple-icons';
 
+import colectivoA from '../assets/demo/colectivo-a.jpg';
+import colectivoB from '../assets/demo/colectivo-b.jpg';
+import colectivoC from '../assets/demo/colectivo-c.jpg';
 import feriaProyectos from '../assets/demo/feria-proyectos.jpg';
 import hackaton from '../assets/demo/hackaton.jpg';
 import charlaCiberseguridad from '../assets/demo/charla-ciberseguridad.jpg';
@@ -76,7 +80,7 @@ export const pillars = [
 		word: 'APOYO',
 		title: 'Acompañamos',
 		text: 'Desde primer ciclo: que te sientas escuchado y apoyado desde el primer día.',
-		// Shows the real board photos (duotone) on the tile.
+		// Draws the isotype outline on the tile (a decorative layer, not a photo).
 		faces: true,
 		demo: true,
 	},
@@ -86,7 +90,8 @@ export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
-	{ label: 'Síguenos', href: '#redes' },
+	{ label: 'FAQ', href: '#faq' },
+	{ label: 'Redes', href: '#redes' },
 ];
 
 export const activityTypes = ['taller', 'charla', 'evento', 'comunidad'] as const;
@@ -304,6 +309,31 @@ export const join = {
 		],
 	},
 	cta: 'Escríbenos por Instagram',
+	// Second collage row: activity-type tags (no photos of people here; board photos live only in Directiva).
+	tags: ['#talleres', '#charlas', '#hackatones', '#comunidad', '#primer-ciclo', '#todos-los-ciclos', '#voz-estudiantil', '#aprender-haciendo'],
+};
+
+// DEMO: extra stock photos used only by the Join collage (see src/assets/demo/SOURCES.md).
+export const collagePhotos: { image: ImageMetadata }[] = [
+	{ image: colectivoA },
+	{ image: colectivoB },
+	{ image: colectivoC },
+];
+
+// DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). Replace with the board's own
+// answers and drop `demo`. `topic` is the slug shown as `git help <topic>`.
+export const faq = {
+	demo: true,
+	title: 'Preguntas frecuentes',
+	lead: 'Lo que más nos preguntan antes de sumarse. Si falta algo, escríbenos por mensaje directo.',
+	items: [
+		{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante de la carrera de Computación, de primer ciclo a último. No necesitas experiencia previa.' },
+		{ topic: 'costo', q: '¿Tiene algún costo?', a: 'Participar en las actividades de la ASO es gratis. Si alguna actividad necesitara un aporte, se avisa de antemano en Instagram.' },
+		{ topic: 'avisos', q: '¿Cómo me entero de las actividades?', a: 'Todo se anuncia primero en nuestro Instagram. También publicamos en TikTok y LinkedIn.' },
+		{ topic: 'proponer', q: '¿Puedo proponer un taller o una charla?', a: 'Claro. Escríbenos por mensaje directo con tu idea y la revisamos con la directiva.' },
+		{ topic: 'aso', q: '¿Qué hace la ASO por mí?', a: 'Representamos a los estudiantes, organizamos actividades para aprender fuera del aula y acompañamos a quienes llegan a primer ciclo.' },
+		{ topic: 'contacto', q: '¿Cómo contacto a la directiva?', a: 'Por mensaje directo en nuestras redes, sobre todo Instagram. No tenemos correo público.' },
+	],
 };
 
 interface TeamMember {
@@ -331,6 +361,9 @@ export const team: TeamMember[] = [
 interface Social {
 	// Short lowercase name, shown like a git remote name.
 	remote: string;
+	// SVG path (24x24 viewBox) of the brand glyph. LinkedIn is not in the current simple-icons release, so its
+	// path is the long-standing Simple Icons (CC0) one.
+	icon: string;
 	label: string;
 	handle: string;
 	href: string;
@@ -339,8 +372,8 @@ interface Social {
 }
 
 export const socials: Social[] = [
-	{ remote: 'instagram', label: 'Instagram', handle: '@aso_computacion', href: 'https://www.instagram.com/aso_computacion/', note: 'Anunciamos primero aquí' },
-	{ remote: 'tiktok', label: 'TikTok', handle: '@aso_computacion_unl', href: 'https://www.tiktok.com/@aso_computacion_unl' },
-	{ remote: 'linkedin', label: 'LinkedIn', handle: 'ASO Computación', href: 'https://www.linkedin.com/company/aso-computacion-unl/' },
-	{ remote: 'twitch', label: 'Twitch', handle: 'ASO_Computacion', href: 'https://www.twitch.tv/aso_computacion' },
+	{ remote: 'instagram', icon: siInstagram.path, label: 'Instagram', handle: '@aso_computacion', href: 'https://www.instagram.com/aso_computacion/', note: 'Anunciamos primero aquí' },
+	{ remote: 'tiktok', icon: siTiktok.path, label: 'TikTok', handle: '@aso_computacion_unl', href: 'https://www.tiktok.com/@aso_computacion_unl' },
+	{ remote: 'linkedin', icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z', label: 'LinkedIn', handle: 'ASO Computación', href: 'https://www.linkedin.com/company/aso-computacion-unl/' },
+	{ remote: 'twitch', icon: siTwitch.path, label: 'Twitch', handle: 'ASO_Computacion', href: 'https://www.twitch.tv/aso_computacion' },
 ];

@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import { type TimelineKind, nextEvent, team, timeline } from '../data/site';
+import { type TimelineKind, nextEvent, timeline } from '../data/site';
 import { shortHash } from './shortHash';
 
 type Entry = (typeof timeline)[number];
@@ -36,7 +36,6 @@ const external = entry.href ? /^https?:/.test(entry.href) : false;
 const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
-const showFaces = !compact && entry.kind === 'head';
 const isNext = !compact && entry === nextEvent;
 ---
 
@@ -93,17 +92,6 @@ const isNext = !compact && entry === nextEvent;
 						</div>
 					))}
 				</dl>
-			)
-		}
-		{
-			showFaces && (
-				<div class="faces" aria-hidden="true">
-					{team.map((member) => (
-						<div class="duo face">
-							<Image src={member.photo} alt="" width={120} height={120} fit="cover" position="top" loading="lazy" />
-						</div>
-					))}
-				</div>
 			)
 		}
 		{

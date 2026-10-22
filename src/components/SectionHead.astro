@@ -1,0 +1,27 @@
+---
+// Section header with a fixed hierarchy: eyebrow (mono label) -> heading -> lead, plus an optional aside on the right.
+// Nothing floats on its own: the lead sits directly under the heading and the aside belongs to the same grid.
+interface Props {
+	eyebrow: string;
+	title: string;
+	lead?: string;
+	demo?: boolean;
+	// Heading colour for sections on a sky background.
+	tone?: 'default' | 'on-sky';
+}
+
+const { eyebrow, title, lead, demo = false, tone = 'default' } = Astro.props;
+const hasAside = Astro.slots.has('aside');
+---
+
+<header class:list={['section-head', { 'has-aside': hasAside }]}>
+	<div class="section-head-main">
+		<p class="eyebrow" aria-hidden="true">
+			<span>{eyebrow}</span>
+			{demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+		</p>
+		<h2 class:list={['h2-xl', { 'text-navy': tone === 'on-sky' }]}>{title}</h2>
+		{lead && <p class="lead">{lead}</p>}
+	</div>
+	{hasAside && <div class="section-head-aside"><slot name="aside" /></div>}
+</header>

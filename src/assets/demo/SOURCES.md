@@ -18,3 +18,11 @@ Downloaded with `?w=1200&q=70&fm=jpg` from `https://images.unsplash.com/<photo-i
 Note: the Unsplash CDN does not expose the photographer, and Unsplash blocks automated lookups of the photo
 page, so the credits could not be resolved from this environment. Search each photo id on unsplash.com to
 fill in the photographer before any of these images goes live (or, better, replace them with real photos).
+
+## Collage-only photos (Join section)
+
+| File | Unsplash photo id (CDN URL) | Photographer |
+| --- | --- | --- |
+| `colectivo-a.jpg` | https://images.unsplash.com/photo-1517694712202-14dd9538aa97 | not resolved (see note above) |
+| `colectivo-b.jpg` | https://images.unsplash.com/photo-1517048676732-d65bc937f952 | not resolved (see note above) |
+| `colectivo-c.jpg` | https://images.unsplash.com/photo-1515187029135-18ee286d815b | not resolved (see note above) |

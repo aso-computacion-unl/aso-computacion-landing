@@ -103,8 +103,15 @@ async function init() {
 			const cue = q<HTMLElement>('[data-hero-cue]');
 			const trunk = q<HTMLElement>('[data-trunk]');
 			const cursor = q('[data-mark-cursor]');
-			if (pin && hero && mark && stem && cue && trunk && cursor) {
-				// Geometry of the moment: the isotype grows until its cursor sits on the Activities trunk.
+			const markLeft = q('[data-mark-left]');
+			const markRight = q('[data-mark-right]');
+			const markChev = q('[data-mark-chev]');
+			const markOutline = q('[data-mark-outline]');
+			if (pin && hero && mark && stem && cue && trunk && cursor && markLeft && markRight) {
+				// Order of the moment: headline leaves, the isotype grows to fill the viewport, its brackets slide
+				// off to both sides, and only then does the `_` cursor thin into the stem. The stem is never drawn
+				// across the bracket shapes, and the Activities trunk stays hidden until the stem reaches it.
+				const BAR_H = 10.32; // cursor bar height in viewBox units
 				let g = { S: 1, k: 1, tx: 0, ty: 0, L0: 0, T0: 0 };
 				const layout = () => {
 					const H = hero.offsetHeight;
@@ -117,27 +124,39 @@ async function init() {
 					const tx = railX - S * 119.63 * k;
 					const ty = Yu - S * 123.62 * k;
 					g = { S, k, tx, ty, L0: mark.offsetLeft, T0: mark.offsetTop };
-					gsap.set(stem, { left: railX - 1.5, top: Yu, height: H - Yu });
-					const cueLeft = Math.min(tx + S * W + 48, window.innerWidth - 200);
+					// The stem starts at the top edge of the thinned cursor bar, so the bar is the start of the line.
+					const stemTop = Yu - (BAR_H / 2) * S * k;
+					gsap.set(stem, { left: railX - 1.5, top: stemTop, height: H - stemTop });
+					const cueLeft = Math.min(railX + 48, window.innerWidth - 240);
 					gsap.set(cue, { left: cueLeft, top: Yu - 70, width: Math.min(544, window.innerWidth - cueLeft - 32) });
 				};
 				layout();
 				ScrollTrigger.addEventListener('refreshInit', layout);
+				const clear = () => (window.innerWidth * 1.15) / (g.S * g.k);
 
 				const tl = gsap.timeline({
 					scrollTrigger: {
 						trigger: hero,
 						start: 'top 64px',
-						end: () => `+=${Math.round(window.innerHeight * 1.4)}`,
+						end: () => `+=${Math.round(window.innerHeight * 1.6)}`,
 						pin: true,
 						scrub: 0.7,
 						anticipatePin: 1,
 						invalidateOnRefresh: true,
+						onUpdate: (self) => {
+							const done = self.progress > 0.995;
+							if (done !== trunkOn) {
+								trunkOn = done;
+								gsap.to(trunk, { scaleY: done ? 1 : 0, duration: done ? 0.7 : 0.25, ease: done ? 'expo.out' : 'power2.in', overwrite: true });
+							}
+						},
 					},
 				});
-				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power2.in', duration: 0.32, stagger: 0.07 }, 0)
-					.to(qa('[data-hero-fade]'), { y: -30, opacity: 0, duration: 0.18 }, 0)
-					.to(q('[data-hero-slab]'), { xPercent: 12, opacity: 0, duration: 0.3 }, 0.02)
+				let trunkOn = false;
+				gsap.set(trunk, { scaleY: 0 });
+				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power2.in', duration: 0.3, stagger: 0.06 }, 0)
+					.to(qa('[data-hero-fade]'), { y: -30, opacity: 0, duration: 0.16 }, 0)
+					.to(q('[data-hero-slab]'), { xPercent: 12, opacity: 0, duration: 0.28 }, 0.02)
 					.to(
 						mark,
 						{
@@ -145,10 +164,14 @@ async function init() {
 							y: () => g.ty - g.T0,
 							scale: () => g.S,
 							ease: 'power2.inOut',
-							duration: 0.56,
+							duration: 0.46,
 						},
-						0.12,
+						0.1,
 					)
+					.to(markOutline, { opacity: 0, duration: 0.08 }, 0.5)
+					.to(markChev, { opacity: 0, duration: 0.06 }, 0.58)
+					.to(markLeft, { x: () => -clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
+					.to(markRight, { x: () => clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
 					.to(
 						cursor,
 						{
@@ -156,13 +179,15 @@ async function init() {
 							svgOrigin: '397.63 288.62',
 							fill: '#2bb2e4',
 							stroke: '#2bb2e4',
-							duration: 0.1,
+							duration: 0.08,
 						},
-						0.62,
+						0.84,
 					)
-					.to(stem, { scaleY: 1, ease: 'none', duration: 0.3 }, 0.68)
-					.fromTo(cue, { y: 24 }, { y: 0, opacity: 1, duration: 0.14 }, 0.84)
-					.to({}, { duration: 0.02 }, 0.98);
+					.to(stem, { scaleY: 1, ease: 'none', duration: 0.26 }, 0.9)
+					// Once the stem has grown past the bar, the stem alone carries the line (no sub-pixel fringe).
+					.set(cursor, { opacity: 0 }, 0.98)
+					.fromTo(cue, { y: 24 }, { y: 0, opacity: 1, duration: 0.12 }, 1.0)
+					.to({}, { duration: 0.02 }, 1.16);
 			}
 
 			/* ---------- Activities: rails draw, cursor travels, nodes pop, cards slide in ---------- */

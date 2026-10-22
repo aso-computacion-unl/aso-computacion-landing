@@ -1,43 +1,65 @@
 ---
 import { Image } from 'astro:assets';
 import IsotypeColor from '../assets/brand/isotype-color.svg';
-import { join, socials, team, timeline } from '../data/site';
+import { collagePhotos, join, socials, timeline } from '../data/site';
 import Button from './Button.astro';
 
 const instagram = socials.find((social) => social.remote === 'instagram');
-// Collage rows: the demo event photos on one row, the real board photos on the other. Both repeat so the rows are
-// wider than the viewport and can slide against each other on scroll.
-const eventPhotos = timeline.flatMap((entry) => (entry.image ? [entry.image] : []));
-const rowA = [...eventPhotos, ...eventPhotos.slice(0, 3)];
-const facePhotos = team.map((member) => member.photo);
-const rowB = [...facePhotos, ...facePhotos.slice(0, 5)];
+// Collage: nine different photos in one row (event photos plus the collage-only ones), then a row of activity tags.
+// No repeats, so the same picture is never visible twice. Board photos are not used here.
+const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : [])), ...collagePhotos.map((item) => item.image)];
 ---
 
 <section id="sumarte" class="on-sky relative overflow-clip bg-sky py-16 text-navy sm:py-24 lg:py-32">
-	<div class="wrap">
-		<div class="grid items-end gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
+	<div class="wrap grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+		<div>
+			<p class="eyebrow" aria-hidden="true">
+				<span>CONTRIBUTING.md</span>
+				{join.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+			</p>
 			<h2 class="join-title">
+				<span class="sr-only">{join.headline.join(' ')}</span>
 				{
 					join.headline.map((line) => (
-						<span class="m-line">
+						<span class="m-line" aria-hidden="true">
 							<span class="m-in" data-j-in>{line}</span>
 						</span>
 					))
 				}
 			</h2>
-			<div>
-				{join.demo && <span class="demo-tag mb-5" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
-				<p class="max-w-[36ch] text-xl font-semibold leading-snug sm:text-2xl">{join.lead}</p>
-			</div>
+			<p class="lead mt-6 max-w-[34ch]">{join.lead}</p>
+			{
+				instagram && (
+					<div class="mt-8">
+						<Button href={instagram.href} size="xl" external>
+							{join.cta}
+						</Button>
+					</div>
+				)
+			}
 		</div>
+
+		<ol class="reasons">
+			{
+				join.reasons.map((reason, index) => (
+					<li class="reason" data-reason>
+						<span class="reason-num" aria-hidden="true">{index + 1}</span>
+						<div>
+							<h3 class="reason-title">{reason.title}</h3>
+							<p class="reason-text">{reason.text}</p>
+						</div>
+					</li>
+				))
+			}
+		</ol>
 	</div>
 
-	<div class="collage mt-12 lg:mt-16" data-collage aria-hidden="true">
-		<span class="stk" style="--r:-7deg;left:5%;top:-1.25rem"><span class="stk-face stk-white" data-pop>{join.stickers[0]}</span></span>
-		<span class="stk" style="--r:5deg;right:6%;bottom:-1rem"><span class="stk-face stk-navy" data-pop>{join.stickers[1]}</span></span>
+	<div class="collage mt-14 lg:mt-20" data-collage aria-hidden="true">
+		<span class="stk" style="--r:-7deg;left:5%;top:-0.25rem"><span class="stk-face stk-white" data-pop>{join.stickers[0]}</span></span>
+		<span class="stk" style="--r:5deg;right:6%;bottom:-0.25rem"><span class="stk-face stk-navy" data-pop>{join.stickers[1]}</span></span>
 		<div class="c-row c-row-a" data-c-row="left">
 			{
-				rowA.map((photo) => (
+				photos.map((photo) => (
 					<div class="duo c-tile c-wide">
 						<Image src={photo} alt="" width={480} height={340} widths={[320, 480]} sizes="17rem" loading="lazy" />
 					</div>
@@ -45,50 +67,25 @@ const rowB = [...facePhotos, ...facePhotos.slice(0, 5)];
 			}
 		</div>
 		<div class="c-row c-row-b" data-c-row="right">
-			{
-				rowB.map((photo) => (
-					<div class="duo c-tile c-tall">
-						<Image src={photo} alt="" width={288} height={336} fit="cover" position="top" widths={[192, 288]} sizes="12rem" loading="lazy" />
-					</div>
-				))
-			}
+			{join.tags.map((tag) => <span class="c-tag">{tag}</span>)}
 		</div>
 	</div>
 
 	<div class="wrap">
-		<ul class="mt-16 grid gap-x-14 md:grid-cols-2 lg:mt-24">
-			{
-				join.reasons.map((reason) => (
-					<li class="reason" data-reason>
-						<h3 class="reason-title">{reason.title}</h3>
-						<p class="reason-text">{reason.text}</p>
-					</li>
-				))
-			}
-		</ul>
-
 		<div class="newcomer relative mt-14 lg:mt-20">
 			<span class="stk stk-iso" style="--r:-9deg" aria-hidden="true">
 				<span class="stk-face stk-white" data-pop><IsotypeColor class="h-full w-auto" /></span>
 			</span>
-			<div class="grid items-center gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-14">
+			<div class="grid items-end gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
 				<div>
-					<h3 class="font-mono text-[0.8125rem] font-semibold text-sky">{join.newcomer.title}</h3>
-					<p class="mt-3 font-display text-[clamp(1.75rem,3.4vw,3.5rem)] leading-[1.1] text-white">
-						{join.newcomer.lead}
-					</p>
-					<div class="mt-5 grid max-w-[60ch] gap-3 text-lg text-mist">
+					<p class="eyebrow eyebrow-light" aria-hidden="true"><span>{join.newcomer.title}</span></p>
+					<h3 class="newcomer-title">{join.newcomer.lead}</h3>
+					<div class="mt-6 grid gap-4 text-lg text-mist">
 						{join.newcomer.steps.map((step) => <p>{step}</p>)}
 					</div>
 				</div>
-				<div class="lg:justify-self-end">
-					{
-						instagram && (
-							<Button href={instagram.href} size="xl" external>
-								{join.cta}
-							</Button>
-						)
-					}
+				<div class="newcomer-hola" aria-hidden="true">
+					<span class="outline-word">HOLA</span>
 				</div>
 			</div>
 		</div>

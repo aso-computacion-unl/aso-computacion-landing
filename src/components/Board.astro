@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import { team } from '../data/site';
+import SectionHead from './SectionHead.astro';
 
 // Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
 // (2 wide, 3 small, 2 half), desktop 10 cols (2 wide of 5, then 5 small of 2).
@@ -25,13 +26,21 @@ const handle = (name: string) =>
 
 <section id="directiva" class="bg-navy py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<div class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-16">
-			<h2 class="h2-xl">Directiva</h2>
-			<p class="text-lg text-mist">
-				Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta.
-				<span class="mt-3 block font-mono text-[0.8125rem] text-sky" aria-hidden="true">contributors ({team.length})</span>
-			</p>
-		</div>
+		<SectionHead
+			eyebrow="$ git shortlog"
+			title="Directiva"
+			lead="Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas."
+		>
+			<div slot="aside" class="count">
+				<p class="count-num" aria-hidden="true">{team.length}</p>
+				<div>
+					<p class="count-label">personas que te representan</p>
+					<ul class="mt-4 flex flex-wrap gap-2" aria-label="Cargos">
+						{team.map((member) => <li class="role-chip">{member.role}</li>)}
+					</ul>
+				</div>
+			</div>
+		</SectionHead>
 
 		<ul class="mt-12 grid grid-cols-2 gap-2.5 md:grid-cols-6 md:gap-4 lg:mt-16 lg:grid-cols-10 lg:gap-5">
 			{

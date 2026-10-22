@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import { aboutHighlights, manifesto, pillars, site, team } from '../data/site';
+import Isotype from '../assets/brand/isotype-white.svg';
+import { aboutHighlights, manifesto, pillars, site } from '../data/site';
 
 // The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
@@ -34,6 +35,8 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 				</span>
 			</h2>
 
+			<div class="about-block">
+			<p class="eyebrow" aria-hidden="true"><span>$ cat README.md</span></p>
 			<p class="about-text" data-statement>
 				{
 					parts.map((part) =>
@@ -47,6 +50,7 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 					)
 				}
 			</p>
+			</div>
 		</div>
 
 		<ul class="bento mt-14 lg:mt-20">
@@ -68,17 +72,7 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 								</div>
 							)
 						}
-						{
-							pillar.faces && (
-								<div class="tile-faces" aria-hidden="true">
-									{team.slice(0, 5).map((member) => (
-										<div class="duo face-card">
-											<Image src={member.photo} alt="" width={240} height={300} fit="cover" position="top" widths={[160, 240]} sizes="10rem" loading="lazy" />
-										</div>
-									))}
-								</div>
-							)
-						}
+						{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
 						<div class="tile-body">
 							<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
 							<h3 class="tile-title">{pillar.title}</h3>

@@ -1,0 +1,30 @@
+---
+import { faq } from '../data/site';
+import SectionHead from './SectionHead.astro';
+---
+
+<section id="faq" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
+	<div class="wrap">
+		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo} />
+
+		<div class="faq-list mt-12 lg:mt-16">
+			{
+				faq.items.map((item) => (
+					<details class="faq-item" name="faq">
+						<summary>
+							<span class="faq-mark" aria-hidden="true">?</span>
+							<span class="faq-q">
+								<span class="faq-topic" aria-hidden="true">git help {item.topic}</span>
+								<span class="faq-title">{item.q}</span>
+							</span>
+							<span class="faq-plus" aria-hidden="true"></span>
+						</summary>
+						<div class="faq-a">
+							<p>{item.a}</p>
+						</div>
+					</details>
+				))
+			}
+		</div>
+	</div>
+</section>
