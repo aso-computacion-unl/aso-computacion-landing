@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completeFaqCommand, helpLines, runFaqCommand, type FaqEntry } from './faq-shell';
+import { completeFaqCommand, helpLines, runFaqCommand, tabFaqCommand, type FaqEntry } from './faq-shell';
 
 const items: FaqEntry[] = [
 	{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante.' },
@@ -82,6 +82,31 @@ describe('completeFaqCommand', () => {
 	it('returns nothing for an empty or unmatched input', () => {
 		expect(completeFaqCommand('', items)).toEqual([]);
 		expect(completeFaqCommand('zzz', items)).toEqual([]);
+	});
+});
+
+describe('tabFaqCommand', () => {
+	it('lets Tab through when nothing matches', () => {
+		expect(tabFaqCommand('', items)).toBeNull();
+		expect(tabFaqCommand('zzz', items)).toBeNull();
+	});
+
+	it('completes a single match in place', () => {
+		expect(tabFaqCommand('git help pa', items)).toEqual({ value: 'git help participar', options: [] });
+	});
+
+	it('extends an ambiguous prefix to what every match shares before listing them', () => {
+		expect(tabFaqCommand('git h', items)).toEqual({ value: 'git help ', options: [] });
+		expect(tabFaqCommand('co', items)).toEqual({ value: 'co', options: ['costo', 'contacto'] });
+		expect(tabFaqCommand('git help co', items)).toEqual({ value: 'git help co', options: ['git help costo', 'git help contacto'] });
+	});
+
+	it('keeps what was typed when the matches share nothing more', () => {
+		expect(tabFaqCommand('c', items)).toEqual({ value: 'c', options: ['clear', 'costo', 'contacto'] });
+	});
+
+	it('works from untidy input', () => {
+		expect(tabFaqCommand('  GIT   help pa', items)).toEqual({ value: 'git help participar', options: [] });
 	});
 });
 

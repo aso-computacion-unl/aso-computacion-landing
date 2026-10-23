@@ -1,6 +1,6 @@
 import { toLocale } from '../i18n/locales';
 import { typeLabel, useTranslations } from '../i18n/ui';
-import { completeFaqCommand, helpLines, runFaqCommand, type FaqEntry, type FaqLine } from './faq-shell';
+import { helpLines, runFaqCommand, tabFaqCommand, type FaqEntry, type FaqLine } from './faq-shell';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
@@ -212,11 +212,11 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 		}
 		if (event.key === 'Tab') {
 			// Only take Tab when there is something to complete, so keyboard users can still tab out of the shell.
-			const matches = completeFaqCommand(faqInput.value, faqEntries);
-			if (matches.length === 0) return;
+			const tab = tabFaqCommand(faqInput.value, faqEntries);
+			if (!tab) return;
 			event.preventDefault();
-			if (matches.length === 1) faqInput.value = matches[0];
-			else append([line('is-out', matches.join('   '))]);
+			faqInput.value = tab.value;
+			if (tab.options.length > 0) append([line('is-out', tab.options.join('   '))]);
 		}
 	});
 
