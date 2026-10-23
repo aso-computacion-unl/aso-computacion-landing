@@ -130,7 +130,7 @@ src/
 Este es un proyecto de la comunidad de ASO Computación y la directiva lo mantiene junto con quien quiera aportar.
 
 - **Contenido** (eventos, fotos, FAQ, directiva, pilares, redes): se edita en el panel de administración, sin tocar código.
-- **Código y diseño**: Pull Request contra `main`. `main` está protegida, así que todo cambio entra por PR con una aprobación y no hay CI: se corre `pnpm test` y `pnpm build` localmente antes de pedir revisión.
+- **Código y diseño**: Pull Request contra `main`. `main` está protegida, así que todo cambio entra por PR con una aprobación y la CI tiene que pasar en verde (`pnpm test` y `pnpm build`). Conviene correr lo mismo localmente antes de pedir revisión.
 - **Errores e ideas**: abrí un issue con las plantillas del repositorio.
 
 La guía completa, con el flujo de ramas, las convenciones de commits y las buenas prácticas para la directiva, está en [CONTRIBUTING.md](CONTRIBUTING.md). Las vulnerabilidades se reportan en privado según [SECURITY.md](SECURITY.md).
