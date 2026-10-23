@@ -74,6 +74,6 @@ if (history && rootNode && mainRail) {
 	};
 	fitRail();
 	window.addEventListener('load', fitRail);
-	document.fonts?.ready.then(fitRail);
+	document.fonts?.ready.then(fitRail).catch(() => {}); // A font that fails to load keeps the fallback; nothing to redo.
 	new ResizeObserver(fitRail).observe(history);
 }

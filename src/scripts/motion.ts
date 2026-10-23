@@ -507,7 +507,7 @@ async function init() {
 
 	const refresh = () => ScrollTrigger.refresh();
 	window.addEventListener('load', refresh);
-	document.fonts?.ready.then(refresh);
+	document.fonts?.ready.then(refresh).catch(() => {}); // A font that fails to load keeps the fallback; nothing to redo.
 	root.dataset.scrollTriggers = String(ScrollTrigger.getAll().length);
 	root.dataset.motionReady = 'true';
 }
