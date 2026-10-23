@@ -4,13 +4,14 @@ import ActivityGraph from '../components/ActivityGraph.astro';
 import Board from '../components/Board.astro';
 import Hero from '../components/Hero.astro';
 import Join from '../components/Join.astro';
+import News from '../components/News.astro';
 import Faq from '../components/Faq.astro';
 import Socials from '../components/Socials.astro';
 import Ribbon from '../components/Ribbon.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import Layout from '../layouts/Layout.astro';
-import { faq, site, socials, team } from '../data/content';
+import { faq, latestNews, site, socials, team } from '../data/content';
 ---
 
 <Layout title={`${site.name} · ${site.tagline}`} description={site.description}>
@@ -19,6 +20,7 @@ import { faq, site, socials, team } from '../data/content';
 		<Hero />
 		<Ribbon />
 		<ActivityGraph />
+		{latestNews.length > 0 && <News />}
 		<About />
 		{team.length > 0 && <Board />}
 		<Join />
