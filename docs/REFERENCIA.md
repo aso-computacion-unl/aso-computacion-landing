@@ -152,8 +152,38 @@ pnpm test      # vitest: fetch, validation, fallback, mapping and the Markdown r
 
 Real content is edited in the admin. What stays in code (`src/data/site.ts`): the hero and
 manifesto copy, the nav, the ribbon, the contribute section, the three structural timeline
-entries and the demo placeholders. Sections are rendered in `src/pages/index.astro`; the news pages
-are in `src/pages/novedades/`.
+entries and the demo placeholders. Sections are rendered in `src/views/HomePage.astro`; the news pages
+are `src/views/NewsIndexPage.astro` and `src/views/NewsPostPage.astro`.
+
+## Themes and languages
+
+**Theme.** Dark is the brand look; a light palette repaints the same colour roles (`navy`, `ink`, `sky`, ...)
+in `src/styles/global.css` under `:root[data-theme="light"]`. The first visit follows
+`prefers-color-scheme`; the header button stores the choice in `localStorage` (`aso-theme`). An inline script
+in `Layout.astro` sets the theme before the first paint, so there is no flash. Use the role utilities
+(`text-ink`, `bg-navy`, `text-on-sky`), not `text-white`, and `.theme-dark-only` / `.theme-light-only` for
+pieces drawn once per theme.
+
+**Languages.** Spanish lives at `/`, English under `/en/` (`/en/`, `/en/novedades/`,
+`/en/novedades/<slug>/`). The header switch goes to the same page in the other language, and every page
+carries `hreflang` alternates and the right `<html lang>`. Only the landing's *fixed* copy is translated;
+what is loaded in the admin (events, FAQ, pillars, news, board, site texts) and the demo placeholders stay in
+Spanish. Dates are formatted per language.
+
+Where the strings live:
+
+| What | Where |
+|------|-------|
+| Short UI words (buttons, labels, aria texts, countdown, filters) | `src/i18n/ui.ts` (`es` and `en`; the type forces `en` to have every key) |
+| Section copy (hero, manifesto, ribbon, nav, contribute, FAQ intro) | `copy` in `src/data/site.ts` |
+| Routes, `localizedPath`, `alternatePath` | `src/i18n/locales.ts` |
+| Content in a language | `getContent(locale)` in `src/data/content.ts` |
+| Terminal messages of the FAQ | `src/scripts/faq-shell.ts` |
+
+To add a UI word: add the key to `es` and to `en` in `src/i18n/ui.ts`, then `t('your.key')` in the component
+(`const t = useTranslations(toLocale(Astro.currentLocale))`). Client scripts read the language from
+`<html lang>`. To add a language: extend `locales` in `src/i18n/locales.ts` and `astro.config.mjs`, add its
+dictionary and `copy` entry, and a route folder next to `src/pages/en/` (thin files that render the views).
 
 ## Structure
 
@@ -164,9 +194,10 @@ src/
 │   ├── fallback.json     # committed snapshot of the real content, API shape (news: [])
 │   └── site.ts           # landing-owned copy and demo placeholders
 ├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
-├── layouts/Layout.astro  # HTML shell and global styles
-├── pages/index.astro     # landing sections
-├── pages/novedades/      # news list and one page per item
+├── i18n/                 # locales, localized paths, UI dictionary (es/en)
+├── layouts/Layout.astro  # HTML shell, theme script, hreflang
+├── views/                # the pages' bodies, shared by both languages
+├── pages/                # thin routes: / and /novedades (es), /en/... (en)
 └── styles/global.css     # Tailwind entry point
 ```
 

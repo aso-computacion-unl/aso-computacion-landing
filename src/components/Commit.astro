@@ -1,10 +1,12 @@
 ---
 import Photo from './Photo.astro';
-import { nextEvent, timeline } from '../data/content';
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { metaLabel, useTranslations } from '../i18n/ui';
 import type { TimelineKind } from '../lib/admin-content/model';
 import { shortHash } from './shortHash';
 
-type Entry = (typeof timeline)[number];
+type Entry = ReturnType<typeof getContent>['timeline'][number];
 
 interface Props {
 	entry: Entry;
@@ -13,6 +15,9 @@ interface Props {
 }
 
 const { entry, last = false, compact = false } = Astro.props;
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { nextEvent } = getContent(locale);
 
 const nodeClass: Record<TimelineKind, string> = {
 	next: 'node-next',
@@ -24,8 +29,8 @@ const nodeClass: Record<TimelineKind, string> = {
 };
 
 const decoration: Partial<Record<TimelineKind, string>> = {
-	next: '(por venir)',
-	upcoming: '(por venir)',
+	next: t('commit.upcoming'),
+	upcoming: t('commit.upcoming'),
 	head: '(HEAD -> main)',
 	initial: '(initial commit)',
 };
@@ -48,13 +53,13 @@ const isNext = !compact && entry === nextEvent;
 		aria-hidden="true"></span>
 	<span class="link" data-link aria-hidden="true"></span>
 	<div class:list={['card', 'card-row']} data-card={compact ? undefined : ''}>
-		{isNext && <span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">¡nuevo!</span>}
+		{isNext && <span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">{t('commit.new')}</span>}
 		<div class="card-main">
 			{
 				entry.stamp && (
 					<p class="leading-none">
 						<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
-						{entry.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+						{entry.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
 					</p>
 				)
 			}
@@ -70,7 +75,7 @@ const isNext = !compact && entry === nextEvent;
 						rel={external ? 'me noopener' : undefined}
 					>
 						{entry.hrefLabel}
-						{external && <span class="sr-only"> (se abre en otra pestaña)</span>}
+						{external && <span class="sr-only"> {t('newTab')}</span>}
 					</a>
 				)
 			}
@@ -88,7 +93,7 @@ const isNext = !compact && entry === nextEvent;
 				<dl class="card-meta">
 					{metaEntries.map(([label, value]) => (
 						<div>
-							<dt>{label}</dt>
+							<dt>{metaLabel(locale, label)}</dt>
 							<dd>{value}</dd>
 						</div>
 					))}

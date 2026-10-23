@@ -20,7 +20,7 @@ Sitio de la Asociación de Estudiantes de la carrera de Computación de la Unive
 
 ## Qué es
 
-El sitio donde los estudiantes de Computación se enteran de lo que pasa en la carrera. Presenta el historial de actividades como una línea de tiempo al estilo de un historial de git, publica novedades, muestra a la directiva vigente y explica cómo sumarse a la asociación.
+El sitio donde los estudiantes de Computación se enteran de lo que pasa en la carrera. Presenta el historial de actividades como una línea de tiempo al estilo de un historial de git, publica novedades, muestra a la directiva vigente y explica cómo sumarse a la asociación. Tiene modo oscuro y claro, y está en español (`/`) y en inglés (`/en/`); el contenido cargado en el admin no se traduce (ver [docs/REFERENCIA.md](docs/REFERENCIA.md#themes-and-languages)).
 
 <table>
   <tr>

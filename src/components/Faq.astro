@@ -1,6 +1,11 @@
 ---
-import { faq } from '../data/content';
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
 import SectionHead from './SectionHead.astro';
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { faq } = getContent(locale);
 ---
 
 <section id="faq" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32" data-faq>
@@ -32,7 +37,7 @@ import SectionHead from './SectionHead.astro';
 			<div class="term-window faq-guide-window">
 				<div class="term-titlebar">
 					<span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
-					<span class="term-title">faq — temas</span>
+					<span class="term-title">{t('faq.termTitle')}</span>
 				</div>
 				<ul class="faq-guide" role="list">
 					{
@@ -46,7 +51,7 @@ import SectionHead from './SectionHead.astro';
 						))
 					}
 				</ul>
-				<p class="faq-guide-hint"># o escribe en la terminal: <code>help</code>, <code>git help &lt;tema&gt;</code>, <code>clear</code></p>
+				<p class="faq-guide-hint">{t('faq.hint')} <code>help</code>, <code>git help &lt;{t('faq.topicWord')}&gt;</code>, <code>clear</code></p>
 			</div>
 
 			<div class="term-window faq-shell-window" data-faq-shell>
@@ -54,9 +59,9 @@ import SectionHead from './SectionHead.astro';
 					<span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
 					<span class="term-title">aso@unl: ~/faq</span>
 				</div>
-				<div class="faq-out" data-faq-out role="log" aria-live="polite" aria-label="Respuestas de la terminal"></div>
+				<div class="faq-out" data-faq-out role="log" aria-live="polite" aria-label={t('faq.log')}></div>
 				<form class="faq-prompt" data-faq-form>
-					<label class="faq-prompt-sign" for="faq-input">aso@unl:~$<span class="sr-only"> Escribe un comando</span></label>
+					<label class="faq-prompt-sign" for="faq-input">aso@unl:~$<span class="sr-only">{t('faq.promptHint')}</span></label>
 					<input
 						id="faq-input"
 						class="faq-input"
@@ -66,7 +71,7 @@ import SectionHead from './SectionHead.astro';
 						autocapitalize="off"
 						spellcheck="false"
 						enterkeyhint="send"
-						placeholder="escribe 'help'"
+						placeholder={t('faq.placeholder')}
 					/>
 				</form>
 			</div>

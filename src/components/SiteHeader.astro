@@ -1,12 +1,26 @@
 ---
 import IsotypeColor from '../assets/brand/isotype-color.svg';
 import IsotypeWhite from '../assets/brand/isotype-white.svg';
-import { navLinks, site } from '../data/content';
+import { getContent } from '../data/content';
+import { alternatePath, localizedPath, toLocale } from '../i18n/locales';
+import type { Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { navLinks, site } = getContent(locale);
+const other: Locale = locale === 'es' ? 'en' : 'es';
 
 // Section anchors only exist on the home page: from /novedades they point back to it.
-const onHome = Astro.url.pathname === '/';
-const hrefFor = (href: string) => (href.startsWith('#') && !onHome ? `/${href}` : href);
-const isCurrent = (href: string) => !href.startsWith('#') && (Astro.url.pathname === href || Astro.url.pathname.startsWith(`${href}/`));
+const homePath = localizedPath('/', locale);
+const onHome = Astro.url.pathname.replace(/\/$/, '') === homePath.replace(/\/$/, '');
+const pathFor = (href: string) => (href.startsWith('#') ? href : localizedPath(href, locale));
+const hrefFor = (href: string) => (href.startsWith('#') && !onHome ? `${homePath}${href}` : pathFor(href));
+const isCurrent = (href: string) => {
+	if (href.startsWith('#')) return false;
+	const path = pathFor(href);
+	return Astro.url.pathname === path || Astro.url.pathname.startsWith(`${path}/`);
+};
 ---
 
 <header class="sticky top-0 z-50 border-b border-sky/30 bg-navy">
@@ -14,13 +28,13 @@ const isCurrent = (href: string) => !href.startsWith('#') && (Astro.url.pathname
 		href="#contenido"
 		class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-sky focus:px-4 focus:py-2 focus:font-semibold focus:text-on-sky"
 	>
-		Saltar al contenido
+		{t('skip')}
 	</a>
 	<nav
-		aria-label="Principal"
+		aria-label={t('nav.label')}
 		class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3"
 	>
-		<a href={onHome ? '#top' : '/'} class="hidden shrink-0 min-[340px]:flex items-center gap-3" aria-label={`${site.name}, inicio`}>
+		<a href={onHome ? '#top' : homePath} class="hidden shrink-0 items-center gap-3 sm:flex" aria-label={t('nav.home', { name: site.name })}>
 			<IsotypeWhite class="theme-dark-only h-7 w-auto sm:h-8" aria-hidden="true" />
 			<IsotypeColor class="theme-light-only h-7 w-auto sm:h-8" aria-hidden="true" />
 			<span class="hidden font-display text-base text-ink md:inline">{site.name}</span>
@@ -42,11 +56,20 @@ const isCurrent = (href: string) => !href.startsWith('#') && (Astro.url.pathname
 			}
 		</ul>
 		<div class="flex shrink-0 items-center font-mono text-xs min-[400px]:text-[0.8125rem]">
+			<a
+				href={alternatePath(Astro.url.pathname, other)}
+				hreflang={other}
+				lang={other}
+				aria-label={t('lang.switchLabel')}
+				class="flex min-h-9 min-w-8 items-center justify-center px-1 text-mist hover:text-ink sm:min-w-9 sm:px-1.5"
+			>
+				{t('lang.switchText')}
+			</a>
 			<button
 				type="button"
 				data-theme-toggle
 				aria-pressed="true"
-				aria-label="Modo oscuro"
+				aria-label={t('theme.toggle')}
 				class="flex h-9 w-8 items-center justify-center text-mist hover:text-ink sm:w-9"
 			>
 				<!-- The icon is the theme the button switches to: sun while dark, moon while light. -->

@@ -1,8 +1,15 @@
 ---
 import Photo from './Photo.astro';
 import Isotype from '../assets/brand/isotype-white.svg';
-import { pillars, site } from '../data/content';
-import { aboutHighlights, manifesto } from '../data/site';
+import { getContent } from '../data/content';
+import { copy } from '../data/site';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { pillars, site } = getContent(locale);
+const { aboutHighlights, manifesto } = copy[locale];
 
 // The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
 const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
@@ -77,7 +84,7 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 								<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
 								<h3 class="tile-title">{pillar.title}</h3>
 								<p class="tile-text">{pillar.text}</p>
-								{pillar.demo && <span class="demo-tag" style="margin-left:0" title="Contenido de ejemplo">demo</span>}
+								{pillar.demo && <span class="demo-tag" style="margin-left:0" title={t('demo.title')}>demo</span>}
 							</div>
 						</li>
 					))

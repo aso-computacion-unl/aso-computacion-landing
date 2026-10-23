@@ -1,10 +1,15 @@
 ---
 // Home section: the latest news as the newest tags of the repo. Hidden by the page when there is nothing to show.
-import { latestNews, news } from '../data/content';
+import { getContent } from '../data/content';
+import { localizedPath, toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
 import Button from './Button.astro';
 import NewsCard from './NewsCard.astro';
 import SectionHead from './SectionHead.astro';
 
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { latestNews, news } = getContent(locale);
 const count = latestNews.length;
 ---
 
@@ -12,11 +17,11 @@ const count = latestNews.length;
 	<div class="wrap">
 		<SectionHead
 			eyebrow="$ git tag --sort=-creatordate"
-			title="Novedades"
-			lead="Lo último que anunciamos: avisos, resultados y noticias para quienes estudian Computación."
+			title={t('news.title')}
+			lead={t('news.lead')}
 		>
 			<div slot="aside" class="flex lg:justify-end">
-				<Button href="/novedades" variant="ghost">{news.length > count ? `Ver las ${news.length} novedades` : 'Ver todas las novedades'}</Button>
+				<Button href={localizedPath('/novedades', locale)} variant="ghost">{news.length > count ? t('news.seeCount', { count: news.length }) : t('news.seeAll')}</Button>
 			</div>
 		</SectionHead>
 

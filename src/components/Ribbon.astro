@@ -1,5 +1,8 @@
 ---
-import { ribbon } from '../data/site';
+import { toLocale } from '../i18n/locales';
+import { copy } from '../data/site';
+
+const { ribbon } = copy[toLocale(Astro.currentLocale)];
 ---
 
 <div class="ribbon" aria-hidden="true">

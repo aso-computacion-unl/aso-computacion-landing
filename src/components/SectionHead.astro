@@ -1,4 +1,7 @@
 ---
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
 // Section header with a fixed hierarchy: eyebrow (mono label) -> heading -> lead, plus an optional aside on the right.
 // Nothing floats on its own: the lead sits directly under the heading and the aside belongs to the same grid.
 interface Props {
@@ -13,6 +16,7 @@ interface Props {
 }
 
 const { eyebrow, title, lead, demo = false, tone = 'default', level = 2 } = Astro.props;
+const t = useTranslations(toLocale(Astro.currentLocale));
 const Heading = level === 1 ? 'h1' : 'h2';
 const hasAside = Astro.slots.has('aside');
 ---
@@ -21,7 +25,7 @@ const hasAside = Astro.slots.has('aside');
 	<div class="section-head-main">
 		<p class="eyebrow" aria-hidden="true">
 			<span>{eyebrow}</span>
-			{demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+			{demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
 		</p>
 		<Heading class:list={['h2-xl', { 'text-on-sky': tone === 'on-sky' }]}>{title}</Heading>
 		{lead && <p class="lead">{lead}</p>}
