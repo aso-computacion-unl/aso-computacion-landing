@@ -1141,6 +1141,12 @@
 		color: #fff;
 	}
 
+	@media (max-width: 47.99rem) {
+		.manifesto {
+			font-size: clamp(2.25rem, 10.2vw, 2.75rem);
+		}
+	}
+
 	.m-line {
 		display: block;
 		overflow: hidden;
@@ -2166,22 +2172,23 @@ html.motion .hero-mark-svg {
 	visibility: hidden;
 }
 
+/* Phones get the same entrances as desktop, with shorter travel so nothing leaves the narrow column. */
+html.motion .w {
+	opacity: 0.22;
+}
+
+html.motion [data-member] {
+	opacity: 0;
+	transform: translateY(3rem) rotate(2deg);
+}
+
 @media (max-width: 47.99rem) {
 	html.motion [data-card] {
-		transform: translateY(1rem);
-	}
-
-	html.motion [data-member] {
-		opacity: 0;
-		transform: translateY(2rem);
+		transform: translateX(-1.75rem);
 	}
 }
 
 @media (min-width: 48rem) {
-	html.motion .w {
-		opacity: 0.22;
-	}
-
 	html.motion [data-member] {
 		opacity: 0;
 		transform: translateY(4.5rem) rotate(3deg);
@@ -2202,5 +2209,56 @@ html.motion .hero-mark-svg {
 	html.motion .hero-cue {
 		display: block;
 		opacity: 0;
+	}
+}
+
+/* Hero scroll moment on phones (matches the JS media query). The stage sticks natively instead of being pinned by
+   JS, so touch scrolling stays native and nothing jumps when the address bar shows or hides; svh keeps its height
+   fixed while the browser bars move. The run is the scroll distance the moment plays over. Without motion both
+   wrappers are display: contents and the hero is the plain stacked layout. */
+.hero-run,
+.hero-stage {
+	display: contents;
+}
+
+@media (max-width: 47.99rem) {
+	html.motion .hero-run {
+		--header-h: 4.0625rem;
+		--stage-h: calc(100svh - var(--header-h));
+		display: grid;
+		min-height: calc(var(--stage-h) * 2.3);
+	}
+
+	html.motion .hero-run > * {
+		grid-area: 1 / 1;
+	}
+
+	html.motion .hero-main {
+		align-self: start;
+	}
+
+	html.motion .hero-stage {
+		display: block;
+		position: sticky;
+		top: var(--header-h);
+		z-index: 11;
+		align-self: start;
+		height: var(--stage-h);
+		pointer-events: none;
+	}
+
+	html.motion .hero-stem {
+		display: block;
+		transform: scaleY(0);
+	}
+
+	html.motion .hero-cue {
+		display: block;
+		opacity: 0;
+	}
+
+	/* The stem comes down the left edge of the preview, so the tag steps aside to leave its line clear. */
+	html.motion [data-hero-slab] .tag-plan {
+		margin-left: 3rem;
 	}
 }
