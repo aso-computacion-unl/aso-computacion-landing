@@ -2,6 +2,7 @@
 // FAQ, pillars, socials, board, site copy) comes from the admin and is resolved in ./content.ts, with
 // ./fallback.json as the committed snapshot used when the admin is unreachable. Edit that, not this, for real content.
 
+import type { Locale } from '../i18n/locales';
 import { activityTypes } from '../lib/admin-content/model';
 import type { BoardFun, FaqItem, Photo, Pillar, SiteCopy, TimelineEntry } from '../lib/admin-content/model';
 
@@ -269,4 +270,109 @@ export const demoBoardFun: Record<string, BoardFun> = {
 	'Marco Chiliguano': { language: 'JavaScript', motto: 'feat: pulgar arriba para este PR', demo: true },
 	'Alejandro Padilla': { language: 'C++', motto: 'style: código limpio, camisa planchada', demo: true },
 	'Melissa Contento': { language: 'Go', motto: 'fix: el bug era un punto y coma', demo: true },
+};
+
+// English versions of the landing's own copy. Content from the admin (and the demo placeholders standing in for it)
+// stays in Spanish: only the landing's fixed words are translated.
+type Anchors = typeof timelineAnchors;
+
+export interface LandingCopy {
+	site: SiteCopy;
+	aboutHighlights: string[];
+	ribbon: string[];
+	manifesto: typeof manifesto;
+	navLinks: typeof navLinks;
+	timelineAnchors: Anchors;
+	join: typeof join;
+	faqCopy: typeof faqCopy;
+}
+
+const enCopy: LandingCopy = {
+	site: {
+		name: 'ASO Computación',
+		tagline: 'Student association of the Computer Science program',
+		headline: ['Keep up with', 'what is going on in', 'Computer Science.'],
+		headlineAccent: 2,
+		heroCue: 'Scroll down the branch: this is our history.',
+		description: 'ASO Computación is the student association of the program. Here is our history, activity by activity.',
+		about:
+			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
+	},
+	// The admin's about text stays in Spanish, so its phrases are highlighted too.
+	aboutHighlights: ['student organization', 'Universidad Nacional de Loja', ...aboutHighlights],
+	ribbon: [
+		'feat: represent the students',
+		'fix: learn as a team',
+		'chore: build community',
+		'docs: share what we know',
+		'feat: first semester, welcome',
+		'refactor: make the degree lighter',
+	],
+	manifesto: {
+		lines: ['We are the ASO', 'of Computer Science'],
+		rotor: ['students', 'community', 'your voice'],
+		sr: 'We are the Computer Science ASO: students, community and your voice.',
+	},
+	navLinks: [
+		{ label: 'Activities', href: '#actividades' },
+		{ label: 'News', href: '/novedades' },
+		{ label: 'About', href: '#nosotros' },
+		{ label: 'Board', href: '#directiva' },
+		{ label: 'FAQ', href: '#faq' },
+		{ label: 'Socials', href: '#redes' },
+	],
+	timelineAnchors: {
+		next: {
+			...timelineAnchors.next,
+			msg: 'chore: soon in your feed',
+			stamp: 'Up next',
+			title: 'The next activity is announced first on Instagram',
+			description: 'Follow us to hear about it as soon as it is posted.',
+			hrefLabel: 'Open Instagram',
+		},
+		head: {
+			...timelineAnchors.head,
+			msg: 'docs(board): meet the people who make this happen',
+			title: 'Current board',
+			description: 'Seven members represent the students of the program today.',
+			hrefLabel: 'Meet the board',
+		},
+		initial: {
+			...timelineAnchors.initial,
+			msg: 'init: hello, world',
+			title: 'ASO Computación is born',
+			description: 'The student association of the Computer Science program is founded.',
+		},
+	},
+	join: {
+		...join,
+		headline: ['Your ideas', 'make a', 'commit too'],
+		lead: 'We make the program better together. Tell us what you would change and help us make the community stronger.',
+		stickers: ['pitch it!', 'ideas from every semester'],
+		reasons: [
+			{ title: 'Pitch a workshop or a talk', text: 'If there is something you want to learn or teach, write to us and we will put it together.' },
+			{ title: 'Tell us what to improve in the program', text: 'What you see from your semester helps the ASO carry everyone’s voice better.' },
+			{ title: 'Help spread the word and take part', text: 'Come to the activities, share the announcements and bring your classmates.' },
+			{ title: 'Share what you know with other semesters', text: 'What you learned a year ago helps someone who is just starting.' },
+		],
+		newcomer: {
+			title: 'Your first idea',
+			lead: 'At first nobody knows anybody.',
+			steps: [
+				'That is normal: come to an activity, say hi and stay to watch. They are all open to any Computer Science student.',
+				'You need no experience to have an opinion. Send us a direct message and we will tell you about the next activity.',
+			],
+		},
+		cta: 'Send us your idea',
+		tags: ['#workshops', '#talks', '#hackathons', '#community', '#first-semester', '#every-semester', '#student-voice', '#learn-by-doing'],
+	},
+	faqCopy: {
+		title: 'Frequently asked questions',
+		lead: 'What people ask us most about the ASO and its activities. If something is missing, send us a direct message.',
+	},
+};
+
+export const copy: Record<Locale, LandingCopy> = {
+	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, faqCopy },
+	en: enCopy,
 };

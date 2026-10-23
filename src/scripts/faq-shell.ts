@@ -9,6 +9,26 @@ export type FaqLine = {
 	note?: string;
 };
 
+// Messages of the terminal itself; questions and answers come from the admin as written.
+const MESSAGES = {
+	es: {
+		help: 'Temas disponibles. Escribe uno o tócalo en la lista:',
+		noTopic: (topic: string) => `git help: no hay ningún tema '${topic}'.`,
+		notFound: (input: string) => `comando no encontrado: '${input}'.`,
+		didYouMean: (topic: string) => ` ¿Quisiste decir 'git help ${topic}'?`,
+		typeHelp: " Escribe 'help' para ver los temas.",
+	},
+	en: {
+		help: 'Available topics. Type one or tap it in the list:',
+		noTopic: (topic: string) => `git help: no topic named '${topic}'.`,
+		notFound: (input: string) => `command not found: '${input}'.`,
+		didYouMean: (topic: string) => ` Did you mean 'git help ${topic}'?`,
+		typeHelp: " Type 'help' to see the topics.",
+	},
+};
+
+export type FaqLocale = keyof typeof MESSAGES;
+
 export type FaqResult = { kind: 'clear' } | { kind: 'lines'; lines: FaqLine[] };
 
 const HELP_WORDS = new Set(['help', 'git help', 'ayuda', 'ls']);
@@ -39,16 +59,17 @@ const closestTopic = (word: string, items: readonly FaqEntry[]): string | undefi
 	return best?.topic;
 };
 
-export const helpLines = (items: readonly FaqEntry[]): FaqLine[] => [
-	{ tone: 'out', text: 'Temas disponibles. Escribe uno o tócalo en la lista:' },
+export const helpLines = (items: readonly FaqEntry[], locale: FaqLocale = 'es'): FaqLine[] => [
+	{ tone: 'out', text: MESSAGES[locale].help },
 	...items.map((item) => ({ tone: 'topic' as const, text: `git help ${item.topic}`, note: item.q })),
 ];
 
-export const runFaqCommand = (input: string, items: readonly FaqEntry[]): FaqResult => {
+export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale: FaqLocale = 'es'): FaqResult => {
+	const m = MESSAGES[locale];
 	const command = normalize(input);
 	if (command === '') return { kind: 'lines', lines: [] };
 	if (command === 'clear') return { kind: 'clear' };
-	if (HELP_WORDS.has(command)) return { kind: 'lines', lines: helpLines(items) };
+	if (HELP_WORDS.has(command)) return { kind: 'lines', lines: helpLines(items, locale) };
 
 	const asked = command.startsWith('git help ') ? command.slice('git help '.length) : command;
 	const item = items.find((entry) => entry.topic === asked);
@@ -63,11 +84,8 @@ export const runFaqCommand = (input: string, items: readonly FaqEntry[]): FaqRes
 	}
 
 	const suggestion = closestTopic(asked, items);
-	const text = command.startsWith('git help ')
-		? `git help: no hay ningún tema '${asked}'.${suggestion ? ` ¿Quisiste decir 'git help ${suggestion}'?` : " Escribe 'help' para ver los temas."}`
-		: suggestion
-			? `comando no encontrado: '${input.trim()}'. ¿Quisiste decir 'git help ${suggestion}'?`
-			: `comando no encontrado: '${input.trim()}'. Escribe 'help' para ver los temas.`;
+	const head = command.startsWith('git help ') ? m.noTopic(asked) : m.notFound(input.trim());
+	const text = head + (suggestion ? m.didYouMean(suggestion) : m.typeHelp);
 	return { kind: 'lines', lines: [{ tone: 'error', text }] };
 };
 

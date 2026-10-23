@@ -2,6 +2,7 @@
 import { toPhoto, type MapContext } from './map';
 import type { NewsItem } from './model';
 import { formatStamp } from './timeline';
+import { localizedPath } from '../../i18n/locales';
 import type { PublicNewsItem } from './types';
 
 // The home shows this many; /novedades shows all.
@@ -17,12 +18,12 @@ export const toNews = (news: readonly PublicNewsItem[], ctx: MapContext): NewsIt
 		.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 		.map((item) => ({
 			slug: item.slug,
-			href: newsPath(item.slug),
+			href: localizedPath(newsPath(item.slug), ctx.locale ?? 'es'),
 			title: item.title,
 			summary: item.summary,
 			body: item.body,
 			date: item.publishedAt,
-			stamp: formatStamp(item.publishedAt),
+			stamp: formatStamp(item.publishedAt, 'day', ctx.locale),
 			...(item.cover ? { cover: toPhoto(item.cover, ctx) } : {}),
 		}));
 
