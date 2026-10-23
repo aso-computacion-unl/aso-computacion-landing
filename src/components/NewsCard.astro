@@ -1,0 +1,246 @@
+---
+// One news item as a flat card. The whole card is one link (the title's); the date is a past-date outline chip, never
+// the red one, because red is reserved for what is still to come.
+import Photo from './Photo.astro';
+import { shortHash } from './shortHash';
+import type { NewsItem } from '../lib/admin-content/model';
+
+interface Props {
+	item: NewsItem;
+	// feature: cover on top (or beside it, when wide). row: small thumbnail beside the text.
+	variant?: 'feature' | 'row';
+	wide?: boolean;
+	// Heading level of the title, so the page outline stays right (the home section is an h2, the list page an h1).
+	as?: 'h2' | 'h3';
+}
+
+const { item, variant = 'feature', wide = false, as: Heading = 'h3' } = Astro.props;
+const feature = variant === 'feature';
+---
+
+<article class:list={['news-card', `news-card-${variant}`, { 'news-card-wide': wide && feature, 'has-cover': Boolean(item.cover) }]}>
+	{
+		item.cover && (
+			<div class="news-cover">
+				<Photo
+					photo={item.cover}
+					box={feature ? { width: 960, height: 640 } : { width: 320, height: 240 }}
+					widths={feature ? [480, 960] : [320, 640]}
+					sizes={feature ? (wide ? '(min-width: 1024px) 40rem, 92vw' : '(min-width: 1024px) 36rem, 92vw') : '(min-width: 640px) 10rem, 6.5rem'}
+					fit="cover"
+					alt=""
+					class="news-img"
+				/>
+			</div>
+		)
+	}
+	<div class="news-text">
+		<p class="news-meta">
+			<time class="stamp stamp-past news-stamp" datetime={item.date}>{item.stamp}</time>
+			<span class="news-hash" aria-hidden="true">{shortHash(item.slug)}</span>
+		</p>
+		<Heading class="news-title"><a href={item.href}>{item.title}</a></Heading>
+		<p class="news-summary">{item.summary}</p>
+		<p class="news-more" aria-hidden="true"><span>git show</span> {item.slug}</p>
+	</div>
+</article>
+
+<style>
+	.news-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		overflow: clip;
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+		transition: background-color 0.2s ease-out;
+	}
+
+	.news-card:hover {
+		background: color-mix(in srgb, var(--color-navy-lift) 88%, var(--color-sky));
+	}
+
+	/* The stretched link is the card; keyboard focus shows on the card, not on the text only. */
+	.news-card:has(a:focus-visible) {
+		outline: 2px solid var(--color-sky);
+		outline-offset: 3px;
+	}
+
+	.news-title a:focus-visible {
+		outline: none;
+	}
+
+	.news-title a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
+
+	.news-cover {
+		position: relative;
+		overflow: clip;
+		background: var(--color-navy);
+	}
+
+	/* The crop is done here, like for the board photos: the admin keeps the full picture. Absolute, so the image's own
+	   aspect ratio never stretches the box the card's layout decided. */
+	/* :global because the <img> belongs to the Photo component, which this component's scope does not reach. */
+	.news-cover :global(.news-img) {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.news-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		padding: 1.25rem 1.25rem 1.5rem;
+	}
+
+	.news-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		line-height: 1;
+	}
+
+	.news-stamp {
+		margin-left: 0;
+	}
+
+	.news-hash {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-mist);
+	}
+
+	.news-title {
+		margin-top: 0.875rem;
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		line-height: 1.2;
+		color: #fff;
+		overflow-wrap: anywhere;
+	}
+
+	.news-summary {
+		margin-top: 0.625rem;
+		max-width: 60ch;
+		color: var(--color-mist);
+	}
+
+	.news-more {
+		margin-top: auto;
+		padding-top: 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-mist);
+		overflow-wrap: anywhere;
+	}
+
+	.news-more span {
+		color: var(--color-sky);
+	}
+
+	.news-card:hover .news-title,
+	.news-card:has(a:focus-visible) .news-title {
+		text-decoration: underline;
+		text-decoration-color: var(--color-sky);
+		text-decoration-thickness: 2px;
+		text-underline-offset: 0.25em;
+	}
+
+	/* Feature: cover on top. */
+	.news-card-feature .news-cover {
+		aspect-ratio: 3 / 2;
+	}
+
+	@media (min-width: 40rem) {
+		.news-card-feature .news-title {
+			font-size: 1.5rem;
+		}
+
+		.news-text {
+			padding: 1.5rem 1.5rem 1.75rem;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		/* The home can ask for a shorter cover when the card stands beside a stack of rows. */
+		.news-card-feature .news-cover {
+			aspect-ratio: var(--cover-ratio, 3 / 2);
+		}
+
+		.news-card-feature .news-title {
+			font-size: 1.75rem;
+		}
+
+		.news-card-wide {
+			flex-direction: row;
+		}
+
+		.news-card-wide .news-cover {
+			flex: 0 0 55%;
+			aspect-ratio: auto;
+		}
+
+		.news-card-wide .news-title {
+			font-size: 2.25rem;
+		}
+
+		.news-card-wide .news-summary {
+			font-size: 1.125rem;
+		}
+	}
+
+	/* Row: thumbnail beside the text; summary kept to a few lines so a long list stays scannable. */
+	.news-card-row.has-cover {
+		display: grid;
+		grid-template-columns: 6.5rem minmax(0, 1fr);
+	}
+
+	.news-card-row .news-cover {
+		height: 100%;
+		min-height: 6.5rem;
+	}
+
+	.news-card-row .news-text {
+		padding: 1rem;
+	}
+
+	.news-card-row .news-summary {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		overflow: hidden;
+	}
+
+	@media (min-width: 40rem) {
+		.news-card-row.has-cover {
+			grid-template-columns: 10rem minmax(0, 1fr);
+		}
+
+		.news-card-row .news-text {
+			padding: 1.25rem 1.25rem 1.5rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.news-cover :global(.news-img) {
+			transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		.news-card:hover .news-cover :global(.news-img) {
+			transform: scale(1.03);
+		}
+	}
+</style>
