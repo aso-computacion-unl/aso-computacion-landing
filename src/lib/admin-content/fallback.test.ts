@@ -52,6 +52,12 @@ describe('src/data/fallback.json', () => {
 		for (const member of fallback.board) expect(Object.keys(member).sort()).toEqual(['name', 'photo', 'role']);
 	});
 
+	it('carries no news: the fallback has nothing published to show', () => {
+		expect(fallback.news).toEqual([]);
+		if (!parsed.ok) throw new Error(parsed.reason);
+		expect(parsed.content.news).toEqual([]);
+	});
+
 	it('leaves the site copy to the landing (settings null)', () => {
 		expect(fallback.settings).toBeNull();
 	});

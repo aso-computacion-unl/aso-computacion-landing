@@ -9,6 +9,8 @@ import {
 	type PublicEvent,
 	type PublicFaq,
 	type PublicImage,
+	type PublicNewsCover,
+	type PublicNewsItem,
 	type PublicPillar,
 	type PublicSiteSettings,
 	type PublicSocial,
@@ -44,6 +46,12 @@ const LIMIT = {
 	alt: 400,
 	url: 2048,
 	generatedAt: 64,
+	// News follow the admin's contract (S6) exactly.
+	newsTitle: 120,
+	newsSummary: 280,
+	newsBody: 10_000,
+	newsAlt: 200,
+	newsSlug: 100,
 } as const;
 
 const COUNT = {
@@ -51,6 +59,7 @@ const COUNT = {
 	photos: 12, // per event, the admin's own cap
 	highlights: 16,
 	others: 50, // FAQs, pillars, socials, board
+	news: 200,
 } as const;
 
 const text = (value: unknown, path: string, max: number): string => {
@@ -92,6 +101,14 @@ const calendarDate = (value: unknown, path: string): string => {
 	return fail(path, 'expected a calendar date (YYYY-MM-DD)');
 };
 
+// The slug is a URL path segment (/novedades/<slug>), so it is held to lowercase words joined by single hyphens.
+const NEWS_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const newsSlug = (value: unknown, path: string): string => {
+	const slug = text(value, path, LIMIT.newsSlug);
+	return NEWS_SLUG.test(slug) ? slug : fail(path, 'expected lowercase letters and digits joined by single hyphens');
+};
+
 const datePrecision = (value: unknown, path: string): DatePrecision =>
 	(datePrecisions as readonly unknown[]).includes(value) ? (value as DatePrecision) : fail(path, `expected one of ${datePrecisions.join(', ')}`);
 
@@ -128,6 +145,28 @@ const readers = (options: ParseOptions) => {
 			width: dimension(raw.width, `${path}.width`),
 			height: dimension(raw.height, `${path}.height`),
 			alt: text(raw.alt, `${path}.alt`, LIMIT.alt),
+		};
+	};
+
+	const readNewsCover = (value: unknown, path: string): PublicNewsCover => {
+		const raw = object(value, path);
+		return {
+			url: imageUrl(raw.url, `${path}.url`),
+			width: dimension(raw.width, `${path}.width`),
+			height: dimension(raw.height, `${path}.height`),
+			alt: nonEmpty(raw.alt, `${path}.alt`, LIMIT.newsAlt),
+		};
+	};
+
+	const readNewsItem = (value: unknown, path: string): PublicNewsItem => {
+		const raw = object(value, path);
+		return {
+			slug: newsSlug(raw.slug, `${path}.slug`),
+			title: nonEmpty(raw.title, `${path}.title`, LIMIT.newsTitle),
+			summary: nonEmpty(raw.summary, `${path}.summary`, LIMIT.newsSummary),
+			body: nonEmpty(raw.body, `${path}.body`, LIMIT.newsBody),
+			publishedAt: calendarDate(raw.publishedAt, `${path}.publishedAt`),
+			cover: nullable(raw.cover, `${path}.cover`, readNewsCover),
 		};
 	};
 
@@ -204,7 +243,17 @@ const readers = (options: ParseOptions) => {
 		};
 	};
 
-	return { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings };
+	return { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings, readNewsItem };
+};
+
+// Two items with one slug would be two pages at one URL.
+const uniqueSlugs = (items: PublicNewsItem[]): PublicNewsItem[] => {
+	const seen = new Set<string>();
+	items.forEach((item, index) => {
+		if (seen.has(item.slug)) fail(`news[${index}].slug`, `duplicate slug "${item.slug}"`);
+		seen.add(item.slug);
+	});
+	return items;
 };
 
 // Validates an untrusted payload against the version 1 shape and returns a clean copy with only the documented keys.
@@ -215,7 +264,7 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 		if (root.version !== PUBLIC_CONTENT_VERSION) {
 			fail('version', `unsupported version ${JSON.stringify(root.version)} (this landing reads version ${PUBLIC_CONTENT_VERSION})`);
 		}
-		const { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings } = readers(options);
+		const { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings, readNewsItem } = readers(options);
 		return {
 			ok: true,
 			content: {
@@ -227,6 +276,8 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 				socials: list(root.socials, 'socials', COUNT.others, readSocial),
 				board: list(root.board, 'board', COUNT.others, readMember),
 				settings: nullable(root.settings, 'settings', readSettings),
+				// Added after version 1 shipped: an admin that does not send it yet has no news.
+				news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
 			},
 		};
 	} catch (error) {

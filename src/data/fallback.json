@@ -114,5 +114,6 @@
       "photo": { "url": "/src/assets/team/melissa-contento.jpg", "width": 1086, "height": 1448, "alt": "Foto de Melissa Contento" }
     }
   ],
-  "settings": null
+  "settings": null,
+  "news": []
 }

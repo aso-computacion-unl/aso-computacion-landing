@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadPublicContent } from './load';
-import { payload } from './test-fixtures';
+import { newsItem, payload } from './test-fixtures';
 
 const URL_OK = 'https://admin.example.test/api/public/content';
 const fallback = payload({ events: [], faqs: [], settings: null });
@@ -24,6 +24,24 @@ describe('loadPublicContent', () => {
 		expect(result.content).toEqual(api);
 		expect(warn).not.toHaveBeenCalled();
 		expect(fetchMock.mock.calls.filter(([url]) => url === URL_OK)).toHaveLength(1);
+	});
+
+	it('reads the news of the API, and a response without `news` (an admin that does not send it yet) as none', async () => {
+		const news = [newsItem()];
+		const withNews = await setup({ fetch: respond(payload({ news })) as unknown as typeof fetch }).run();
+		expect(withNews).toMatchObject({ source: 'api', content: { news } });
+
+		const { news: _news, ...legacy } = payload();
+		const { run, warn } = setup({ fetch: respond(legacy) as unknown as typeof fetch });
+		expect(await run()).toMatchObject({ source: 'api', content: { news: [] } });
+		expect(warn).not.toHaveBeenCalled();
+	});
+
+	it('falls back, without failing, when a news item is invalid', async () => {
+		const { run, warn } = setup({ fetch: respond(payload({ news: [newsItem({ publishedAt: 'ayer' })] })) as unknown as typeof fetch });
+		expect(await run()).toMatchObject({ source: 'fallback', content: fallback });
+		expect(warn).toHaveBeenCalledTimes(1);
+		expect(warn.mock.calls[0][0]).toMatch(/news\[0\]\.publishedAt/);
 	});
 
 	it('uses the fallback and warns once when ADMIN_CONTENT_URL is unset or blank', async () => {

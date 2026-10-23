@@ -71,6 +71,24 @@ export interface PublicSiteSettings {
 	about: string;
 }
 
+// A published news item. `body` is a small Markdown subset (paragraphs, **bold**, *italic*, [links](https://...),
+// `- ` lists) that markdown.ts renders without ever emitting raw HTML.
+export interface PublicNewsItem {
+	// Lowercase words joined by hyphens: it becomes the URL /novedades/<slug>.
+	slug: string;
+	title: string;
+	summary: string;
+	body: string;
+	// YYYY-MM-DD.
+	publishedAt: string;
+	cover: PublicNewsCover | null;
+}
+
+export interface PublicNewsCover extends PublicImage {
+	// Unlike the other images, a cover always has alt text.
+	alt: string;
+}
+
 export interface PublicContent {
 	version: typeof PUBLIC_CONTENT_VERSION;
 	generatedAt: string;
@@ -81,4 +99,6 @@ export interface PublicContent {
 	board: PublicBoardMember[];
 	// null until the admin saves the settings once: the landing keeps its own copy.
 	settings: PublicSiteSettings | null;
+	// Newest first. Added after version 1 shipped: a payload without it is read as [].
+	news: PublicNewsItem[];
 }
