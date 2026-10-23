@@ -1,0 +1,53 @@
+---
+// One photo, two delivery paths. A bundled image (fallback content, demo placeholders) goes through Astro's image
+// pipeline. A remote one (admin content) is a plain <img> that asks Cloudinary for a resized copy, so no remote image is
+// ever downloaded at build time and none can fail the build.
+import { Image } from 'astro:assets';
+import { remoteImageAttrs } from '../lib/admin-content/cloudinary';
+import { isRemote } from '../lib/admin-content/map';
+import type { Photo } from '../lib/admin-content/model';
+
+interface Props {
+	photo: Photo;
+	// Size Astro renders a bundled image at. A remote image keeps the width and height the admin reported.
+	box: { width: number; height: number };
+	widths?: number[];
+	sizes?: string;
+	// Overrides the photo's own alt (the decorative collage passes an empty one).
+	alt?: string;
+	// Only meaningful for bundled images; the crop of a remote one is done in CSS (object-fit).
+	fit?: 'cover';
+	position?: string;
+	class?: string;
+	// Nothing on the page is above the fold today; pass "eager" if a photo ever is.
+	loading?: 'lazy' | 'eager';
+}
+
+const { photo, box, widths, sizes, alt = photo.alt, fit, position, class: className, loading = 'lazy' } = Astro.props;
+---
+
+{
+	isRemote(photo) ? (
+		<img
+			{...remoteImageAttrs(photo, widths ?? [box.width])}
+			sizes={sizes}
+			alt={alt}
+			loading={loading}
+			decoding={loading === 'lazy' ? 'async' : undefined}
+			class={className}
+		/>
+	) : (
+		<Image
+			src={photo.src}
+			alt={alt}
+			width={box.width}
+			height={box.height}
+			widths={widths}
+			sizes={sizes}
+			fit={fit}
+			position={position}
+			loading={loading}
+			class={className}
+		/>
+	)
+}

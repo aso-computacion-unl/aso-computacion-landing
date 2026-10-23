@@ -1,7 +1,7 @@
 // Events -> timeline entries. The kind of an entry comes from its date, never from a stored flag.
 import type { TimelineEntry, TimelineKind } from './model';
 import { slugify, toPhoto, type MapContext } from './map';
-import type { PublicEvent } from './types';
+import type { DatePrecision, PublicEvent } from './types';
 
 const TIME_ZONE = 'America/Guayaquil';
 
@@ -10,26 +10,32 @@ export const todayInEcuador = (now: Date): string =>
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-// "2026-04-14" -> "14 abr 2026" (the chip format the landing has always used).
-export const formatStamp = (date: string): string => {
+// "2026-04-14" -> "14 abr 2026" (the chip format the landing has always used); month precision -> "abr 2026".
+export const formatStamp = (date: string, precision: DatePrecision = 'day'): string => {
 	const [year, month, day] = date.split('-').map(Number);
-	return `${day} ${MONTHS[month - 1]} ${year}`;
+	return precision === 'month' ? `${MONTHS[month - 1]} ${year}` : `${day} ${MONTHS[month - 1]} ${year}`;
 };
+
+// What orders and classifies an event: its date, or the first of the month when only the month is confirmed.
+const orderingDate = <T extends { date?: string | null; datePrecision?: DatePrecision }>(item: T): string | null | undefined =>
+	item.date && item.datePrecision === 'month' ? `${item.date.slice(0, 7)}-01` : item.date;
 
 // upcoming: dated today or later. merge: a past event that lists highlights (drawn as a feature branch).
 // commit: everything else, including undated events (the API puts those last).
 export const eventKind = (event: PublicEvent, today: string): TimelineKind => {
-	if (event.date !== null && event.date >= today) return 'upcoming';
+	const date = orderingDate(event);
+	if (date && date >= today) return 'upcoming';
 	return event.highlights.length > 0 ? 'merge' : 'commit';
 };
 
 // `git log` order: newest first, undated last. Stable, so ties keep the API order.
-export const sortEvents = <T extends { date?: string | null }>(events: readonly T[]): T[] =>
+export const sortEvents = <T extends { date?: string | null; datePrecision?: DatePrecision }>(events: readonly T[]): T[] =>
 	[...events].sort((a, b) => {
-		if (!a.date && !b.date) return 0;
-		if (!a.date) return 1;
-		if (!b.date) return -1;
-		return b.date.localeCompare(a.date);
+		const [dateA, dateB] = [orderingDate(a), orderingDate(b)];
+		if (!dateA && !dateB) return 0;
+		if (!dateA) return 1;
+		if (!dateB) return -1;
+		return dateB.localeCompare(dateA);
 	});
 
 const branchIds = (highlights: readonly string[]) => {
@@ -55,7 +61,11 @@ export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEn
 		kind,
 		title: event.title,
 		featured: event.featured,
-		...(event.date ? { stamp: formatStamp(event.date), date: event.date } : {}),
+		...(event.date
+			? event.datePrecision === 'month'
+				? { stamp: formatStamp(event.date, 'month'), date: orderingDate(event) ?? event.date, datePrecision: 'month' as const }
+				: { stamp: formatStamp(event.date), date: event.date }
+			: {}),
 		...(event.description ? { description: event.description } : {}),
 		...(event.type ? { type: event.type } : {}),
 		...(event.commitMessage ? { msg: event.commitMessage } : {}),

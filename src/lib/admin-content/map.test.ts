@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { siInstagram } from 'simple-icons';
 import type { ImageMetadata } from 'astro';
-import { countWord, faqTopic, imageProps, slugify, toBoard, toFaqItems, toPhoto, toPillars, toSite, toSocials } from './map';
+import { countWord, faqTopic, slugify, toBoard, toFaqItems, toPhoto, toPillars, toSite, toSocials } from './map';
 import { platformIcon } from './platform-icons';
 import { image, payload } from './test-fixtures';
 
@@ -21,15 +21,6 @@ describe('toPhoto', () => {
 
 	it('fails loudly on a bundled image that does not exist', () => {
 		expect(() => toPhoto(image({ url: '/src/assets/team/missing.jpg' }), ctx)).toThrow(/missing\.jpg/);
-	});
-});
-
-describe('imageProps', () => {
-	it('uses the box the component asks for on bundled images and the API dimensions on remote ones', () => {
-		const bundled = imageProps({ src: local('/a.jpg'), alt: 'a' }, { width: 720, height: 360 });
-		expect(bundled).toMatchObject({ width: 720, height: 360, alt: 'a' });
-		const remote = imageProps({ src: 'https://res.cloudinary.com/x/1.jpg', width: 1600, height: 900, alt: 'b' }, { width: 720, height: 360 });
-		expect(remote).toEqual({ src: 'https://res.cloudinary.com/x/1.jpg', width: 1600, height: 900, alt: 'b' });
 	});
 });
 

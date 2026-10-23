@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import fallback from '../../data/fallback.json';
+import { toTimelineEntry } from './timeline';
 import { parsePublicContent } from './validate';
 
 const root = resolve(import.meta.dirname, '../../..');
@@ -37,6 +38,14 @@ describe('src/data/fallback.json', () => {
 
 	it('holds real content only: no demo assets or placeholder photos', () => {
 		expect(JSON.stringify(fallback)).not.toMatch(/assets\/demo|ejemplo|demo/i);
+	});
+
+	it('keeps the Semana del Estudiante as a month-only event, shown as "feb 2026"', () => {
+		if (!parsed.ok) throw new Error(parsed.reason);
+		const semana = parsed.content.events.find((event) => event.slug === 'semana-del-estudiante-2026');
+		expect(semana?.datePrecision).toBe('month');
+		const entry = toTimelineEntry(semana!, { today: '2026-10-22', resolveLocal: () => undefined });
+		expect(entry).toMatchObject({ stamp: 'feb 2026', kind: 'merge' });
 	});
 
 	it('keeps the board to name, role and photo (S4)', () => {

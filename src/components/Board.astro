@@ -1,7 +1,7 @@
 ---
-import { Image } from 'astro:assets';
+import Photo from './Photo.astro';
+import { isRemote } from '../lib/admin-content/map';
 import { team } from '../data/content';
-import { imageProps, isRemote } from '../lib/admin-content/map';
 import SectionHead from './SectionHead.astro';
 
 // Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
@@ -51,9 +51,11 @@ const handle = (name: string) =>
 				team.map((member, index) => (
 					<li class:list={['member', layout[index] ?? extraLayout]} tabindex="0" data-member>
 						<div class="duo portrait">
-							<Image
-								{...imageProps(member.photo, { width: index < 2 ? 960 : 480, height: index < 2 ? 720 : 640 })}
-								{...(isRemote(member.photo) ? { widths: [480, 960], sizes: index < 2 ? '(min-width: 1024px) 28rem, 50vw' : '(min-width: 1024px) 14rem, 50vw' } : {})}
+							<Photo
+								photo={member.photo}
+								box={{ width: index < 2 ? 960 : 480, height: index < 2 ? 720 : 640 }}
+								widths={isRemote(member.photo) ? [480, 960] : undefined}
+								sizes={isRemote(member.photo) ? (index < 2 ? '(min-width: 1024px) 28rem, 50vw' : '(min-width: 1024px) 14rem, 50vw') : undefined}
 								fit="cover"
 								position="top"
 								loading="lazy"

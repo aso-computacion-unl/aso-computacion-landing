@@ -50,13 +50,6 @@ export const toPhoto = (image: PublicImage, ctx: MapContext): Photo => {
 
 export const isRemote = (photo: Photo): photo is Extract<Photo, { src: string }> => typeof photo.src === 'string';
 
-// Props for Astro's <Image>. Bundled images take the box the component asks for; remote ones use the width and
-// height the admin reported, so Astro never has to download an image just to measure it.
-export const imageProps = (photo: Photo, box: { width: number; height: number }) =>
-	isRemote(photo)
-		? { src: photo.src, alt: photo.alt, width: photo.width, height: photo.height }
-		: { src: photo.src, alt: photo.alt, width: box.width, height: box.height };
-
 export const toFaqItems = (faqs: readonly PublicFaq[]): FaqItem[] =>
 	faqs.map((faq) => ({ topic: faqTopic(faq.question), q: faq.question, a: faq.answer }));
 

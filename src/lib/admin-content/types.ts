@@ -6,6 +6,11 @@ export const PUBLIC_CONTENT_VERSION = 1;
 export const eventTypes = ['taller', 'charla', 'evento', 'comunidad'] as const;
 export type EventType = (typeof eventTypes)[number];
 
+// How much of an event's `date` is real. "month" means only the month is confirmed: the day in `date` is a placeholder.
+// Absent in older payloads, which `parsePublicContent` reads as "day".
+export const datePrecisions = ['day', 'month'] as const;
+export type DatePrecision = (typeof datePrecisions)[number];
+
 export interface PublicImage {
 	url: string;
 	width: number;
@@ -19,6 +24,7 @@ export interface PublicEvent {
 	description: string | null;
 	// YYYY-MM-DD. A date on or after today is an upcoming event.
 	date: string | null;
+	datePrecision: DatePrecision;
 	type: EventType | null;
 	commitMessage: string | null;
 	hora: string | null;

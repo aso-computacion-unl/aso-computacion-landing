@@ -58,26 +58,76 @@ describe('parsePublicContent', () => {
 		expect(reason(payload({ events: [{ ...event, slug: '' }] }))).toContain('slug');
 	});
 
+	describe('datePrecision (month-only dates, additive to version 1)', () => {
+		const event = payload().events[0];
+		const { datePrecision: _datePrecision, ...legacy } = event;
+
+		it('defaults to "day" when the payload does not carry it (an older admin stays valid)', () => {
+			expect(ok(payload({ events: [legacy as never] })).events[0].datePrecision).toBe('day');
+		});
+
+		it('accepts "day" and "month"', () => {
+			expect(ok(payload({ events: [{ ...event, datePrecision: 'month' }] })).events[0].datePrecision).toBe('month');
+			expect(ok(payload({ events: [{ ...event, datePrecision: 'day' }] })).events[0].datePrecision).toBe('day');
+		});
+
+		it('rejects any other value, null included', () => {
+			for (const datePrecision of ['year', 'Month', 'DAY', '', null, 1, true]) {
+				expect(reason(payload({ events: [{ ...event, datePrecision: datePrecision as never }] })), String(datePrecision)).toContain('datePrecision');
+			}
+		});
+
+		it('keeps a month-precision event without a date valid (the chip is simply omitted)', () => {
+			expect(ok(payload({ events: [{ ...event, date: null, datePrecision: 'month' }] })).events[0]).toMatchObject({ date: null, datePrecision: 'month' });
+		});
+	});
+
 	it('accepts null optional event fields', () => {
 		const event = payload().events[0];
 		const nulls = { description: null, date: null, type: null, commitMessage: null, hora: null, lugar: null, para: null, linkUrl: null, linkLabel: null };
 		expect(ok(payload({ events: [{ ...event, ...nulls, photos: [] }] })).events[0]).toMatchObject(nulls);
 	});
 
-	it('only lets http(s) URLs through into links', () => {
+	it('only lets https URLs through into links', () => {
 		const event = payload().events[0];
-		expect(reason(payload({ events: [{ ...event, linkUrl: 'javascript:alert(1)' }] }))).toContain('linkUrl');
+		for (const linkUrl of ['javascript:alert(1)', 'http://example.com/inscripcion']) {
+			expect(reason(payload({ events: [{ ...event, linkUrl }] }))).toContain('linkUrl');
+		}
 		const social = payload().socials[0];
-		expect(reason(payload({ socials: [{ ...social, url: 'javascript:alert(1)' }] }))).toContain('url');
+		for (const url of ['javascript:alert(1)', 'http://www.instagram.com/aso/']) {
+			expect(reason(payload({ socials: [{ ...social, url }] }))).toContain('url');
+		}
+		expect(ok(payload({ events: [{ ...event, linkUrl: 'https://example.com/ok' }] })).events[0].linkUrl).toBe('https://example.com/ok');
 	});
 
-	it('requires https for image URLs and positive integer dimensions', () => {
+	it('requires a Cloudinary image URL and positive integer dimensions', () => {
 		const event = payload().events[0];
-		expect(reason(payload({ events: [{ ...event, photos: [image({ url: 'http://x.test/a.jpg' })] }] }))).toContain('url');
+		expect(reason(payload({ events: [{ ...event, photos: [image({ url: 'http://res.cloudinary.com/demo/image/upload/v1/a.jpg' })] }] }))).toContain('url');
 		expect(reason(payload({ events: [{ ...event, photos: [image({ url: '/src/assets/team/a.jpg' })] }] }))).toContain('url');
 		expect(reason(payload({ events: [{ ...event, photos: [image({ width: 0 })] }] }))).toContain('width');
 		expect(reason(payload({ events: [{ ...event, photos: [image({ height: 10.5 })] }] }))).toContain('height');
 		expect(reason(payload({ board: [{ name: 'A', role: 'B', photo: image({ alt: undefined as never }) }] }))).toContain('alt');
+	});
+
+	it('rejects an image that is not an image upload on res.cloudinary.com, wherever it appears', () => {
+		const event = payload().events[0];
+		const member = payload().board[0];
+		const pillar = payload().pillars[0];
+		for (const url of [
+			'https://images.example.com/image/upload/v1/a.jpg',
+			'https://res.cloudinary.com.evil.test/demo/image/upload/v1/a.jpg',
+			'https://evil.test/res.cloudinary.com/demo/image/upload/v1/a.jpg',
+			'https://res.cloudinary.com/demo/video/upload/v1/dog.mp4',
+			'https://res.cloudinary.com/demo/raw/upload/v1/a.json',
+			'https://res.cloudinary.com/demo/image/fetch/https://evil.test/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/',
+			'https://res.cloudinary.com//image/upload/v1/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/a b.jpg',
+		]) {
+			expect(reason(payload({ events: [{ ...event, photos: [image({ url })] }] })), url).toContain('url');
+			expect(reason(payload({ board: [{ ...member, photo: image({ url }) }] })), url).toContain('url');
+			expect(reason(payload({ pillars: [{ ...pillar, image: image({ url }) }] })), url).toContain('url');
+		}
 	});
 
 	it('accepts local asset references only when allowLocalImages is set (the committed fallback)', () => {
@@ -86,6 +136,99 @@ describe('parsePublicContent', () => {
 		expect(ok(local, { allowLocalImages: true }).board[0].photo.url).toBe('/src/assets/team/a.jpg');
 		const traversal = payload({ board: [{ name: 'A', role: 'B', photo: image({ url: '/src/assets/../../.env' }) }] });
 		expect(reason(traversal, { allowLocalImages: true })).toContain('url');
+		const foreign = payload({ board: [{ name: 'A', role: 'B', photo: image({ url: 'https://evil.test/a.jpg' }) }] });
+		expect(reason(foreign, { allowLocalImages: true })).toContain('url');
+	});
+
+	it('rejects stored Cloudinary transformations: only an optional version and comma-free segments follow /image/upload/', () => {
+		const event = payload().events[0];
+		const photoWith = (url: string) => payload({ events: [{ ...event, photos: [image({ url })] }] });
+		for (const url of [
+			'https://res.cloudinary.com/demo/image/upload/c_fill,w_100/v99/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/c_fill,w_100/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/w_100,h_50/a.jpg',
+		]) {
+			expect(reason(photoWith(url)), url).toContain('url');
+		}
+		for (const url of [
+			'https://res.cloudinary.com/demo/image/upload/v1712345/aso/eventos/foto%20uno.jpg',
+			'https://res.cloudinary.com/demo/image/upload/aso/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/a.jpg',
+		]) {
+			expect(ok(photoWith(url)).events[0].photos[0].url, url).toBe(url);
+		}
+	});
+
+	it('rejects dot segments, encoded dots, query strings and fragments anywhere in the image path', () => {
+		const event = payload().events[0];
+		const photoWith = (url: string) => payload({ events: [{ ...event, photos: [image({ url })] }] });
+		const base = 'https://res.cloudinary.com/demo/image/upload/';
+		const cases: Record<string, string[]> = {
+			'..': [`${base}v1/../../video/upload/a.mp4`, `${base}../other/image/upload/a.jpg`, `${base}v1/a/..`],
+			'%2e': [`${base}v1/%2e%2e/a.jpg`, `${base}v1/%2e./a.jpg`, `${base}v1/.%2e/a.jpg`],
+			'%2E': [`${base}v1/%2E%2E/a.jpg`, `${base}v1/a/%2E%2e/b.jpg`],
+			'?': [`${base}v1/a.jpg?x=1`, `${base}v1/a?b/c.jpg`],
+			'#': [`${base}v1/a.jpg#frag`, `${base}v1/a#b/c.jpg`],
+		};
+		for (const [label, urls] of Object.entries(cases)) {
+			for (const url of urls) expect(reason(photoWith(url)), `${label} ${url}`).toContain('url');
+		}
+	});
+
+	it('caps image width and height at 10000 positive integers', () => {
+		const event = payload().events[0];
+		const photoWith = (overrides: Parameters<typeof image>[0]) => payload({ events: [{ ...event, photos: [image(overrides)] }] });
+		for (const value of [1e21, 10001, Infinity, NaN, 1.5, 0, -5]) {
+			expect(reason(photoWith({ width: value })), `width ${value}`).toContain('width');
+			expect(reason(photoWith({ height: value })), `height ${value}`).toContain('height');
+		}
+		const photo = ok(photoWith({ width: 10000, height: 10000 })).events[0].photos[0];
+		expect([photo.width, photo.height]).toEqual([10000, 10000]);
+	});
+
+	describe('size caps (a hostile or buggy payload cannot bloat the page)', () => {
+		const long = (length: number) => 'x'.repeat(length);
+		const event = payload().events[0];
+
+		it('rejects strings far beyond the admin limits', () => {
+			expect(reason(payload({ faqs: [{ question: '¿Q?', answer: long(5_000_000) }] }))).toContain('answer');
+			expect(reason(payload({ faqs: [{ question: long(1_000), answer: 'a' }] }))).toContain('question');
+			expect(reason(payload({ events: [{ ...event, title: long(1_000) }] }))).toContain('title');
+			expect(reason(payload({ events: [{ ...event, description: long(10_000) }] }))).toContain('description');
+			expect(reason(payload({ events: [{ ...event, highlights: [long(1_000)] }] }))).toContain('highlights');
+			expect(reason(payload({ events: [{ ...event, photos: [image({ alt: long(5_000) })] }] }))).toContain('alt');
+			expect(reason(payload({ board: [{ name: long(1_000), role: 'r', photo: image() }] }))).toContain('name');
+			expect(reason(payload({ socials: [{ ...payload().socials[0], handle: long(1_000) }] }))).toContain('handle');
+			expect(reason(payload({ settings: { tagline: 't', description: 'd', about: long(10_000) } }))).toContain('about');
+			expect(reason(payload({ events: [{ ...event, linkUrl: `https://example.com/${long(5_000)}` }] }))).toContain('linkUrl');
+		});
+
+		it('still accepts the admin maximums', () => {
+			const content = ok(
+				payload({
+					faqs: [{ question: long(200), answer: long(1000) }],
+					events: [{ ...event, title: long(120), description: long(600), highlights: Array(8).fill(long(80)), photos: Array(12).fill(image({ alt: long(200) })) }],
+					settings: { tagline: long(120), description: long(300), about: long(600) },
+				}),
+			);
+			expect(content.faqs[0].answer).toHaveLength(1000);
+			expect(content.events[0].photos).toHaveLength(12);
+		});
+
+		it('rejects arrays beyond the caps', () => {
+			expect(reason(payload({ events: Array(101).fill(event) }))).toContain('events');
+			expect(reason(payload({ events: [{ ...event, photos: Array(13).fill(image()) }] }))).toContain('photos');
+			expect(reason(payload({ events: [{ ...event, highlights: Array(17).fill('h') }] }))).toContain('highlights');
+			expect(reason(payload({ faqs: Array(51).fill(payload().faqs[0]) }))).toContain('faqs');
+			expect(reason(payload({ pillars: Array(51).fill(payload().pillars[0]) }))).toContain('pillars');
+			expect(reason(payload({ socials: Array(51).fill(payload().socials[0]) }))).toContain('socials');
+			expect(reason(payload({ board: Array(51).fill(payload().board[0]) }))).toContain('board');
+		});
+
+		it('accepts arrays at the caps', () => {
+			expect(ok(payload({ events: Array(100).fill(event) })).events).toHaveLength(100);
+			expect(ok(payload({ board: Array(50).fill(payload().board[0]) })).board).toHaveLength(50);
+		});
 	});
 
 	it('accepts a pillar without an image', () => {

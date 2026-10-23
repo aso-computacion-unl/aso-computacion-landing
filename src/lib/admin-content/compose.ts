@@ -71,8 +71,8 @@ export function composeSiteContent(options: {
 	const team = toBoard(content.board, ctx, withDemo ? baseline.demo.boardFun : {});
 	const timeline = [baseline.anchors.next, ...upcoming, headEntry(baseline.anchors.head, team.length), ...history, baseline.anchors.initial];
 
-	// Nearest dated upcoming entry: feeds the countdown panel and the "¡nuevo!" sticker.
-	const nextEvent = upcoming.filter((entry) => entry.date).reduce<TimelineEntry | undefined>((nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest), undefined);
+	// Nearest upcoming entry with a confirmed day: feeds the countdown panel and the "¡nuevo!" sticker. A month-only entry never claims a day.
+	const nextEvent = upcoming.filter((entry) => entry.date && entry.datePrecision !== 'month').reduce<TimelineEntry | undefined>((nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest), undefined);
 
 	const pillars = content.pillars.length > 0 || !withDemo ? toPillars(content.pillars, ctx) : baseline.demo.pillars;
 	const faqIsDemo = withDemo && content.faqs.length === 0 && baseline.demo.faqItems.length > 0;
