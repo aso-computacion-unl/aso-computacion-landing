@@ -68,6 +68,13 @@ describe('completeFaqCommand', () => {
 		expect(completeFaqCommand('cl', items)).toEqual(['clear']);
 	});
 
+	it('completes bare topics and the help aliases, the forms runFaqCommand accepts', () => {
+		expect(completeFaqCommand('cos', items)).toEqual(['costo']);
+		expect(completeFaqCommand('ay', items)).toEqual(['ayuda']);
+		expect(completeFaqCommand('l', items)).toEqual(['ls']);
+		expect(completeFaqCommand('c', items)).toEqual(['clear', 'costo', 'contacto']);
+	});
+
 	it('returns every candidate for an ambiguous prefix', () => {
 		expect(completeFaqCommand('git help co', items)).toEqual(['git help costo', 'git help contacto']);
 	});

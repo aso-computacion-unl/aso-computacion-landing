@@ -1848,9 +1848,8 @@
 		color: var(--color-mist);
 	}
 
-	/* The shell comes first on narrow screens so a tapped answer lands right above the list. */
+	/* DOM order (guide, then shell) is also the visual order at every width, so focus order matches what is seen. */
 	.faq-shell-window {
-		order: -1;
 		height: min(26rem, 62dvh);
 		/* Clears the sticky header when a tap scrolls the shell into view. */
 		scroll-margin-top: 5rem;
@@ -1859,7 +1858,6 @@
 	@media (min-width: 64rem) {
 		/* Size containment: the guide alone sets the row height and the shell scrolls inside it instead of growing. */
 		.faq-shell-window {
-			order: 0;
 			height: auto;
 			min-height: 30rem;
 			contain: size;

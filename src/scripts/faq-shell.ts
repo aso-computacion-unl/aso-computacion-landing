@@ -74,6 +74,7 @@ export const runFaqCommand = (input: string, items: readonly FaqEntry[]): FaqRes
 export const completeFaqCommand = (input: string, items: readonly FaqEntry[]): string[] => {
 	const prefix = input.replace(/^\s+/, '').replace(/\s+/g, ' ').toLowerCase();
 	if (prefix === '') return [];
-	const candidates = ['help', 'clear', ...items.map((item) => `git help ${item.topic}`)];
+	// Every form runFaqCommand accepts: the help aliases, clear, bare topics and `git help <topic>`.
+	const candidates = ['help', 'ayuda', 'ls', 'clear', ...items.map((item) => item.topic), ...items.map((item) => `git help ${item.topic}`)];
 	return candidates.filter((candidate) => candidate.startsWith(prefix) && candidate !== prefix);
 };
