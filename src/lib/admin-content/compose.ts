@@ -2,7 +2,8 @@
 // on the fallback path only, the demo placeholders. Pure: `now` and the bundled-image lookup are passed in.
 import type { LoadedContent } from './load';
 import { countWord, toBoard, toFaqItems, toPillars, toSite, toSocials, type MapContext } from './map';
-import type { BoardFun, FaqItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
+import type { BoardFun, FaqItem, NewsItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
+import { NEWS_PATH, latestNews, toNews } from './news';
 import { sortEvents, toTimelineEntry, todayInEcuador } from './timeline';
 
 // What the landing owns in code: its copy, the three structural timeline entries and the demo placeholders.
@@ -35,6 +36,9 @@ export interface SiteContent {
 	team: TeamMember[];
 	socials: Social[];
 	collage: Photo[];
+	// Every news item, newest first, and the few the home shows.
+	news: NewsItem[];
+	latestNews: NewsItem[];
 }
 
 export const COLLAGE_EVENT_PHOTOS = 12;
@@ -86,9 +90,11 @@ export function composeSiteContent(options: {
 		.slice(0, COLLAGE_EVENT_PHOTOS);
 	const collage = [...eventPhotos, ...(withDemo ? baseline.demo.collage : [])];
 
-	const hasContent: Record<string, boolean> = { '#faq': faqItems.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
+	const news = toNews(content.news, ctx);
+
+	const hasContent: Record<string, boolean> = { [NEWS_PATH]: news.length > 0, '#faq': faqItems.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
 	const navLinks = baseline.navLinks.filter((link) => hasContent[link.href] ?? true);
 
-	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, team, socials, collage };
+	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, team, socials, collage, news, latestNews: latestNews(news) };
 }
 

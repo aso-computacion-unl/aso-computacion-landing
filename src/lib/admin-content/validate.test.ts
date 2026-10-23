@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { image, payload } from './test-fixtures';
+import { image, newsItem, payload } from './test-fixtures';
 import { parsePublicContent } from './validate';
 
 const ok = (raw: unknown, options?: Parameters<typeof parsePublicContent>[1]) => {
@@ -271,5 +271,91 @@ describe('parsePublicContent', () => {
 		expect(content).toEqual(raw);
 		expect(content.events).toHaveLength(raw.events.length);
 		expect(content.faqs).toHaveLength(raw.faqs.length);
+	});
+});
+
+describe('parsePublicContent: news', () => {
+	const cover = newsItem().cover!;
+
+	it('reads a payload without `news` as an empty list (an admin that does not send it yet)', () => {
+		const { news: _news, ...withoutNews } = payload();
+		expect(ok(withoutNews).news).toEqual([]);
+	});
+
+	it('accepts valid items, with and without a cover, and keeps their order', () => {
+		const news = [newsItem(), newsItem({ slug: 'sin-portada', cover: null, publishedAt: '2026-09-01' })];
+		expect(ok(JSON.parse(JSON.stringify(payload({ news }))))).toEqual(payload({ news }));
+	});
+
+	it('rejects `news` that is not an array, including null', () => {
+		expect(reason({ ...payload(), news: {} })).toContain('news');
+		expect(reason({ ...payload(), news: null })).toContain('news');
+	});
+
+	it('drops keys outside the documented shape', () => {
+		const raw = { ...newsItem(), id: 7, draft: true, author: 'x', cover: { ...cover, publicId: 'secret' } };
+		const [item] = ok(payload({ news: [raw as never] })).news;
+		expect(Object.keys(item).sort()).toEqual(['body', 'cover', 'publishedAt', 'slug', 'summary', 'title']);
+		expect(Object.keys(item.cover!).sort()).toEqual(['alt', 'height', 'url', 'width']);
+	});
+
+	it('requires a URL-safe, unique slug', () => {
+		for (const slug of ['', 'Con Mayúsculas', 'a/b', '..', 'a_b', '-x', 'x-', 'a--b', 'x'.repeat(101)]) {
+			expect(reason(payload({ news: [newsItem({ slug })] })), slug).toContain('slug');
+		}
+		expect(reason(payload({ news: [newsItem(), newsItem({ title: 'Otro' })] }))).toContain('duplicate');
+	});
+
+	it('enforces the contract caps on text', () => {
+		expect(ok(payload({ news: [newsItem({ title: 'x'.repeat(120), summary: 'x'.repeat(280), body: 'x'.repeat(10_000) })] })).news).toHaveLength(1);
+		expect(reason(payload({ news: [newsItem({ title: 'x'.repeat(121) })] }))).toContain('title');
+		expect(reason(payload({ news: [newsItem({ summary: 'x'.repeat(281) })] }))).toContain('summary');
+		expect(reason(payload({ news: [newsItem({ body: 'x'.repeat(10_001) })] }))).toContain('body');
+		for (const key of ['title', 'summary', 'body'] as const) {
+			expect(reason(payload({ news: [newsItem({ [key]: '  ' })] })), key).toContain(key);
+			expect(reason(payload({ news: [newsItem({ [key]: 5 as never })] })), key).toContain(key);
+		}
+	});
+
+	it('caps the number of items', () => {
+		const many = (count: number) => Array.from({ length: count }, (_, index) => newsItem({ slug: `n-${index}` }));
+		expect(ok(payload({ news: many(200) })).news).toHaveLength(200);
+		expect(reason(payload({ news: many(201) }))).toContain('news');
+	});
+
+	it('requires publishedAt to be a real calendar date', () => {
+		for (const publishedAt of ['20/10/2026', '2026-02-31', '2026-10-20T10:00:00Z', '', null, 20261020]) {
+			expect(reason(payload({ news: [newsItem({ publishedAt: publishedAt as never })] })), String(publishedAt)).toContain('publishedAt');
+		}
+	});
+
+	it('restricts the cover exactly like the other admin images', () => {
+		const bad = [
+			'http://res.cloudinary.com/demo/image/upload/v1/a.jpg',
+			'https://evil.example/image/upload/v1/a.jpg',
+			'https://res.cloudinary.com/demo/video/upload/v1/a.mp4',
+			'https://res.cloudinary.com/demo/image/upload/c_fill,w_100/v1/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/../../video/upload/a.jpg',
+			'https://res.cloudinary.com/demo/image/upload/v1/a.jpg?x=1',
+			'/src/assets/team/ana.jpg',
+			'javascript:alert(1)',
+		];
+		for (const url of bad) expect(reason(payload({ news: [newsItem({ cover: { ...cover, url } })] })), url).toContain('cover.url');
+	});
+
+	it('accepts bundled covers only on the fallback path', () => {
+		const local = newsItem({ cover: { ...cover, url: '/src/assets/team/ana.jpg' } });
+		expect(ok(payload({ news: [local] }), { allowLocalImages: true }).news).toHaveLength(1);
+	});
+
+	it('bounds the cover dimensions and requires its alt text', () => {
+		for (const bad of [{ width: 0 }, { width: 10_001 }, { height: 1.5 }, { height: '800' }, { alt: '' }, { alt: 'x'.repeat(201) }, { alt: undefined }]) {
+			expect(reason(payload({ news: [newsItem({ cover: { ...cover, ...bad } as never })] })), JSON.stringify(bad)).toContain('cover');
+		}
+	});
+
+	it('treats an invalid item as an invalid payload, so the build falls back', () => {
+		const good = newsItem({ slug: 'bueno' });
+		expect(reason(payload({ news: [good, newsItem({ slug: 'malo', summary: '' })] }))).toContain('news[1].summary');
 	});
 });

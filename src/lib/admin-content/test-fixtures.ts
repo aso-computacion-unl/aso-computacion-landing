@@ -1,11 +1,21 @@
 // Test-only builders for the admin's public payload (shape: GET /api/public/content, version 1).
-import type { PublicContent, PublicImage } from './types';
+import type { PublicContent, PublicImage, PublicNewsItem } from './types';
 
 export const image = (overrides: Partial<PublicImage> = {}): PublicImage => ({
 	url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/photo.jpg',
 	width: 1200,
 	height: 800,
 	alt: 'Foto',
+	...overrides,
+});
+
+export const newsItem = (overrides: Partial<PublicNewsItem> = {}): PublicNewsItem => ({
+	slug: 'taller-de-git-2026',
+	title: 'Taller de Git 2026',
+	summary: 'Abrimos inscripciones para el taller de Git.',
+	body: 'Primer párrafo con **negrita**.\n\n- Uno\n- Dos',
+	publishedAt: '2026-10-20',
+	cover: { url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/news.jpg', width: 1200, height: 800, alt: 'Cartel del taller' },
 	...overrides,
 });
 
@@ -36,5 +46,6 @@ export const payload = (overrides: Partial<PublicContent> = {}): PublicContent =
 	socials: [{ platform: 'instagram', label: 'Instagram', handle: '@aso', url: 'https://www.instagram.com/aso/', note: null, blurb: null }],
 	board: [{ name: 'Ana Pérez', role: 'Presidenta', photo: image({ alt: 'Foto de Ana Pérez' }) }],
 	settings: { tagline: 'Tagline', description: 'Descripción', about: 'Acerca de' },
+	news: [],
 	...overrides,
 });

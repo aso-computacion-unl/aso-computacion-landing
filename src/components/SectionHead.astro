@@ -8,9 +8,12 @@ interface Props {
 	demo?: boolean;
 	// Heading colour for sections on a sky background.
 	tone?: 'default' | 'on-sky';
+	// 1 for a page's own heading (the news pages); sections of the home keep 2.
+	level?: 1 | 2;
 }
 
-const { eyebrow, title, lead, demo = false, tone = 'default' } = Astro.props;
+const { eyebrow, title, lead, demo = false, tone = 'default', level = 2 } = Astro.props;
+const Heading = level === 1 ? 'h1' : 'h2';
 const hasAside = Astro.slots.has('aside');
 ---
 
@@ -20,7 +23,7 @@ const hasAside = Astro.slots.has('aside');
 			<span>{eyebrow}</span>
 			{demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
 		</p>
-		<h2 class:list={['h2-xl', { 'text-navy': tone === 'on-sky' }]}>{title}</h2>
+		<Heading class:list={['h2-xl', { 'text-navy': tone === 'on-sky' }]}>{title}</Heading>
 		{lead && <p class="lead">{lead}</p>}
 	</div>
 	{hasAside && <div class="section-head-aside"><slot name="aside" /></div>}

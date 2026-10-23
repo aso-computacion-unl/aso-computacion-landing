@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { composeSiteContent, type Baseline } from './compose';
 import type { LoadedContent } from './load';
 import type { Photo } from './model';
-import { image, payload } from './test-fixtures';
+import { image, newsItem, payload } from './test-fixtures';
 
 const NOW = new Date('2026-10-22T15:00:00Z');
 const local = (path: string) => ({ src: path, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
@@ -14,6 +14,7 @@ const baseline: Baseline = {
 	site: { name: 'ASO', tagline: 'base tagline', headline: ['a'], headlineAccent: 0, heroCue: 'cue', description: 'base desc', about: 'base about' },
 	navLinks: [
 		{ label: 'Actividades', href: '#actividades' },
+		{ label: 'Novedades', href: '/novedades' },
 		{ label: 'Nosotros', href: '#nosotros' },
 		{ label: 'Directiva', href: '#directiva' },
 		{ label: 'FAQ', href: '#faq' },
@@ -147,6 +148,25 @@ describe('composeSiteContent: API path', () => {
 		const bare = compose(api(payload({ faqs: [], board: [], socials: [] })));
 		expect(bare.navLinks.map((l) => l.href)).toEqual(['#actividades', '#nosotros']);
 		expect(compose(api()).navLinks).toHaveLength(5);
+	});
+
+	it('lists news newest first, with the three latest for the home, and shows the nav link only when there are news', () => {
+		const news = ['2026-01-01', '2026-04-01', '2026-02-01', '2026-03-01'].map((publishedAt) => newsItem({ slug: `n-${publishedAt}`, publishedAt }));
+		const withNews = compose(api(payload({ news })));
+		expect(withNews.news.map((entry) => entry.date)).toEqual(['2026-04-01', '2026-03-01', '2026-02-01', '2026-01-01']);
+		expect(withNews.latestNews.map((entry) => entry.date)).toEqual(['2026-04-01', '2026-03-01', '2026-02-01']);
+		expect(withNews.navLinks.map((link) => link.href)).toEqual(['#actividades', '/novedades', '#nosotros', '#directiva', '#faq', '#redes']);
+
+		const without = compose(api());
+		expect(without.news).toEqual([]);
+		expect(without.latestNews).toEqual([]);
+		expect(without.navLinks.map((link) => link.href)).not.toContain('/novedades');
+	});
+
+	it('has no news on the fallback path: the demo placeholders never include any', () => {
+		const result = compose(fallback());
+		expect(result.news).toEqual([]);
+		expect(result.navLinks.map((link) => link.href)).not.toContain('/novedades');
 	});
 });
 

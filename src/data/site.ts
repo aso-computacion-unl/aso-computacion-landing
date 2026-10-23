@@ -86,6 +86,7 @@ export const demoPillars: Pillar[] = [
 
 export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Novedades', href: '/novedades' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
 	{ label: 'FAQ', href: '#faq' },

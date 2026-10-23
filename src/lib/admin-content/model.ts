@@ -56,6 +56,21 @@ export interface Pillar {
 	demo?: boolean;
 }
 
+export interface NewsItem {
+	slug: string;
+	// Site path of the item's own page.
+	href: string;
+	title: string;
+	summary: string;
+	// The Markdown subset as the admin sends it: render it with markdown.ts, never as HTML.
+	body: string;
+	// YYYY-MM-DD, for <time datetime> and ordering.
+	date: string;
+	// The date as the chips show it ("20 oct 2026").
+	stamp: string;
+	cover?: Photo;
+}
+
 export interface FaqItem {
 	// Slug shown as `git help <topic>`.
 	topic: string;

@@ -1,0 +1,67 @@
+---
+// A news body. The HTML comes from renderMarkdown, which escapes the whole text and emits only p, ul, li, strong, em and
+// https links, so set:html never receives anything the admin typed as markup.
+import { renderMarkdown } from '../lib/admin-content/markdown';
+
+interface Props {
+	body: string;
+}
+
+const html = renderMarkdown(Astro.props.body);
+---
+
+<div class="news-prose" set:html={html} />
+
+<style is:global>
+	.news-prose {
+		max-width: 68ch;
+		font-size: 1.125rem;
+		line-height: 1.7;
+		color: var(--color-mist);
+	}
+
+	.news-prose > * + * {
+		margin-top: 1.25rem;
+	}
+
+	.news-prose strong {
+		font-weight: 700;
+		color: #fff;
+	}
+
+	.news-prose a {
+		color: var(--color-sky);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 0.2em;
+		overflow-wrap: anywhere;
+	}
+
+	.news-prose a:hover {
+		color: #fff;
+	}
+
+	/* A short sky segment as the bullet, like the links of the activity graph. */
+	.news-prose ul {
+		list-style: none;
+	}
+
+	.news-prose li {
+		position: relative;
+		padding-left: 1.75rem;
+	}
+
+	.news-prose li + li {
+		margin-top: 0.5rem;
+	}
+
+	.news-prose li::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0.85em;
+		width: 1rem;
+		height: 2px;
+		background: var(--color-sky);
+	}
+</style>
