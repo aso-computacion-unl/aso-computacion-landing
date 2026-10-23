@@ -1,3 +1,5 @@
+import { completeFaqCommand, helpLines, runFaqCommand, type FaqEntry, type FaqLine } from './faq-shell';
+
 // Small interactions that work with or without motion: countdown, activity filters, board cards on touch.
 // Every one of them has a complete static fallback in the HTML.
 
@@ -76,4 +78,143 @@ if (history && rootNode && mainRail) {
 	window.addEventListener('load', fitRail);
 	document.fonts?.ready.then(fitRail);
 	new ResizeObserver(fitRail).observe(history);
+}
+
+// FAQ terminal: replaces the static <details> list with a small shell (help, git help <tema>, clear, history, Tab).
+// The <details> entries stay the single source of questions and answers, and the fallback without JS.
+const faqSection = document.querySelector<HTMLElement>('[data-faq]');
+const faqStatic = faqSection?.querySelector<HTMLElement>('[data-faq-static]');
+const faqTerm = faqSection?.querySelector<HTMLElement>('[data-faq-term]');
+const faqShell = faqSection?.querySelector<HTMLElement>('[data-faq-shell]');
+const faqOut = faqSection?.querySelector<HTMLElement>('[data-faq-out]');
+const faqForm = faqSection?.querySelector<HTMLFormElement>('[data-faq-form]');
+const faqInput = faqSection?.querySelector<HTMLInputElement>('[data-faq-input]');
+const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-entry]') ?? []).map((entry) => ({
+	topic: entry.dataset.topic ?? '',
+	q: entry.querySelector('[data-faq-q]')?.textContent?.trim() ?? '',
+	a: entry.querySelector('[data-faq-a]')?.textContent?.trim() ?? '',
+}));
+if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntries.length > 0) {
+	const MAX_LINES = 120;
+	const MAX_HISTORY = 50;
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+	const guideRows = Array.from(faqTerm.querySelectorAll<HTMLButtonElement>('.faq-guide-row'));
+	const typed: string[] = [];
+	let historyIndex: number | null = null;
+	let draft = '';
+
+	const line = (className: string, text = ''): HTMLDivElement => {
+		const element = document.createElement('div');
+		element.className = `term-line ${className}`;
+		element.textContent = text;
+		return element;
+	};
+
+	// Every value goes in through textContent: questions and answers come from the admin.
+	const render = (item: FaqLine): HTMLElement => {
+		if (item.tone !== 'topic') return line(`is-${item.tone}`, item.text);
+		const row = line('is-topic');
+		const run = document.createElement('button');
+		run.type = 'button';
+		run.className = 'term-run';
+		run.dataset.faqRun = item.text;
+		run.textContent = item.text;
+		const note = document.createElement('span');
+		note.className = 'term-note';
+		note.textContent = item.note ?? '';
+		row.append(run, note);
+		return row;
+	};
+
+	const echo = (command: string): HTMLElement => {
+		const row = line('is-in');
+		const sign = document.createElement('span');
+		sign.className = 'term-sign';
+		sign.textContent = 'aso@unl:~$';
+		row.append(sign, document.createTextNode(` ${command}`));
+		return row;
+	};
+
+	const append = (nodes: HTMLElement[]) => {
+		faqOut.append(...nodes);
+		while (faqOut.childElementCount > MAX_LINES) faqOut.firstElementChild?.remove();
+		faqOut.scrollTop = faqOut.scrollHeight;
+	};
+
+	const markCurrent = (command: string) => {
+		guideRows.forEach((row) => row.toggleAttribute('aria-current', row.dataset.faqRun === command.trim().toLowerCase()));
+	};
+
+	const run = (command: string) => {
+		const result = runFaqCommand(command, faqEntries);
+		if (command.trim() !== '') {
+			typed.push(command.trim());
+			if (typed.length > MAX_HISTORY) typed.shift();
+		}
+		historyIndex = null;
+		faqInput.value = '';
+		markCurrent(command);
+		if (result.kind === 'clear') {
+			faqOut.replaceChildren();
+			return;
+		}
+		append([echo(command.trim()), ...result.lines.map(render)]);
+	};
+
+	// The shell may sit below the guide on narrow screens: bring the answer into view after a tap.
+	const reveal = () => {
+		const box = faqShell.getBoundingClientRect();
+		if (box.top >= 0 && box.bottom <= window.innerHeight) return;
+		faqShell.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+	};
+
+	faqTerm.addEventListener('click', (event) => {
+		const button = (event.target as Element).closest<HTMLButtonElement>('[data-faq-run]');
+		if (!button?.dataset.faqRun) return;
+		run(button.dataset.faqRun);
+		reveal();
+	});
+
+	faqOut.addEventListener('click', (event) => {
+		if ((event.target as Element).closest('button') || window.getSelection()?.toString()) return;
+		faqInput.focus({ preventScroll: true });
+	});
+
+	faqForm.addEventListener('submit', (event) => {
+		event.preventDefault();
+		run(faqInput.value);
+	});
+
+	faqInput.addEventListener('keydown', (event) => {
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			if (typed.length === 0) return;
+			event.preventDefault();
+			if (event.key === 'ArrowUp') {
+				if (historyIndex === null) {
+					draft = faqInput.value;
+					historyIndex = typed.length - 1;
+				} else historyIndex = Math.max(0, historyIndex - 1);
+				faqInput.value = typed[historyIndex];
+			} else if (historyIndex !== null) {
+				historyIndex += 1;
+				if (historyIndex >= typed.length) {
+					historyIndex = null;
+					faqInput.value = draft;
+				} else faqInput.value = typed[historyIndex];
+			}
+			return;
+		}
+		if (event.key === 'Tab') {
+			// Only take Tab when there is something to complete, so keyboard users can still tab out of the shell.
+			const matches = completeFaqCommand(faqInput.value, faqEntries);
+			if (matches.length === 0) return;
+			event.preventDefault();
+			if (matches.length === 1) faqInput.value = matches[0];
+			else append([line('is-out', matches.join('   '))]);
+		}
+	});
+
+	append([echo('help'), ...helpLines(faqEntries).map(render)]);
+	faqStatic.hidden = true;
+	faqTerm.hidden = false;
 }
