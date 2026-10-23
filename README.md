@@ -16,7 +16,7 @@ pnpm preview
 
 ## Content from the admin
 
-Events, FAQ, pillars, socials, the board and the site copy are managed in the admin
+Events, news, FAQ, pillars, socials, the board and the site copy are managed in the admin
 (`aso-computacion-admin`). The landing is static: it reads that content **at build time** and
 bakes it into the HTML, so a change in the admin shows up after the next build (the admin
 triggers one through a deploy hook, plus a daily rebuild as a safety net).
@@ -54,6 +54,8 @@ The fetch has a 10 second timeout and the payload is validated against the versi
   (another host, `/video/upload/`, `http`, a stored transformation such as `c_fill,w_100`, or `..`,
   `%2e`, `?` or `#` in the path), or an image `width`/`height` that is not an integer from 1 to 10000
 - a `linkUrl` or social `url` that is not `https`
+- an invalid `news` item: see "News" below. A payload with no `news` key at all is fine: it means
+  no news (an admin that does not send the field yet)
 - a string or an array over its cap (text up to 2000 characters, titles 240, at most 100
   events, 12 photos per event and 50 FAQs, pillars, socials or board members)
 
@@ -86,6 +88,8 @@ section with nothing to show is left out.
   `"day"`; any other value makes the payload invalid). Its chip reads "feb 2026", never a day.
   For ordering and for upcoming/past it counts as the first of that month, and it never feeds
   the countdown panel. The `date` still has to be a full `YYYY-MM-DD`; its day is ignored.
+- **News** (`news`, newest `publishedAt` first) become the Novedades section of the home, the
+  `/novedades` list and one page per item. See "News" below.
 - **FAQ** `topic` (`git help <topic>`) is the question as a slug, cut at 28 characters.
 - **Socials** `platform` picks a Simple Icons glyph; an unknown platform gets a generic one.
 - **Pillars** without an image show the isotype tile.
@@ -99,17 +103,55 @@ section with nothing to show is left out.
   paths render through `src/components/Photo.astro`. Board photos appear only in the Directiva
   section.
 
+### News
+
+Each item is `{ slug, title, summary, body, publishedAt, cover }` (contract S6 of the admin).
+Validation is as strict as for the other fields, and one invalid item makes the whole payload
+invalid, so the build falls back:
+
+- `slug`: lowercase letters and digits joined by single hyphens, at most 100 characters, unique
+  (it is the URL `/novedades/<slug>`)
+- `title` 1-120, `summary` 1-280, `body` 1-10000 characters, none of them blank; at most 200 items
+- `publishedAt`: a real calendar date, `YYYY-MM-DD`
+- `cover`: `null`, or `{ url, width, height, alt }` with the same Cloudinary image URL rules as
+  every other admin image, width/height integers from 1 to 10000 and `alt` 1-200 characters
+
+Where it shows up:
+
+- **Home**: a "Novedades" section after the activity graph with the 3 most recent items (the
+  landing sorts by `publishedAt`, newest first, ties keep the API order) and a link to
+  `/novedades`. It is left out when there are no news, and so is the "Novedades" nav link.
+- **`/novedades`**: every item. **`/novedades/<slug>`**: one static page per item, built by
+  `getStaticPaths` from the resolved content, with its own `<title>`, meta description (the
+  summary) and share image (the cover).
+- **No news** (the fallback snapshot has `"news": []`, and so does an admin that has none
+  published): there are no `/novedades/<slug>` pages, and `/novedades` still builds as a short
+  empty state marked `noindex`, so a shared or bookmarked link never ends in a 404.
+- **Covers** are delivered by Cloudinary like any other photo (see Photos above).
+- **`body`** is a small Markdown subset rendered by `src/lib/admin-content/markdown.ts`:
+  paragraphs (blank line), `**bold**`, `*italic*`, `[text](https://...)` and `- ` lists; a
+  backslash keeps `\* [ ] ( ) - _` literal. Raw HTML is never rendered: every character is
+  escaped and only `p`, `ul`, `li`, `strong`, `em` and `a` come out (each link also carries a
+  visually hidden "se abre en otra pestaña" note). Only `https:` links are
+  kept (`target="_blank"`, `rel="noopener noreferrer"`); `http:`, `javascript:`, relative or
+  credentialed URLs, headings, images, quotes and ordered lists stay plain text.
+
+To try it without an admin, serve a payload with `news` from any local HTTP server and build
+against it: `ADMIN_CONTENT_URL=http://127.0.0.1:8799/api/public/content pnpm build`. Image URLs
+in that payload must be Cloudinary ones.
+
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback and mapping
+pnpm test      # vitest: fetch, validation, fallback, mapping and the Markdown renderer
 ```
 
 ## Editing content
 
 Real content is edited in the admin. What stays in code (`src/data/site.ts`): the hero and
 manifesto copy, the nav, the ribbon, the contribute section, the three structural timeline
-entries and the demo placeholders. Sections are rendered in `src/pages/index.astro`.
+entries and the demo placeholders. Sections are rendered in `src/pages/index.astro`; the news pages
+are in `src/pages/novedades/`.
 
 ## Structure
 
@@ -117,11 +159,12 @@ entries and the demo placeholders. Sections are rendered in `src/pages/index.ast
 src/
 ├── data/
 │   ├── content.ts        # resolves the content once per build (API or fallback)
-│   ├── fallback.json     # committed snapshot of the real content, API shape
+│   ├── fallback.json     # committed snapshot of the real content, API shape (news: [])
 │   └── site.ts           # landing-owned copy and demo placeholders
-├── lib/admin-content/    # validate, load (fetch + fallback), map, compose (+ tests)
+├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
 ├── layouts/Layout.astro  # HTML shell and global styles
 ├── pages/index.astro     # landing sections
+├── pages/novedades/      # news list and one page per item
 └── styles/global.css     # Tailwind entry point
 ```
 
