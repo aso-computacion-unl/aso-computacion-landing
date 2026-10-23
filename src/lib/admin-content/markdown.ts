@@ -1,6 +1,6 @@
 // Renders a news `body` (a small Markdown subset) to HTML. Pure, no dependencies, and safe by construction: the output
 // is built only from the tags below, and every character of the source reaches it through `escapeHtml`, so the text
-// can carry no markup. Supported:
+// can carry no markup. The only tags are p, ul, li, strong, em, a and the span of the link notice. Supported:
 //   - paragraphs (blank-line separated) and `- ` lists
 //   - **bold**, *italic* (nestable) and [text](https://...) links
 //   - `\` before one of \ * [ ] ( ) - _ keeps it literal
@@ -11,6 +11,8 @@ const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;'
 
 export const escapeHtml = (text: string): string => text.replace(/[&<>"']/g, (char) => ESCAPES[char]);
 
+// Links open in a new tab: say so to screen readers (`sr-only` is the landing's visually-hidden utility).
+const NEW_TAB_NOTICE = '<span class="sr-only"> (se abre en otra pestaña)</span>';
 const LITERAL_AFTER_BACKSLASH = '\\*[]()-_';
 // The character after `https://` must start a host; quotes, angle brackets, backticks and backslashes never belong.
 const HTTPS_URL = /^https:\/\/[^\s/\\?#@<>"'`][^\s\\<>"'`]*$/i;
@@ -87,7 +89,7 @@ function readLink(source: string, start: number, depth: number, budget: Budget):
 	if (!href || label.trim() === '') return null;
 	return {
 		end: end + 1,
-		html: `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${inline(label, true, depth + 1, budget)}</a>`,
+		html: `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${inline(label, true, depth + 1, budget)}${NEW_TAB_NOTICE}</a>`,
 	};
 }
 

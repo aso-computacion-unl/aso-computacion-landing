@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown';
 
 const LINK = 'target="_blank" rel="noopener noreferrer"';
+const NOTICE = '<span class="sr-only"> (se abre en otra pestaña)</span>';
 
 // Everything the renderer is allowed to emit.
-const ALLOWED_TAGS = /<\/?(?:p|ul|li|strong|em)>|<a href="https:\/\/[^"<>\s]*" target="_blank" rel="noopener noreferrer">|<\/a>/g;
+const ALLOWED_TAGS = /<\/?(?:p|ul|li|strong|em)>|<a href="https:\/\/[^"<>\s]*" target="_blank" rel="noopener noreferrer">|<\/a>|<span class="sr-only">|<\/span>/g;
 
 describe('renderMarkdown: blocks', () => {
 	it('renders paragraphs separated by blank lines', () => {
@@ -67,11 +68,11 @@ describe('renderMarkdown: emphasis', () => {
 
 describe('renderMarkdown: links', () => {
 	it('renders https links that open in a new tab with rel noopener noreferrer', () => {
-		expect(renderMarkdown('[ASO](https://aso.example/inscripcion)')).toBe(`<p><a href="https://aso.example/inscripcion" ${LINK}>ASO</a></p>`);
+		expect(renderMarkdown('[ASO](https://aso.example/inscripcion)')).toBe(`<p><a href="https://aso.example/inscripcion" ${LINK}>ASO${NOTICE}</a></p>`);
 	});
 
 	it('allows emphasis in the link text', () => {
-		expect(renderMarkdown('[**ASO**](https://aso.example/)')).toBe(`<p><a href="https://aso.example/" ${LINK}><strong>ASO</strong></a></p>`);
+		expect(renderMarkdown('[**ASO**](https://aso.example/)')).toBe(`<p><a href="https://aso.example/" ${LINK}><strong>ASO</strong>${NOTICE}</a></p>`);
 	});
 
 	it('rejects every scheme but https, leaving the Markdown as plain text', () => {
@@ -119,6 +120,10 @@ describe('renderMarkdown: no raw HTML, ever', () => {
 	it('escapes the text', () => {
 		expect(renderMarkdown('<b>x</b> & "y"')).toBe('<p>&lt;b&gt;x&lt;/b&gt; &amp; &quot;y&quot;</p>');
 		expect(renderMarkdown('&lt;')).toBe('<p>&amp;lt;</p>');
+	});
+
+	it('escapes a literal copy of the link notice instead of trusting it', () => {
+		expect(renderMarkdown('<span class="sr-only">x</span>')).toBe('<p>&lt;span class=&quot;sr-only&quot;&gt;x&lt;/span&gt;</p>');
 	});
 
 	it('emits only the allowed tags for any input', () => {
