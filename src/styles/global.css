@@ -492,6 +492,37 @@
 		color: var(--color-mist);
 	}
 
+	/* Phones: the card is a column. The photo keeps its whole frame and the plate sits under it (never over a face);
+	   the plate stretches so every card in a row ends at the same line. */
+	@media (max-width: 47.99rem) {
+		.member {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.member .portrait {
+			position: relative;
+			inset: auto;
+			flex: none;
+			aspect-ratio: 3 / 4;
+		}
+
+		.member-wide .portrait {
+			aspect-ratio: 4 / 3;
+		}
+
+		.member-lg,
+		.member {
+			--show-h: 82%;
+		}
+
+		.plate {
+			position: static;
+			flex: 1;
+			padding: 0.625rem 0.75rem 0.75rem;
+		}
+	}
+
 	.hint {
 		position: absolute;
 		z-index: 2;
