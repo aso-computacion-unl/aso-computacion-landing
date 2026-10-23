@@ -34,9 +34,9 @@ const isCurrent = (href: string) => {
 		aria-label={t('nav.label')}
 		class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3"
 	>
-		<a href={onHome ? '#top' : homePath} class="hidden shrink-0 items-center gap-3 sm:flex" aria-label={t('nav.home', { name: site.name })}>
-			<IsotypeWhite class="theme-dark-only h-7 w-auto sm:h-8" aria-hidden="true" />
-			<IsotypeColor class="theme-light-only h-7 w-auto sm:h-8" aria-hidden="true" />
+		<a href={onHome ? '#top' : homePath} class="hidden shrink-0 items-center gap-3 min-[340px]:flex" aria-label={t('nav.home', { name: site.name })}>
+			<IsotypeWhite class="theme-dark-only h-6 w-auto sm:h-8" aria-hidden="true" />
+			<IsotypeColor class="theme-light-only h-6 w-auto sm:h-8" aria-hidden="true" />
 			<span class="hidden font-display text-base text-ink md:inline">{site.name}</span>
 		</a>
 		<ul class="nav-scroll flex min-w-0 items-center gap-2 overflow-x-auto font-mono text-xs [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
@@ -61,7 +61,7 @@ const isCurrent = (href: string) => {
 				hreflang={other}
 				lang={other}
 				aria-label={t('lang.switchLabel')}
-				class="flex min-h-9 min-w-8 items-center justify-center px-1 text-mist hover:text-ink sm:min-w-9 sm:px-1.5"
+				class="flex min-h-9 min-w-7 items-center justify-center px-1 text-mist hover:text-ink sm:min-w-9 sm:px-1.5"
 			>
 				{t('lang.switchText')}
 			</a>
@@ -70,7 +70,7 @@ const isCurrent = (href: string) => {
 				data-theme-toggle
 				aria-pressed="true"
 				aria-label={t('theme.toggle')}
-				class="flex h-9 w-8 items-center justify-center text-mist hover:text-ink sm:w-9"
+				class="flex h-9 w-7 items-center justify-center text-mist hover:text-ink sm:w-9"
 			>
 				<!-- The icon is the theme the button switches to: sun while dark, moon while light. -->
 				<svg class="theme-dark-only size-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
