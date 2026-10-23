@@ -19,7 +19,7 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
 - Nadie empuja directo a `main`: todo cambio entra por un Pull Request.
 - Cada PR necesita **1 aprobación** de otra persona.
 - No se permite `force push` ni borrar `main`.
-- No hay CI: las comprobaciones se corren a mano antes de pedir revisión (ver abajo).
+- La CI (GitHub Actions) tiene que pasar en verde para mergear: corre `pnpm test` y `pnpm build` en cada PR. No usa secretos.
 
 ## Flujo de trabajo
 
@@ -30,7 +30,7 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
    git switch -c tipo/descripcion-corta   # ej.: fix/menu-movil, feat/seccion-galeria
    ```
 3. **Commits pequeños** con [Conventional Commits](https://www.conventionalcommits.org/es/): `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`. El mensaje describe el cambio en inglés, en imperativo: `fix: align social tiles on mobile`.
-4. **Comprobá localmente** (requiere Node 22 y pnpm):
+4. **Comprobá localmente** (requiere Node 22 y pnpm); la CI corre lo mismo en el PR:
    ```sh
    pnpm install
    pnpm test
