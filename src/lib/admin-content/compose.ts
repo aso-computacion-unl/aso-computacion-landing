@@ -1,5 +1,6 @@
 // Puts the pieces together: the resolved content (admin API or fallback snapshot) plus the landing's own copy and,
 // on the fallback path only, the demo placeholders. Pure: `now` and the bundled-image lookup are passed in.
+import type { Locale } from '../../i18n/locales';
 import type { LoadedContent } from './load';
 import { countWord, toBoard, toFaqItems, toPillars, toSite, toSocials, type MapContext } from './map';
 import type { BoardFun, FaqItem, NewsItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
@@ -43,13 +44,18 @@ export interface SiteContent {
 
 export const COLLAGE_EVENT_PHOTOS = 12;
 
-const headEntry = (base: TimelineEntry, members: number): TimelineEntry => {
+const headEntry = (base: TimelineEntry, members: number, locale: Locale): TimelineEntry => {
 	const { description: _description, href: _href, hrefLabel: _hrefLabel, ...rest } = base;
 	if (members === 0) return rest;
+	const count = countWord(members, locale).replace(/^./, (letter) => letter.toUpperCase());
 	const description =
-		members === 1
-			? 'Una persona representa hoy a los estudiantes de la carrera.'
-			: `${countWord(members).replace(/^./, (letter) => letter.toUpperCase())} integrantes representan hoy a los estudiantes de la carrera.`;
+		locale === 'en'
+			? members === 1
+				? 'One person represents the students of the program today.'
+				: `${count} members represent the students of the program today.`
+			: members === 1
+				? 'Una persona representa hoy a los estudiantes de la carrera.'
+				: `${count} integrantes representan hoy a los estudiantes de la carrera.`;
 	return { ...rest, description, href: base.href, hrefLabel: base.hrefLabel };
 };
 
@@ -58,12 +64,14 @@ export function composeSiteContent(options: {
 	baseline: Baseline;
 	now: Date;
 	resolveLocal: MapContext['resolveLocal'];
+	// Language of the landing's own words; Spanish when omitted.
+	locale?: Locale;
 }): SiteContent {
-	const { loaded, baseline, now, resolveLocal } = options;
+	const { loaded, baseline, now, resolveLocal, locale = 'es' } = options;
 	const { content, source } = loaded;
 	// Placeholders are a fallback-path concern: once the admin answers, its content is the whole truth.
 	const withDemo = source === 'fallback';
-	const ctx: MapContext = { today: todayInEcuador(now), resolveLocal };
+	const ctx: MapContext = { today: todayInEcuador(now), resolveLocal, locale };
 
 	const demoEntries: TimelineEntry[] = withDemo
 		? baseline.demo.events.map((entry) => ({ ...entry, kind: entry.date && entry.date >= ctx.today ? 'upcoming' : 'commit' }))
@@ -73,7 +81,7 @@ export function composeSiteContent(options: {
 	const history = entries.filter((entry) => entry.kind !== 'upcoming');
 
 	const team = toBoard(content.board, ctx, withDemo ? baseline.demo.boardFun : {});
-	const timeline = [baseline.anchors.next, ...upcoming, headEntry(baseline.anchors.head, team.length), ...history, baseline.anchors.initial];
+	const timeline = [baseline.anchors.next, ...upcoming, headEntry(baseline.anchors.head, team.length, locale), ...history, baseline.anchors.initial];
 
 	// Nearest upcoming entry with a confirmed day: feeds the countdown panel and the "¡nuevo!" sticker. A month-only entry never claims a day.
 	const nextEvent = upcoming.filter((entry) => entry.date && entry.datePrecision !== 'month').reduce<TimelineEntry | undefined>((nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest), undefined);

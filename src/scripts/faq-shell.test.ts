@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completeFaqCommand, runFaqCommand, type FaqEntry } from './faq-shell';
+import { completeFaqCommand, helpLines, runFaqCommand, type FaqEntry } from './faq-shell';
 
 const items: FaqEntry[] = [
 	{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante.' },
@@ -82,5 +82,28 @@ describe('completeFaqCommand', () => {
 	it('returns nothing for an empty or unmatched input', () => {
 		expect(completeFaqCommand('', items)).toEqual([]);
 		expect(completeFaqCommand('zzz', items)).toEqual([]);
+	});
+});
+
+describe('FAQ terminal in English', () => {
+	const items = [{ topic: 'costo', q: 'Does it cost anything?', a: 'No.' }];
+
+	it('introduces the help list in English', () => {
+		expect(helpLines(items, 'en')[0]).toEqual({ tone: 'out', text: 'Available topics. Type one or tap it in the list:' });
+	});
+
+	it('explains unknown commands and topics in English', () => {
+		const error = (input: string) => {
+			const result = runFaqCommand(input, items, 'en');
+			return result.kind === 'lines' ? result.lines[0]?.text : undefined;
+		};
+		expect(error('git help cosot')).toBe("git help: no topic named 'cosot'. Did you mean 'git help costo'?");
+		expect(error('git help zzz')).toBe("git help: no topic named 'zzz'. Type 'help' to see the topics.");
+		expect(error('cosot')).toBe("command not found: 'cosot'. Did you mean 'git help costo'?");
+		expect(error('zzz')).toBe("command not found: 'zzz'. Type 'help' to see the topics.");
+	});
+
+	it('keeps Spanish as the default', () => {
+		expect(helpLines(items)[0]?.text).toBe('Temas disponibles. Escribe uno o tócalo en la lista:');
 	});
 });

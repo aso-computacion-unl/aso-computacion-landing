@@ -1,6 +1,7 @@
 // Pure mapping from the admin's public payload to the models the landing components render. No Astro runtime and no
 // I/O: the bundled-image lookup is passed in, so every rule here is unit-testable. Events live in timeline.ts.
 import type { ImageMetadata } from 'astro';
+import type { Locale } from '../../i18n/locales';
 import type { BoardFun, FaqItem, Photo, Pillar, SiteCopy, Social, TeamMember } from './model';
 import { platformIcon } from './platform-icons';
 import type {
@@ -17,6 +18,8 @@ export interface MapContext {
 	today: string;
 	// Finds a bundled image for a fallback `/src/assets/...` reference.
 	resolveLocal: (path: string) => ImageMetadata | undefined;
+	// Language of the landing's own words (dates, fallback alt text). Content from the admin is never translated.
+	locale?: Locale;
 }
 
 export const slugify = (text: string): string =>
@@ -81,7 +84,7 @@ export const toBoard = (board: readonly PublicBoardMember[], ctx: MapContext, ex
 		return {
 			name: member.name,
 			role: member.role,
-			photo: { ...photo, alt: photo.alt || `Foto de ${member.name}` },
+			photo: { ...photo, alt: photo.alt || (ctx.locale === 'en' ? `Photo of ${member.name}` : `Foto de ${member.name}`) },
 			...(Object.hasOwn(extras, member.name) ? { fun: extras[member.name] } : {}),
 		};
 	});
@@ -90,6 +93,9 @@ export const toBoard = (board: readonly PublicBoardMember[], ctx: MapContext, ex
 export const toSite = (base: SiteCopy, settings: PublicSiteSettings | null): SiteCopy =>
 	settings ? { ...base, tagline: settings.tagline, description: settings.description, about: settings.about } : base;
 
-const COUNT_WORDS = ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce'];
+const COUNT_WORDS: Record<Locale, string[]> = {
+	es: ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce'],
+	en: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'],
+};
 
-export const countWord = (count: number): string => COUNT_WORDS[count] ?? String(count);
+export const countWord = (count: number, locale: Locale = 'es'): string => COUNT_WORDS[locale][count] ?? String(count);

@@ -2,18 +2,24 @@
 import type { TimelineEntry, TimelineKind } from './model';
 import { slugify, toPhoto, type MapContext } from './map';
 import type { DatePrecision, PublicEvent } from './types';
+import type { Locale } from '../../i18n/locales';
 
 const TIME_ZONE = 'America/Guayaquil';
 
 export const todayInEcuador = (now: Date): string =>
 	new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
 
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MONTHS: Record<Locale, string[]> = {
+	es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+	en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+};
 
 // "2026-04-14" -> "14 abr 2026" (the chip format the landing has always used); month precision -> "abr 2026".
-export const formatStamp = (date: string, precision: DatePrecision = 'day'): string => {
+// English keeps the same order: "14 Apr 2026".
+export const formatStamp = (date: string, precision: DatePrecision = 'day', locale: Locale = 'es'): string => {
 	const [year, month, day] = date.split('-').map(Number);
-	return precision === 'month' ? `${MONTHS[month - 1]} ${year}` : `${day} ${MONTHS[month - 1]} ${year}`;
+	const name = MONTHS[locale][month - 1];
+	return precision === 'month' ? `${name} ${year}` : `${day} ${name} ${year}`;
 };
 
 // What orders and classifies an event: its date, or the first of the month when only the month is confirmed.
@@ -63,8 +69,8 @@ export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEn
 		featured: event.featured,
 		...(event.date
 			? event.datePrecision === 'month'
-				? { stamp: formatStamp(event.date, 'month'), date: orderingDate(event) ?? event.date, datePrecision: 'month' as const }
-				: { stamp: formatStamp(event.date), date: event.date }
+				? { stamp: formatStamp(event.date, 'month', ctx.locale), date: orderingDate(event) ?? event.date, datePrecision: 'month' as const }
+				: { stamp: formatStamp(event.date, 'day', ctx.locale), date: event.date }
 			: {}),
 		...(event.description ? { description: event.description } : {}),
 		...(event.type ? { type: event.type } : {}),
