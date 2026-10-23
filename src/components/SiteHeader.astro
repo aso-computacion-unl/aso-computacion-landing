@@ -1,5 +1,6 @@
 ---
-import Isotype from '../assets/brand/isotype-white.svg';
+import IsotypeColor from '../assets/brand/isotype-color.svg';
+import IsotypeWhite from '../assets/brand/isotype-white.svg';
 import { navLinks, site } from '../data/content';
 
 // Section anchors only exist on the home page: from /novedades they point back to it.
@@ -11,7 +12,7 @@ const isCurrent = (href: string) => !href.startsWith('#') && (Astro.url.pathname
 <header class="sticky top-0 z-50 border-b border-sky/30 bg-navy">
 	<a
 		href="#contenido"
-		class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-sky focus:px-4 focus:py-2 focus:font-semibold focus:text-navy"
+		class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-sky focus:px-4 focus:py-2 focus:font-semibold focus:text-on-sky"
 	>
 		Saltar al contenido
 	</a>
@@ -20,29 +21,56 @@ const isCurrent = (href: string) => !href.startsWith('#') && (Astro.url.pathname
 		class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3"
 	>
 		<a href={onHome ? '#top' : '/'} class="hidden shrink-0 min-[340px]:flex items-center gap-3" aria-label={`${site.name}, inicio`}>
-			<Isotype class="h-7 w-auto sm:h-8" aria-hidden="true" />
-			<span class="hidden font-display text-base text-white md:inline">{site.name}</span>
+			<IsotypeWhite class="theme-dark-only h-7 w-auto sm:h-8" aria-hidden="true" />
+			<IsotypeColor class="theme-light-only h-7 w-auto sm:h-8" aria-hidden="true" />
+			<span class="hidden font-display text-base text-ink md:inline">{site.name}</span>
 		</a>
-		<ul class="flex min-w-0 items-center gap-2.5 overflow-x-auto font-mono text-xs [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
+		<ul class="nav-scroll flex min-w-0 items-center gap-2 overflow-x-auto font-mono text-xs [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
 			{
 				navLinks.map((link) => (
 					<li class="nav-item flex shrink-0 items-center">
 						<a
 							href={hrefFor(link.href)}
 							aria-current={isCurrent(link.href) ? 'page' : undefined}
-							class="group flex items-center gap-2 py-3 text-mist hover:text-white aria-[current=page]:text-white sm:px-1"
+							class="group flex items-center gap-2 py-3 text-mist hover:text-ink aria-[current=page]:text-ink sm:px-1"
 						>
-							<span class="hidden size-2 rounded-full bg-sky group-hover:bg-white sm:block" aria-hidden="true" />
+							<span class="hidden size-2 rounded-full bg-sky group-hover:bg-ink sm:block" aria-hidden="true" />
 							{link.label.toLowerCase()}
 						</a>
 					</li>
 				))
 			}
 		</ul>
+		<div class="flex shrink-0 items-center font-mono text-xs min-[400px]:text-[0.8125rem]">
+			<button
+				type="button"
+				data-theme-toggle
+				aria-pressed="true"
+				aria-label="Modo oscuro"
+				class="flex h-9 w-8 items-center justify-center text-mist hover:text-ink sm:w-9"
+			>
+				<!-- The icon is the theme the button switches to: sun while dark, moon while light. -->
+				<svg class="theme-dark-only size-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+					<circle cx="12" cy="12" r="4" />
+					<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+				</svg>
+				<svg class="theme-light-only size-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+				</svg>
+			</button>
+		</div>
 	</nav>
 </header>
 
 <style>
+	/* Phones: the links scroll sideways; a fade on the right edge says there is more. */
+	@media (max-width: 39.99rem) {
+		.nav-scroll {
+			mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+			padding-right: 1.5rem;
+		}
+	}
+
 	/* Short sky segment between items: the nav reads as a tiny branch. */
 	@media (min-width: 40rem) {
 		.nav-item:not(:last-child)::after {

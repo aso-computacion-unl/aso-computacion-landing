@@ -26,7 +26,7 @@ const html = renderMarkdown(Astro.props.body);
 
 	.news-prose strong {
 		font-weight: 700;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.news-prose a {
@@ -38,7 +38,7 @@ const html = renderMarkdown(Astro.props.body);
 	}
 
 	.news-prose a:hover {
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	/* A short sky segment as the bullet, like the links of the activity graph. */

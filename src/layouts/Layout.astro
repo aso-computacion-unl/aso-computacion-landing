@@ -31,6 +31,19 @@ const { title, description, image, type = 'website', noindex = false } = Astro.p
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<script is:inline>
+			// Theme before the first paint, so there is no flash of the other one. Same rule as resolveTheme in
+			// src/scripts/theme.ts: a stored choice wins, otherwise the system preference.
+			(function () {
+				var stored = null;
+				try {
+					stored = localStorage.getItem('aso-theme');
+				} catch (e) {}
+				var theme = stored === 'light' || stored === 'dark' ? stored : window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+				document.documentElement.dataset.theme = theme;
+				if (theme === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f4f7fb');
+			})();
+		</script>
+		<script is:inline>
 			// Opt in to the pre-motion state only when motion is allowed; fall back to visible if the motion script never starts.
 			(function () {
 				var root = document.documentElement;
@@ -43,10 +56,13 @@ const { title, description, image, type = 'website', noindex = false } = Astro.p
 			})();
 		</script>
 	</head>
-	<body class="bg-navy font-sans text-white antialiased">
+	<body class="bg-navy font-sans text-ink antialiased">
 		<slot />
 		<script>
+			import { initThemeToggle } from '../scripts/theme';
 			import '../scripts/ui';
+
+			initThemeToggle();
 			import '../scripts/motion';
 		</script>
 	</body>

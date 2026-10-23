@@ -58,14 +58,14 @@ const isNext = !compact && entry === nextEvent;
 					</p>
 				)
 			}
-			<h3 class="mt-3 font-display text-lg leading-snug text-white md:text-xl xl:text-2xl">{entry.title}</h3>
+			<h3 class="mt-3 font-display text-lg leading-snug text-ink md:text-xl xl:text-2xl">{entry.title}</h3>
 			{entry.msg && <p class="msg">{entry.msg}</p>}
 			{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
 			{
 				!compact && entry.href && (
 					<a
 						href={entry.href}
-						class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-white"
+						class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink"
 						target={external ? '_blank' : undefined}
 						rel={external ? 'me noopener' : undefined}
 					>
