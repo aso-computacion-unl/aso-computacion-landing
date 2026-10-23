@@ -1,13 +1,15 @@
 ---
 import { Image } from 'astro:assets';
 import IsotypeColor from '../assets/brand/isotype-color.svg';
-import { collagePhotos, join, socials, timeline } from '../data/site';
+import { collagePhotos, socials } from '../data/content';
+import { join } from '../data/site';
+import { imageProps } from '../lib/admin-content/map';
 import Button from './Button.astro';
 
 const instagram = socials.find((social) => social.remote === 'instagram');
 // Collage: nine different photos in one row (event photos plus the collage-only ones), then a row of activity tags.
 // No repeats, so the same picture is never visible twice. Board photos are not used here.
-const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : [])), ...collagePhotos.map((item) => item.image)];
+const photos = collagePhotos;
 ---
 
 <section id="ideas" class="on-sky relative overflow-clip bg-sky py-16 text-navy sm:py-24 lg:py-32">
@@ -57,15 +59,17 @@ const photos = [...timeline.flatMap((entry) => (entry.image ? [entry.image] : []
 	<div class="collage mt-14 lg:mt-20" data-collage aria-hidden="true">
 		<span class="stk" style="--r:-7deg;left:5%;top:-0.25rem"><span class="stk-face stk-white" data-pop>{join.stickers[0]}</span></span>
 		<span class="stk" style="--r:5deg;right:6%;bottom:-0.25rem"><span class="stk-face stk-navy" data-pop>{join.stickers[1]}</span></span>
-		<div class="c-row c-row-a" data-c-row="left">
-			{
-				photos.map((photo) => (
-					<div class="duo c-tile c-wide">
-						<Image src={photo} alt="" width={480} height={340} widths={[320, 480]} sizes="17rem" loading="lazy" />
-					</div>
-				))
-			}
-		</div>
+		{
+			photos.length > 0 && (
+				<div class="c-row c-row-a" data-c-row="left">
+					{photos.map((photo) => (
+						<div class="duo c-tile c-wide">
+							<Image {...imageProps(photo, { width: 480, height: 340 })} alt="" widths={[320, 480]} sizes="17rem" loading="lazy" />
+						</div>
+					))}
+				</div>
+			)
+		}
 		<div class="c-row c-row-b" data-c-row="right">
 			{join.tags.map((tag) => <span class="c-tag">{tag}</span>)}
 		</div>

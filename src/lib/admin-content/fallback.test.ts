@@ -25,6 +25,16 @@ describe('src/data/fallback.json', () => {
 		}
 	});
 
+	it('references only bundled images, so the fallback path never needs the network', () => {
+		if (!parsed.ok) throw new Error(parsed.reason);
+		const images = [
+			...parsed.content.board.map((member) => member.photo),
+			...parsed.content.events.flatMap((event) => event.photos),
+			...parsed.content.pillars.flatMap((pillar) => (pillar.image ? [pillar.image] : [])),
+		];
+		for (const { url } of images) expect(url.startsWith('/src/assets/'), url).toBe(true);
+	});
+
 	it('holds real content only: no demo assets or placeholder photos', () => {
 		expect(JSON.stringify(fallback)).not.toMatch(/assets\/demo|ejemplo|demo/i);
 	});

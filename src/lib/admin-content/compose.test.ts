@@ -153,6 +153,12 @@ describe('composeSiteContent: fallback path', () => {
 		expect(real.pillars.map((p) => p.title)).toEqual(['Representamos']);
 	});
 
+	it('flags the FAQ as demo only while it is showing placeholders', () => {
+		expect(compose(fallback()).faqIsDemo).toBe(true);
+		expect(compose(fallback(payload({ events: [] }))).faqIsDemo).toBe(false);
+		expect(compose(api(payload({ faqs: [] }))).faqIsDemo).toBe(false);
+	});
+
 	it('attaches the demo extras to board members by name only', () => {
 		const other = { ...payload().board[0], name: 'Luis Gómez' };
 		const result = compose(fallback(payload({ events: [], board: [payload().board[0], other] })));
