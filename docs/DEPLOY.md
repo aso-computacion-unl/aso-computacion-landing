@@ -44,8 +44,8 @@ validation, the build logs **one** warning:
 and uses the committed `src/data/fallback.json`. The site deploys with the last snapshot of the
 real content (plus the demo placeholders, which only show on this path). Look for that line in
 the Cloudflare build log to know a deploy used the fallback. Once the admin is back, the next
-build (hook or daily) restores the live content. Details: the README section "Content from the
-admin".
+build (hook or daily) restores the live content. Details: the "Content from the
+admin" section of the [reference](REFERENCIA.md#content-from-the-admin).
 
 ## How a build gets triggered
 
