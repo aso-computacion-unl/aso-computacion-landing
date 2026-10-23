@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getContent } from '../../../data/content';
+import type { NewsItem } from '../../../lib/admin-content/model';
+import NewsPostPage from '../../../views/NewsPostPage.astro';
+
+// One page per item of the resolved content (admin or fallback). No news, no pages.
+export const getStaticPaths = (() =>
+	getContent('en').news.map((item) => ({ params: { slug: item.slug }, props: { item } }))) satisfies GetStaticPaths;
+
+interface Props {
+	item: NewsItem;
+}
+
+const { item } = Astro.props;
+---
+
+<NewsPostPage item={item} />

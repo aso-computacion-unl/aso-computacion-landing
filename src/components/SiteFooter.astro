@@ -1,10 +1,16 @@
 ---
-import { site } from '../data/content';
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { site } = getContent(locale);
 ---
 
 <footer class="deep bg-navy-deep py-10">
 	<div class="wrap flex flex-col gap-2 font-mono text-[0.8125rem] text-mist sm:flex-row sm:items-center sm:justify-between">
-		<p>{site.name} · Universidad Nacional de Loja</p>
+		<p>{site.name} · {t('footer.university')}</p>
 		<p>© {new Date().getFullYear()}</p>
 	</div>
 </footer>

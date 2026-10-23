@@ -1,4 +1,7 @@
 ---
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
 // Flat two-layer button: a face that presses down onto an offset darker base layer.
 interface Props {
 	href: string;
@@ -8,6 +11,7 @@ interface Props {
 	external?: boolean;
 }
 
+const t = useTranslations(toLocale(Astro.currentLocale));
 const { href, variant = 'primary', size = 'md', external = false } = Astro.props;
 ---
 
@@ -21,5 +25,5 @@ const { href, variant = 'primary', size = 'md', external = false } = Astro.props
 		<span><slot /></span>
 		<span class="btn-glyph" aria-hidden="true">→</span>
 	</span>
-	{external && <span class="sr-only"> (se abre en otra pestaña)</span>}
+	{external && <span class="sr-only"> {t('newTab')}</span>}
 </a>

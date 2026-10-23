@@ -1,9 +1,14 @@
 ---
-import { nextEvent, timeline } from '../data/content';
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { typeLabel, useTranslations } from '../i18n/ui';
 import { activityTypes } from '../data/site';
 import { shortHash } from './shortHash';
 import Commit from './Commit.astro';
 
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { nextEvent, timeline } = getContent(locale);
 const headIndex = timeline.findIndex((entry) => entry.kind === 'head');
 const planned = timeline.slice(0, headIndex);
 const history = timeline.slice(headIndex);
@@ -15,10 +20,10 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 	<div class="wrap grid gap-10 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
 		<aside
 			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
-			aria-label="Próxima actividad y filtros"
+			aria-label={t('activities.aside')}
 		>
 			<p class="max-w-[34ch] text-lg text-mist">
-				Arriba, lo que viene (línea punteada: todavía no ocurre). Abajo, lo que ya hicimos, hasta el primer día.
+				{t('activities.intro')}
 			</p>
 			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
 
@@ -26,18 +31,18 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 				nextEvent && (
 					<div class="panel mt-8 p-4 sm:p-6" data-countdown={nextEvent.date}>
 						<p class="leading-none">
-							<span class="stamp" style="margin-left:0">Próxima actividad</span>
-							{nextEvent.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+							<span class="stamp" style="margin-left:0">{t('activities.next')}</span>
+							{nextEvent.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
 						</p>
 						<div data-static>
-							<p class="mt-5 font-mono text-[0.8125rem] text-mist">fecha</p>
+							<p class="mt-5 font-mono text-[0.8125rem] text-mist">{t('activities.date')}</p>
 							<p class="font-display text-4xl leading-none text-ink sm:text-5xl">{nextEvent.stamp}</p>
 						</div>
 						<div data-live hidden>
-							<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>faltan</p>
+							<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>{t('count.many')}</p>
 							<p class="flex items-baseline gap-3 leading-none">
 								<span class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-ink sm:text-[7rem]" data-count-num>00</span>
-								<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>días</span>
+								<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>{t('count.dayMany')}</span>
 							</p>
 						</div>
 						<p class="mt-4 text-lg font-semibold leading-snug text-ink">{nextEvent.title}</p>
@@ -52,12 +57,12 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 
 			<div class="js-only mt-8" data-filters>
 				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">git log --grep=</p>
-				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrar actividades por tipo">
-					<button type="button" class="chip" data-filter="all" aria-pressed="true">todo</button>
+				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('filters.label')}>
+					<button type="button" class="chip" data-filter="all" aria-pressed="true">{t('filters.all')}</button>
 					{
 						activityTypes.map((type) => (
 							<button type="button" class="chip" data-filter={type} aria-pressed="false">
-								{type}<span class="chip-count">{typedCount(type)}</span>
+								{typeLabel(locale, type)}<span class="chip-count">{typedCount(type)}</span>
 							</button>
 						))
 					}
@@ -65,22 +70,22 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 				<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
 			</div>
 
-			<ul class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label="Leyenda">
-				<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>próximo</li>
-				<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>línea punteada: planeado</li>
-				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>pasado</li>
-				<li class="flex items-center gap-3"><span class="swatch bg-ink" aria-hidden="true"></span>rama: evento con varias actividades</li>
-				<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>HEAD: hoy</li>
+			<ul class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label={t('legend.label')}>
+				<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>{t('legend.next')}</li>
+				<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>{t('legend.planned')}</li>
+				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>{t('legend.past')}</li>
+				<li class="flex items-center gap-3"><span class="swatch bg-ink" aria-hidden="true"></span>{t('legend.branch')}</li>
+				<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>{t('legend.head')}</li>
 			</ul>
 		</aside>
 
 		<div class="lane-vars contents lg:block">
 			<div class="trunk-head order-first">
 				<span class="trunk" data-trunk data-rail-trunk aria-hidden="true"></span>
-				<h2 class="h2-xl">Actividades</h2>
+				<h2 class="h2-xl">{t('activities.title')}</h2>
 			</div>
 			<div data-timeline>
-				<p class="tag tag-plan lane-tag mb-1">próximamente</p>
+				<p class="tag tag-plan lane-tag mb-1">{t('soon')}</p>
 				<div class="graph plan">
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
@@ -106,7 +111,7 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 												</p>
 											</div>
 											<span class="rail rail-feat" data-rail data-rail-scrub></span>
-											<ol aria-label={`Actividades de ${entry.title}`}>
+											<ol aria-label={t('activities.branch', { title: entry.title })}>
 												{entry.branch.commits.map((sub) => (
 													<li class="commit">
 														<span class="node" data-node aria-hidden="true" />

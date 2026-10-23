@@ -1,10 +1,16 @@
 ---
 import Photo from './Photo.astro';
 import IsotypeColor from '../assets/brand/isotype-color.svg';
-import { collagePhotos, socials } from '../data/content';
-import { join } from '../data/site';
+import { getContent } from '../data/content';
+import { copy } from '../data/site';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
 import Button from './Button.astro';
 
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { collagePhotos, socials } = getContent(locale);
+const { join } = copy[locale];
 const instagram = socials.find((social) => social.remote === 'instagram');
 // Collage: nine different photos in one row (event photos plus the collage-only ones), then a row of activity tags.
 // No repeats, so the same picture is never visible twice. Board photos are not used here.
@@ -16,7 +22,7 @@ const photos = collagePhotos;
 		<div>
 			<p class="eyebrow" aria-hidden="true">
 				<span>{join.eyebrow}</span>
-				{join.demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
+				{join.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
 			</p>
 			<h2 class="join-title">
 				<span class="sr-only">{join.headline.join(' ')}</span>
@@ -88,7 +94,7 @@ const photos = collagePhotos;
 					</div>
 				</div>
 				<div class="newcomer-hola" aria-hidden="true">
-					<span class="outline-word">HOLA</span>
+					<span class="outline-word">{t('join.hello')}</span>
 				</div>
 			</div>
 		</div>

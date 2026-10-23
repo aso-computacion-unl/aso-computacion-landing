@@ -1,0 +1,114 @@
+---
+import Button from '../components/Button.astro';
+import NewsProse from '../components/NewsProse.astro';
+import Photo from '../components/Photo.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { shortHash } from '../components/shortHash';
+import { getContent } from '../data/content';
+import { localizedPath, toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import Layout from '../layouts/Layout.astro';
+import { deliveryUrl } from '../lib/admin-content/cloudinary';
+import { isRemote } from '../lib/admin-content/map';
+import type { NewsItem } from '../lib/admin-content/model';
+
+interface Props {
+	item: NewsItem;
+}
+
+const { item } = Astro.props;
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { site } = getContent(locale);
+const newsHref = localizedPath('/novedades', locale);
+const { cover } = item;
+// Cloudinary resizes the share image; a bundled cover (fallback only) has no public URL worth sharing.
+const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : undefined;
+---
+
+<Layout title={t('news.postTitle', { title: item.title, name: site.name })} description={item.summary} image={shareImage} type="article">
+	<SiteHeader />
+	<main id="contenido" class="bg-navy py-12 sm:py-20 lg:py-24">
+		<div class="wrap grid gap-8 lg:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)] lg:gap-16">
+			<aside class="lg:sticky lg:top-24 lg:self-start" aria-label={t('news.postAside')}>
+				<a href={newsHref} class="back">{t('news.backAll')}</a>
+				<p class="mt-6 leading-none">
+					<time class="stamp stamp-past" style="margin-left:0" datetime={item.date}>{item.stamp}</time>
+				</p>
+				<p class="mt-3 font-mono text-[0.8125rem] leading-5 text-mist" aria-hidden="true">
+					<span class="text-sky">git show</span> {shortHash(item.slug)}
+				</p>
+			</aside>
+
+			<article class="min-w-0">
+				<h1 class="title">{item.title}</h1>
+				<p class="lead">{item.summary}</p>
+
+				{
+					cover && (
+						<figure class="cover">
+							<Photo
+								photo={cover}
+								box={{ width: 1200, height: 800 }}
+								widths={[640, 960, 1200]}
+								sizes="(min-width: 1024px) 52rem, 92vw"
+								alt={cover.alt}
+								loading="eager"
+							/>
+						</figure>
+					)
+				}
+
+				<div class="mt-10 lg:mt-12">
+					<NewsProse body={item.body} />
+				</div>
+
+				<div class="mt-14 border-t border-sky/30 pt-8">
+					<Button href={newsHref} variant="ghost">{t('news.seeAll')}</Button>
+				</div>
+			</article>
+		</div>
+	</main>
+	<SiteFooter />
+</Layout>
+
+<style>
+	.back {
+		display: inline-block;
+		padding-block: 0.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-sky);
+		text-underline-offset: 0.25em;
+	}
+
+	.back:hover {
+		color: var(--color-ink);
+		text-decoration: underline;
+	}
+
+	.title {
+		max-width: 22ch;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4.6vw, 4rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		overflow-wrap: anywhere;
+	}
+
+	.cover {
+		margin-top: 2.5rem;
+		max-width: 56rem;
+		overflow: clip;
+		border-radius: 4px;
+		background: var(--color-navy-deep);
+	}
+
+	.cover :global(img) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+</style>

@@ -1,0 +1,54 @@
+---
+import Button from '../components/Button.astro';
+import NewsCard from '../components/NewsCard.astro';
+import SectionHead from '../components/SectionHead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { getContent } from '../data/content';
+import { localizedPath, toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import Layout from '../layouts/Layout.astro';
+
+// With no news the page stays as a short empty state (and is not indexed): a shared or bookmarked link, or a build
+// that fell back to the committed snapshot, never lands on a 404.
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { news, site } = getContent(locale);
+const empty = news.length === 0;
+---
+
+<Layout
+	title={`${t('news.title')} · ${site.name}`}
+	description={t('news.pageDescription', { name: site.name })}
+	noindex={empty}
+>
+	<SiteHeader />
+	<main id="contenido" class="bg-navy py-16 sm:py-24 lg:py-28">
+		<div class="wrap">
+			<SectionHead
+				level={1}
+				eyebrow="$ git tag --list"
+				title={t('news.title')}
+				lead={empty ? t('news.empty') : t('news.pageLead')}
+			/>
+
+			{
+				empty ? (
+					<div class="mt-12 flex flex-wrap gap-4 lg:mt-16">
+						<Button href={localizedPath('/#redes', locale)}>{t('news.seeSocials')}</Button>
+						<Button href={localizedPath('/', locale)} variant="ghost">{t('news.backHome')}</Button>
+					</div>
+				) : (
+					<ul class="mt-12 grid gap-4 lg:mt-16 xl:grid-cols-2 xl:gap-5">
+						{news.map((item) => (
+							<li class="min-w-0">
+								<NewsCard item={item} variant="row" as="h2" />
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</div>
+	</main>
+	<SiteFooter />
+</Layout>

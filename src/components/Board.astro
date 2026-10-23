@@ -1,8 +1,14 @@
 ---
 import Photo from './Photo.astro';
 import { isRemote } from '../lib/admin-content/map';
-import { team } from '../data/content';
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
 import SectionHead from './SectionHead.astro';
+
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const { team } = getContent(locale);
 
 // Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
 // (2 wide, 3 small, 2 half), desktop 10 cols (2 wide of 5, then 5 small of 2).
@@ -34,14 +40,14 @@ const handle = (name: string) =>
 	<div class="wrap">
 		<SectionHead
 			eyebrow="$ git shortlog"
-			title="Directiva"
-			lead="Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas."
+			title={t('board.title')}
+			lead={t('board.lead')}
 		>
 			<div slot="aside" class="count">
 				<p class="count-num" aria-hidden="true">{team.length}</p>
 				<div>
-					<p class="count-label">personas que te representan</p>
-					<ul class="mt-4 flex flex-wrap gap-2" aria-label="Cargos">
+					<p class="count-label">{t('board.count')}</p>
+					<ul class="mt-4 flex flex-wrap gap-2" aria-label={t('board.roles')}>
 						{team.map((member) => <li class="role-chip">{member.role}</li>)}
 					</ul>
 				</div>
@@ -64,15 +70,15 @@ const handle = (name: string) =>
 								class="object-top"
 							/>
 						</div>
-						<p class="hint" aria-hidden="true">¿quién es?</p>
+						<p class="hint" aria-hidden="true">{t('board.hint')}</p>
 						{index < 2 && (
 							<div class="rest-hint" aria-hidden="true">
 								<span>git show @{handle(member.name)}</span>
-								<span>pasa el cursor o toca para ver más</span>
+								<span>{t('board.more')}</span>
 								{member.fun && (
 									<dl class="rest-fun">
 										<div>
-											<dt>lenguaje favorito</dt>
+											<dt>{t('board.language')}</dt>
 											<dd>{member.fun.language}</dd>
 										</div>
 										<div>
@@ -98,7 +104,7 @@ const handle = (name: string) =>
 								{member.fun && (
 									<dl class="show-fun">
 										<div>
-											<dt>lenguaje favorito</dt>
+											<dt>{t('board.language')}</dt>
 											<dd>{member.fun.language}</dd>
 										</div>
 										<div>
@@ -106,7 +112,7 @@ const handle = (name: string) =>
 											<dd>"{member.fun.motto}"</dd>
 										</div>
 										<div>
-											<span class="demo-tag" style="margin-left:0" title="Dato de ejemplo">demo</span>
+											<span class="demo-tag" style="margin-left:0" title={t('demo.detail')}>demo</span>
 										</div>
 									</dl>
 								)}

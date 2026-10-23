@@ -66,19 +66,3 @@ export function getContent(locale: Locale = 'es') {
 }
 
 export type SiteData = ReturnType<typeof getContent>;
-
-// Transitional: pages and components still read the Spanish content by name until they take their language from
-// Astro.currentLocale and call getContent() themselves.
-const spanish = getContent('es');
-export const contentSource = spanish.contentSource;
-export const site = spanish.site;
-export const navLinks = spanish.navLinks;
-export const timeline = spanish.timeline;
-export const nextEvent = spanish.nextEvent;
-export const pillars = spanish.pillars;
-export const faq = spanish.faq;
-export const team = spanish.team;
-export const socials = spanish.socials;
-export const collagePhotos = spanish.collagePhotos;
-export const news = spanish.news;
-export const latestNews = spanish.latestNews;

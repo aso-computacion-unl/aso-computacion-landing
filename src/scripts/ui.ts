@@ -1,4 +1,10 @@
+import { toLocale } from '../i18n/locales';
+import { typeLabel, useTranslations } from '../i18n/ui';
 import { completeFaqCommand, helpLines, runFaqCommand, type FaqEntry, type FaqLine } from './faq-shell';
+
+// The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
+const locale = toLocale(document.documentElement.lang);
+const t = useTranslations(locale);
 
 // Small interactions that work with or without motion: countdown, activity filters, board cards on touch.
 // Every one of them has a complete static fallback in the HTML.
@@ -17,9 +23,9 @@ if (countdown?.dataset.countdown) {
 		const num = liveView.querySelector('[data-count-num]');
 		const unit = liveView.querySelector('[data-count-unit]');
 		if (label && num && unit) {
-			label.textContent = days === 0 ? 'es' : days === 1 ? 'falta' : 'faltan';
-			num.textContent = days === 0 ? 'hoy' : String(days);
-			unit.textContent = days === 0 ? '' : days === 1 ? 'día' : 'días';
+			label.textContent = days === 0 ? t('count.is') : days === 1 ? t('count.one') : t('count.many');
+			num.textContent = days === 0 ? t('count.today') : String(days);
+			unit.textContent = days === 0 ? '' : days === 1 ? t('count.dayOne') : t('count.dayMany');
 			staticView.hidden = true;
 			liveView.hidden = false;
 		}
@@ -44,7 +50,7 @@ if (filters && timeline) {
 			item.classList.toggle('is-dim', !match);
 			if (match) shown += 1;
 		});
-		if (status) status.textContent = type === 'all' ? '' : `${type}: ${shown} de ${typed.length}`;
+		if (status) status.textContent = type === 'all' ? '' : t('filters.status', { type: typeLabel(locale, type), shown, total: typed.length });
 	});
 }
 
@@ -146,7 +152,7 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 	};
 
 	const run = (command: string) => {
-		const result = runFaqCommand(command, faqEntries);
+		const result = runFaqCommand(command, faqEntries, locale);
 		if (command.trim() !== '') {
 			typed.push(command.trim());
 			if (typed.length > MAX_HISTORY) typed.shift();
@@ -214,7 +220,7 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 		}
 	});
 
-	append([echo('help'), ...helpLines(faqEntries).map(render)]);
+	append([echo('help'), ...helpLines(faqEntries, locale).map(render)]);
 	faqStatic.hidden = true;
 	faqTerm.hidden = false;
 }
