@@ -1,18 +1,75 @@
 // Scroll choreography (GSAP + ScrollTrigger, Lenis for smooth scroll). Transform and opacity only.
 //   - Load: the isotype halves slide together and the `_` cursor blinks.
-//   - Hero (desktop, tall viewports): pinned and scrubbed. The headline leaves line by line, the isotype grows to
-//     fill the viewport and its cursor stretches down into the branch that continues as the Activities trunk.
+//   - Hero moment: the headline leaves, the isotype grows to fill the screen, its brackets slide off and the `_` cursor
+//     thins into a stem that continues as the git line. Desktop (>= 1024x800): the hero is pinned and the stem lands on
+//     the Activities trunk. Phones (< 768): the same sequence in portrait, played over a CSS-sticky stage (no JS pin, so
+//     touch scrolling stays native and the address bar cannot make it jump); the stem lands on the rail of the preview.
 //   - Page: rails draw with a travelling cursor, nodes pop, cards slide in, the about sentence lights up word by word,
 //     the Nosotros manifesto rises line by line while one word rotates, bento tiles and join reasons rise, the
 //     collage rows slide against each other, board cards stagger up, the ribbon reacts to scroll velocity.
 // Everything is visible without JS. The pre-motion state lives behind `html.motion` (set in Layout, removed
 // when motion is reduced or this script fails), so reduced motion gets no pin and no movement at all.
 
+import type { gsap } from 'gsap';
+
 const root = document.documentElement;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Cursor bar (underscore) of the isotype, in viewBox units: width and centre.
 const CURSOR_W = 32.29;
+
+// Geometry of the isotype moment, measured in layout() and read lazily by the tweens (so refreshes re-measure it).
+// `txEnd` is only set in portrait, where the whole mark also slides sideways until its cursor sits on the rail.
+interface MomentGeo {
+	S: number;
+	k: number;
+	tx: number;
+	txEnd: number | null;
+	ty: number;
+	L0: number;
+	T0: number;
+	vw: number;
+}
+
+interface MomentParts {
+	mark: HTMLElement;
+	cursor: Element;
+	markLeft: Element;
+	markRight: Element;
+	markChev: Element | null;
+	markOutline: Element | null;
+	stem: HTMLElement;
+	cue: HTMLElement;
+}
+
+// The part of the moment both layouts share, from the isotype growing to the cue appearing (timeline units).
+const momentSequence = (tl: gsap.core.Timeline, p: MomentParts, g: MomentGeo) => {
+	const clear = () => (g.vw * 1.15) / (g.S * g.k);
+	tl.to(p.mark, { x: () => g.tx - g.L0, y: () => g.ty - g.T0, scale: () => g.S, ease: 'power2.inOut', duration: 0.46 }, 0.1)
+		.to(p.markOutline, { opacity: 0, duration: 0.08 }, 0.5)
+		.to(p.markChev, { opacity: 0, duration: 0.06 }, 0.58)
+		.to(p.markLeft, { x: () => -clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
+		.to(p.markRight, { x: () => clear(), ease: 'power3.in', duration: 0.22 }, 0.6);
+	if (g.txEnd !== null) {
+		tl.to(p.mark, { x: () => (g.txEnd ?? g.tx) - g.L0, ease: 'power3.inOut', duration: 0.24 }, 0.6);
+	}
+	tl.to(
+		p.cursor,
+		{
+			scaleX: () => 3 / (CURSOR_W * g.k * g.S),
+			svgOrigin: '397.63 288.62',
+			fill: '#2bb2e4',
+			stroke: '#2bb2e4',
+			duration: 0.08,
+		},
+		0.84,
+	)
+		.to(p.stem, { scaleY: 1, ease: 'none', duration: 0.26 }, 0.9)
+		// Once the stem has grown past the bar, the stem alone carries the line (no sub-pixel fringe).
+		.set(p.cursor, { opacity: 0 }, 0.98)
+		.fromTo(p.cue, { y: 24 }, { y: 0, opacity: 1, duration: 0.12 }, 1.0)
+		.to({}, { duration: 0.02 }, 1.16);
+};
 
 const q = <T extends Element>(selector: string, scope: ParentNode = document) => scope.querySelector<T>(selector);
 const qa = <T extends Element>(selector: string, scope: ParentNode = document) =>
@@ -55,19 +112,6 @@ async function init() {
 			.to(cursor, { opacity: 0, duration: 0.01, repeat: 5, yoyo: true, repeatDelay: 0.38 }, 1.3);
 	}
 
-	/* ---------- Load: the hero git column draws ---------- */
-	const heroRails = qa<HTMLElement>('[data-hero] [data-rail]');
-	const heroItems = qa<HTMLElement>('[data-hero] li');
-	if (heroRails.length) {
-		const tl = gsap.timeline({ delay: 0.3, defaults: { ease: 'expo.out' } });
-		heroRails.forEach((rail, i) => tl.fromTo(rail, { scaleY: 0 }, { scaleY: 1, duration: 1.4 }, i * 0.9));
-		heroItems.forEach((item, i) => {
-			const at = 0.15 + i * 0.35;
-			tl.fromTo(q('[data-node]', item), { scale: 0 }, { scale: 1, duration: 0.6 }, at);
-			tl.fromTo(q('[data-link]', item), { scaleX: 0 }, { scaleX: 1, duration: 0.6 }, at + 0.1);
-		});
-	}
-
 	/* ---------- Ribbon: speed follows scroll velocity ---------- */
 	const track = q<HTMLElement>('.ribbon-track');
 	if (track) {
@@ -90,13 +134,48 @@ async function init() {
 	mm.add(
 		{
 			full: '(min-width: 768px)',
-			lite: '(max-width: 767px)',
+			phone: '(max-width: 767px)',
 			pin: '(min-width: 1024px) and (min-height: 800px)',
 		},
 		(ctx) => {
-			const { full, pin } = ctx.conditions as { full: boolean; lite: boolean; pin: boolean };
+			const { full, phone, pin } = ctx.conditions as { full: boolean; phone: boolean; pin: boolean };
 
-			/* ---------- Hero: pinned scroll moment ---------- */
+			/* ---------- Hero: git column of the preview ---------- */
+			const heroRails = qa<HTMLElement>('[data-hero] [data-rail]');
+			const heroItems = qa<HTMLElement>('[data-hero] li');
+			if (heroRails.length && !phone) {
+				// Beside the headline on load: the column draws itself.
+				const tl = gsap.timeline({ delay: 0.3, defaults: { ease: 'expo.out' } });
+				heroRails.forEach((rail, i) => tl.fromTo(rail, { scaleY: 0 }, { scaleY: 1, duration: 1.4 }, i * 0.9));
+				heroItems.forEach((item, i) => {
+					const at = 0.15 + i * 0.35;
+					tl.fromTo(q('[data-node]', item), { scale: 0 }, { scale: 1, duration: 0.6 }, at);
+					tl.fromTo(q('[data-link]', item), { scaleX: 0 }, { scaleX: 1, duration: 0.6 }, at + 0.1);
+				});
+			}
+			if (heroRails.length && phone) {
+				// On a phone the preview sits below the moment, out of sight at load: its rails draw with the scroll and the
+				// stem lands on the first one.
+				heroRails.forEach((rail) =>
+					gsap.fromTo(
+						rail,
+						{ scaleY: 0 },
+						{
+							scaleY: 1,
+							ease: 'none',
+							scrollTrigger: { trigger: rail.parentElement, start: 'top 90%', end: 'bottom 60%', scrub: true },
+						},
+					),
+				);
+				reveal('[data-hero-slab] [data-node]', 'top 90%', (batch) =>
+					gsap.fromTo(batch, { scale: 0 }, { scale: 1, duration: 0.6, ease: 'back.out(2.6)', stagger: 0.1 }),
+				);
+				reveal('[data-hero-slab] [data-link]', 'top 90%', (batch) =>
+					gsap.fromTo(batch, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'expo.out', stagger: 0.1 }),
+				);
+			}
+
+			/* ---------- Hero: scroll moment (desktop pinned, phone over a sticky stage) ---------- */
 			const hero = q<HTMLElement>('[data-hero]');
 			const mark = q<HTMLElement>('[data-hero-mark]');
 			const stem = q<HTMLElement>('[data-hero-stem]');
@@ -107,12 +186,14 @@ async function init() {
 			const markRight = q('[data-mark-right]');
 			const markChev = q('[data-mark-chev]');
 			const markOutline = q('[data-mark-outline]');
+			const cleanups: Array<() => void> = [];
+			// Order of the moment: headline leaves, the isotype grows to fill the screen, its brackets slide off to both
+			// sides, and only then does the `_` cursor thin into the stem. The stem is never drawn across the bracket
+			// shapes, and whatever it lands on stays hidden until the stem reaches it.
+			const BAR_H = 10.32; // cursor bar height in viewBox units
+			const geo: MomentGeo = { S: 1, k: 1, tx: 0, txEnd: null, ty: 0, L0: 0, T0: 0, vw: 0 };
+
 			if (pin && hero && mark && stem && cue && trunk && cursor && markLeft && markRight) {
-				// Order of the moment: headline leaves, the isotype grows to fill the viewport, its brackets slide
-				// off to both sides, and only then does the `_` cursor thin into the stem. The stem is never drawn
-				// across the bracket shapes, and the Activities trunk stays hidden until the stem reaches it.
-				const BAR_H = 10.32; // cursor bar height in viewBox units
-				let g = { S: 1, k: 1, tx: 0, ty: 0, L0: 0, T0: 0 };
 				const layout = () => {
 					const H = hero.offsetHeight;
 					const W = mark.offsetWidth;
@@ -121,9 +202,15 @@ async function init() {
 					const t = trunk.getBoundingClientRect();
 					const railX = t.left + t.width / 2;
 					const Yu = H * 0.58;
-					const tx = railX - S * 119.63 * k;
-					const ty = Yu - S * 123.62 * k;
-					g = { S, k, tx, ty, L0: mark.offsetLeft, T0: mark.offsetTop };
+					Object.assign(geo, {
+						S,
+						k,
+						tx: railX - S * 119.63 * k,
+						ty: Yu - S * 123.62 * k,
+						L0: mark.offsetLeft,
+						T0: mark.offsetTop,
+						vw: window.innerWidth,
+					});
 					// The stem starts at the top edge of the thinned cursor bar, so the bar is the start of the line.
 					const stemTop = Yu - (BAR_H / 2) * S * k;
 					gsap.set(stem, { left: railX - 1.5, top: stemTop, height: H - stemTop });
@@ -132,7 +219,7 @@ async function init() {
 				};
 				layout();
 				ScrollTrigger.addEventListener('refreshInit', layout);
-				const clear = () => (window.innerWidth * 1.15) / (g.S * g.k);
+				cleanups.push(() => ScrollTrigger.removeEventListener('refreshInit', layout));
 
 				const tl = gsap.timeline({
 					scrollTrigger: {
@@ -156,38 +243,67 @@ async function init() {
 				gsap.set(trunk, { scaleY: 0 });
 				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power2.in', duration: 0.3, stagger: 0.06 }, 0)
 					.to(qa('[data-hero-fade]'), { y: -30, opacity: 0, duration: 0.16 }, 0)
-					.to(q('[data-hero-slab]'), { xPercent: 12, opacity: 0, duration: 0.28 }, 0.02)
-					.to(
-						mark,
-						{
-							x: () => g.tx - g.L0,
-							y: () => g.ty - g.T0,
-							scale: () => g.S,
-							ease: 'power2.inOut',
-							duration: 0.46,
-						},
-						0.1,
-					)
-					.to(markOutline, { opacity: 0, duration: 0.08 }, 0.5)
-					.to(markChev, { opacity: 0, duration: 0.06 }, 0.58)
-					.to(markLeft, { x: () => -clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
-					.to(markRight, { x: () => clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
-					.to(
-						cursor,
-						{
-							scaleX: () => 3 / (CURSOR_W * g.k * g.S),
-							svgOrigin: '397.63 288.62',
-							fill: '#2bb2e4',
-							stroke: '#2bb2e4',
-							duration: 0.08,
-						},
-						0.84,
-					)
-					.to(stem, { scaleY: 1, ease: 'none', duration: 0.26 }, 0.9)
-					// Once the stem has grown past the bar, the stem alone carries the line (no sub-pixel fringe).
-					.set(cursor, { opacity: 0 }, 0.98)
-					.fromTo(cue, { y: 24 }, { y: 0, opacity: 1, duration: 0.12 }, 1.0)
-					.to({}, { duration: 0.02 }, 1.16);
+					.to(q('[data-hero-slab]'), { xPercent: 12, opacity: 0, duration: 0.28 }, 0.02);
+				momentSequence(tl, { mark, cursor, markLeft, markRight, markChev, markOutline, stem, cue }, geo);
+			}
+
+			// Phone: the same sequence in portrait. The stage (CSS sticky, svh tall) holds the isotype while the run scrolls
+			// under it; the isotype fills the width instead of the height, and its cursor slides onto the rail of the
+			// preview below so the stem lands on it.
+			const run = q<HTMLElement>('[data-hero-run]');
+			const stage = q<HTMLElement>('[data-hero-stage]');
+			const slab = q<HTMLElement>('[data-hero-slab]');
+			const slabRail = slab && q<HTMLElement>('[data-rail]', slab);
+			if (phone && run && stage && slab && slabRail && mark && stem && cue && cursor && markLeft && markRight) {
+				const headerH = () => q<HTMLElement>('header')?.offsetHeight ?? 65;
+				const layout = () => {
+					const H = stage.offsetHeight;
+					const W = stage.offsetWidth;
+					const w0 = mark.offsetWidth;
+					const k = w0 / 186;
+					const S = (0.92 * W) / w0;
+					const rail = slabRail.getBoundingClientRect();
+					const railX = rail.left + rail.width / 2 - stage.getBoundingClientRect().left;
+					// Where the rail starts below the top of the preview: the stem runs past the stage to meet it.
+					const lead = rail.top - slab.getBoundingClientRect().top;
+					const Yu = H * 0.46;
+					Object.assign(geo, {
+						S,
+						k,
+						tx: (W - S * w0) / 2,
+						txEnd: railX - S * 119.63 * k,
+						ty: Yu - S * 123.62 * k,
+						L0: mark.offsetLeft,
+						T0: mark.offsetTop,
+						vw: W,
+					});
+					const stemTop = Yu - (BAR_H / 2) * S * k;
+					gsap.set(stem, { left: railX - 1.5, top: stemTop, height: H - stemTop + lead });
+					const cueLeft = railX + 22;
+					gsap.set(cue, { left: cueLeft, top: Yu - 38, width: W - cueLeft - 20 });
+				};
+				layout();
+				ScrollTrigger.addEventListener('refreshInit', layout);
+				cleanups.push(() => ScrollTrigger.removeEventListener('refreshInit', layout));
+
+				// Start and end are measured from the top of the screen and the fixed stage height, never from the window
+				// height, so the browser bars showing or hiding cannot move them.
+				const tl = gsap.timeline({
+					scrollTrigger: {
+						trigger: run,
+						start: () => `top ${headerH()}px`,
+						end: () => `bottom ${headerH() + stage.offsetHeight}px`,
+						scrub: 0.6,
+						invalidateOnRefresh: true,
+					},
+				});
+				// The headline clears quickly: it scrolls up under the isotype, so it must be gone before they overlap.
+				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power1.in', duration: 0.1, stagger: 0.03 }, 0).to(
+					qa('[data-hero-fade]'),
+					{ y: -30, autoAlpha: 0, duration: 0.1 },
+					0,
+				);
+				momentSequence(tl, { mark, cursor, markLeft, markRight, markChev, markOutline, stem, cue }, geo);
 			}
 
 			/* ---------- Activities: rails draw, cursor travels, nodes pop, cards slide in ---------- */
@@ -239,7 +355,7 @@ async function init() {
 						opacity: 1,
 						x: 0,
 						y: 0,
-						duration: full ? 0.8 : 0.6,
+						duration: 0.8,
 						ease: 'expo.out',
 						stagger: 0.1,
 					}),
@@ -302,7 +418,7 @@ async function init() {
 			}
 
 			const sentence = qa('[data-statement] .w');
-			if (sentence.length && full) {
+			if (sentence.length) {
 				gsap.to(sentence, {
 					opacity: 1,
 					ease: 'none',
@@ -315,15 +431,15 @@ async function init() {
 				gsap.to(batch, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.14 }),
 			);
 
-			if (full) {
-				qa<HTMLElement>('[data-outline]').forEach((word) => {
-					gsap.fromTo(
-						word,
-						{ x: 36 },
-						{ x: -36, ease: 'none', scrollTrigger: { trigger: word, start: 'top bottom', end: 'bottom top', scrub: true } },
-					);
-				});
-			}
+			// Outline words drift against the scroll; on a phone the travel is halved so they stay inside the column.
+			const drift = full ? 36 : 18;
+			qa<HTMLElement>('[data-outline]').forEach((word) => {
+				gsap.fromTo(
+					word,
+					{ x: drift },
+					{ x: -drift, ease: 'none', scrollTrigger: { trigger: word, start: 'top bottom', end: 'bottom top', scrub: true } },
+				);
+			});
 
 			/* ---------- Directiva: cards stagger up, large photos drift ---------- */
 			reveal('[data-member]', 'top 92%', (batch) =>
@@ -331,7 +447,7 @@ async function init() {
 					opacity: 1,
 					y: 0,
 					rotate: 0,
-					duration: full ? 0.95 : 0.7,
+					duration: 0.95,
 					ease: 'expo.out',
 					stagger: 0.09,
 				}),
@@ -384,6 +500,8 @@ async function init() {
 			reveal('[data-reason]', 'top 92%', (batch) =>
 				gsap.to(batch, { opacity: 1, y: 0, duration: 0.85, ease: 'expo.out', stagger: 0.12 }),
 			);
+
+			return () => cleanups.forEach((off) => off());
 		},
 	);
 

@@ -6,18 +6,20 @@ import SectionHead from './SectionHead.astro';
 
 // Grid math (7 people, no holes): phones 2 cols (6 small cards in pairs, last one wide), tablets 6 cols
 // (2 wide, 3 small, 2 half), desktop 10 cols (2 wide of 5, then 5 small of 2).
+// On phones a card is a column (photo, then the name plate underneath), so its height comes from the photo and no
+// aspect class applies below md; from md up the card keeps its own aspect and the plate overlays the photo.
 const layout = [
 	'member-lg md:col-span-3 md:aspect-square lg:col-span-5',
 	'member-lg md:col-span-3 md:aspect-square lg:col-span-5',
-	'aspect-[3/4] md:col-span-2 lg:col-span-2',
-	'aspect-[3/4] md:col-span-2 lg:col-span-2',
-	'aspect-[3/4] md:col-span-2 lg:col-span-2',
-	'aspect-[3/4] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4]',
-	'col-span-2 aspect-[2/1] md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4] [&_img]:object-[50%_30%] lg:[&_img]:object-top',
+	'md:aspect-[3/4] md:col-span-2 lg:col-span-2',
+	'md:aspect-[3/4] md:col-span-2 lg:col-span-2',
+	'md:aspect-[3/4] md:col-span-2 lg:col-span-2',
+	'md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4]',
+	'member-wide col-span-2 md:col-span-3 md:aspect-square lg:col-span-2 lg:aspect-[3/4] [&_img]:object-[50%_25%] md:[&_img]:object-[50%_30%] lg:[&_img]:object-top',
 ];
 
 // Boards of any other size still get a sensible card: extra members use the small portrait.
-const extraLayout = 'aspect-[3/4] md:col-span-2 lg:col-span-2';
+const extraLayout = 'md:aspect-[3/4] md:col-span-2 lg:col-span-2';
 
 // Handle shown in the "git show" panel: first name only, no accents. Not a real social handle.
 const handle = (name: string) =>
