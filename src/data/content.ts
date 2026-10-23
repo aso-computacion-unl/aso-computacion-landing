@@ -47,3 +47,5 @@ export const faq = { ...faqCopy, demo: resolved.faqIsDemo, items: resolved.faqIt
 export const team = resolved.team;
 export const socials = resolved.socials;
 export const collagePhotos = resolved.collage;
+export const news = resolved.news;
+export const latestNews = resolved.latestNews;
