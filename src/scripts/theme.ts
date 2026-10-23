@@ -15,7 +15,7 @@ export function nextTheme(theme: Theme): Theme {
 }
 
 // Browser chrome colour per theme: the page background.
-const THEME_COLOR: Record<Theme, string> = { dark: '#053066', light: '#f4f7fb' };
+export const THEME_COLOR: Record<Theme, string> = { dark: '#053066', light: '#f4f7fb' };
 
 function apply(theme: Theme) {
 	const root = document.documentElement;
