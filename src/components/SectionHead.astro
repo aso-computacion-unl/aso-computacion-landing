@@ -23,7 +23,7 @@ const hasAside = Astro.slots.has('aside');
 			<span>{eyebrow}</span>
 			{demo && <span class="demo-tag" title="Contenido de ejemplo">demo</span>}
 		</p>
-		<Heading class:list={['h2-xl', { 'text-navy': tone === 'on-sky' }]}>{title}</Heading>
+		<Heading class:list={['h2-xl', { 'text-on-sky': tone === 'on-sky' }]}>{title}</Heading>
 		{lead && <p class="lead">{lead}</p>}
 	</div>
 	{hasAside && <div class="section-head-aside"><slot name="aside" /></div>}

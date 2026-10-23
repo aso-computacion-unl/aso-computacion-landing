@@ -12,6 +12,10 @@
  * - signal: accent. Dates and "what comes next" only.
  *           Low contrast on navy (~2:1): use it as a fill with white text, never as text on navy.
  * - navy-deep / navy-lift: darker and lighter steps of the same navy, used as flat overlapping layers.
+ *
+ * Theme roles (html[data-theme], set before paint by Layout.astro): navy, navy-deep and navy-lift are the page
+ * surfaces, ink is the main text on them, on-sky is text and lines on a sky fill, brand is the fixed navy. The dark
+ * theme is the brand look; the light theme repaints the same roles, so components only pick a role.
  */
 @theme {
 	--color-navy: #053066;
@@ -20,11 +24,34 @@
 	--color-sky: #2bb2e4;
 	--color-mist: #d9d9d9;
 	--color-signal: #b7353e;
+	--color-ink: #fff;
+	--color-on-sky: #053066;
+	--color-brand: #053066;
+	--color-shade: #000;
 
 	/* Display: titles and headers only. Body: long-form text. Mono: dates, branch names, short hashes. */
 	--font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
 	--font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
 	--font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Light theme: pale surfaces, navy ink, a deeper sky so it still reads as text (4.5:1 on white), white on sky. */
+:root[data-theme="light"] {
+	--color-navy: #f4f7fb;
+	--color-navy-deep: #e4ebf4;
+	--color-navy-lift: #ffffff;
+	--color-sky: #0a6f9e;
+	--color-mist: #45556d;
+	--color-ink: #0b2447;
+	--color-on-sky: #ffffff;
+	--color-shade: #fff;
+	color-scheme: light;
+}
+
+/* Pieces drawn for one theme only (the white and the colour isotype). */
+:root[data-theme="light"] .theme-dark-only,
+:root:not([data-theme="light"]) .theme-light-only {
+	display: none;
 }
 
 @layer base {
@@ -48,7 +75,7 @@
 
 	::selection {
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	:focus-visible {
@@ -190,7 +217,7 @@
 	}
 
 	.node-merge {
-		background: #fff;
+		background: var(--color-ink);
 	}
 
 	.node-head {
@@ -271,7 +298,7 @@
 	}
 
 	.card-meta dd {
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	/* Commit message: the playful line of the entry. */
@@ -336,11 +363,12 @@
 		transform: rotate(6deg);
 	}
 
-	/* Duotone: grayscale plus a flat navy layer keeps every photo in the palette. */
+	/* Duotone: grayscale plus a flat navy layer keeps every photo in the palette. Always the brand navy, never the
+	   page surface: on the light theme the surface is near white and would wash the photo out. */
 	.duo {
 		position: relative;
 		overflow: hidden;
-		background: var(--color-navy);
+		background: var(--color-brand);
 	}
 
 	.duo img {
@@ -355,7 +383,7 @@
 		content: "";
 		position: absolute;
 		inset: 0;
-		background: var(--color-navy);
+		background: var(--color-brand);
 		mix-blend-mode: screen;
 		pointer-events: none;
 	}
@@ -481,7 +509,7 @@
 	.plate p:first-child {
 		font-weight: 600;
 		line-height: 1.25;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.plate p:last-child {
@@ -530,7 +558,7 @@
 		left: 0.625rem;
 		padding: 0.25rem 0.5rem;
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		font-weight: 600;
@@ -553,7 +581,7 @@
 		flex: none;
 		padding: 0.375rem 0.75rem;
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-family: var(--font-mono);
 		font-size: clamp(0.6875rem, 4.6cqw, 0.8125rem);
 		font-weight: 700;
@@ -575,7 +603,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1rem, 9.5cqw, 2.75rem);
 		line-height: 1.1;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.show-name {
@@ -600,7 +628,7 @@
 	}
 
 	.show-fun dd {
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
@@ -662,7 +690,7 @@
 			align-self: flex-start;
 			padding: 0.25rem 0.5rem;
 			background: var(--color-sky);
-			color: var(--color-navy);
+			color: var(--color-on-sky);
 			font-weight: 700;
 		}
 
@@ -679,7 +707,7 @@
 		}
 
 		.rest-fun dd {
-			color: #fff;
+			color: var(--color-ink);
 		}
 
 		.member:hover .rest-hint,
@@ -715,7 +743,7 @@
 			font-family: var(--font-display);
 			font-size: max(1.375rem, calc((60cqw - 4rem) / 11.5));
 			line-height: 1.05;
-			color: #fff;
+			color: var(--color-ink);
 		}
 
 		.member-lg .show {
@@ -777,7 +805,7 @@
 		border-radius: 4px;
 		background: var(--color-navy-lift);
 		box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-sky) 55%, transparent);
-		color: #fff;
+		color: var(--color-ink);
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 		font-weight: 600;
@@ -802,20 +830,20 @@
 	.chip[aria-pressed="true"] {
 		background: var(--color-sky);
 		box-shadow: none;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-weight: 700;
 	}
 
 	.chip[aria-pressed="true"]::before,
 	.chip[aria-pressed="true"] .chip-count {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.tag {
 		display: inline-block;
 		padding: 0.25rem 0.625rem;
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 		font-weight: 600;
@@ -988,6 +1016,14 @@
 		overflow: visible;
 	}
 
+	/* The white parts of the isotype follow the ink, so the light theme shows the official colour version. */
+	.hero-mark-svg [data-mark-left],
+	.hero-mark-svg [data-mark-chev],
+	.hero-mark-svg [data-mark-cursor] {
+		fill: var(--color-ink);
+		stroke: var(--color-ink);
+	}
+
 	/* Flat offset outline behind the mark: a second layer, never over text. */
 	.mark-outline {
 		transform: translate(9px, 8px);
@@ -1043,7 +1079,7 @@
 	/* Buttons: flat two-layer. The face presses down onto an offset, darker base layer. No blur. */
 	.btn {
 		--face: var(--color-sky);
-		--ink: var(--color-navy);
+		--ink: var(--color-on-sky);
 		--base: color-mix(in srgb, var(--color-sky) 55%, var(--color-navy));
 		--lift: 6px;
 		display: inline-block;
@@ -1056,14 +1092,14 @@
 
 	.btn-ghost {
 		--face: var(--color-navy-lift);
-		--ink: #fff;
+		--ink: var(--color-ink);
 		--base: color-mix(in srgb, var(--color-sky) 38%, var(--color-navy-deep));
 	}
 
 	/* Inverse: navy face with white text, for buttons placed on sky surfaces. */
 	.btn-inverse {
 		--face: var(--color-navy);
-		--ink: #fff;
+		--ink: var(--color-ink);
 		--base: var(--color-navy-deep);
 	}
 
@@ -1138,7 +1174,7 @@
 		font-size: clamp(2.25rem, 5.6vw, 6.5rem);
 		line-height: 1.04;
 		letter-spacing: -0.02em;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	@media (max-width: 47.99rem) {
@@ -1168,7 +1204,7 @@
 
 	.rotor-word::after {
 		content: ".";
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	/* With motion, the three words share one cell and take turns. Without it, all three stay visible. */
@@ -1202,7 +1238,7 @@
 		font-weight: 440;
 		line-height: 1.5;
 		letter-spacing: -0.012em;
-		color: #fff;
+		color: var(--color-ink);
 		max-width: 52ch;
 	}
 
@@ -1242,7 +1278,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.5rem, 2.2vw, 2.25rem);
 		line-height: 1.1;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.tile-text {
@@ -1273,17 +1309,17 @@
 	}
 
 	.tile-2 .outline-word {
-		-webkit-text-stroke-color: var(--color-navy);
+		-webkit-text-stroke-color: var(--color-on-sky);
 	}
 
 	.tile-2 .tile-title,
 	.tile-2 .tile-text {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.tile-2 .demo-tag {
-		border-color: color-mix(in srgb, var(--color-navy) 60%, transparent);
-		color: var(--color-navy);
+		border-color: color-mix(in srgb, var(--color-on-sky) 60%, transparent);
+		color: var(--color-on-sky);
 	}
 
 	@media (min-width: 64rem) {
@@ -1334,12 +1370,12 @@
 
 	/* Join: full-bleed sky section. Navy text on sky; stickers and the photo collage carry the energy. */
 	.on-sky :focus-visible {
-		outline-color: var(--color-navy);
+		outline-color: var(--color-on-sky);
 	}
 
 	.on-sky .demo-tag {
-		border-color: color-mix(in srgb, var(--color-navy) 60%, transparent);
-		color: var(--color-navy);
+		border-color: color-mix(in srgb, var(--color-on-sky) 60%, transparent);
+		color: var(--color-on-sky);
 	}
 
 	.join-title {
@@ -1347,7 +1383,7 @@
 		font-size: clamp(2.75rem, 6.3vw, 7rem);
 		line-height: 1;
 		letter-spacing: -0.02em;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.collage {
@@ -1375,7 +1411,7 @@
 		padding: 0.75rem 1.25rem;
 		border-radius: 4px;
 		background: var(--color-navy);
-		color: #fff;
+		color: var(--color-ink);
 		font-family: var(--font-mono);
 		font-size: clamp(1.125rem, 1.8vw, 1.75rem);
 		font-weight: 700;
@@ -1385,8 +1421,8 @@
 
 	.c-tag:nth-child(3n) {
 		background: transparent;
-		box-shadow: inset 0 0 0 3px var(--color-navy);
-		color: var(--color-navy);
+		box-shadow: inset 0 0 0 3px var(--color-on-sky);
+		color: var(--color-on-sky);
 	}
 
 	.c-tag:nth-child(odd) {
@@ -1447,12 +1483,12 @@
 
 	.stk-white {
 		background: #fff;
-		color: var(--color-navy);
+		color: var(--color-brand);
 	}
 
 	.stk-navy {
 		background: var(--color-navy);
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.stk-iso {
@@ -1498,7 +1534,7 @@
 
 	.on-sky .eyebrow,
 	.on-sky .eyebrow span:first-child {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.eyebrow-light {
@@ -1517,7 +1553,7 @@
 	}
 
 	.on-sky .lead {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-weight: 520;
 	}
 
@@ -1557,7 +1593,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.25rem, 1.8vw, 1.75rem);
 		line-height: 1.15;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.role-chip {
@@ -1581,12 +1617,12 @@
 		grid-template-columns: auto minmax(0, 1fr);
 		align-items: start;
 		gap: 1.25rem;
-		border-top: 2px solid var(--color-navy);
+		border-top: 2px solid var(--color-on-sky);
 		padding-block: 1.25rem 1.5rem;
 	}
 
 	.reason:last-child {
-		border-bottom: 2px solid var(--color-navy);
+		border-bottom: 2px solid var(--color-on-sky);
 	}
 
 	.reason-num {
@@ -1595,21 +1631,21 @@
 		font-size: clamp(2.5rem, 4vw, 4rem);
 		line-height: 0.95;
 		color: transparent;
-		-webkit-text-stroke: 2px var(--color-navy);
+		-webkit-text-stroke: 2px var(--color-on-sky);
 	}
 
 	.reason-title {
 		font-family: var(--font-display);
 		font-size: clamp(1.375rem, 2.1vw, 2.125rem);
 		line-height: 1.1;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.reason-text {
 		margin-top: 0.5rem;
 		font-size: 1.125rem;
 		line-height: 1.45;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.newcomer-title {
@@ -1617,7 +1653,7 @@
 		font-size: clamp(1.875rem, 4vw, 4rem);
 		line-height: 1.08;
 		letter-spacing: -0.01em;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.newcomer-hola {
@@ -1644,7 +1680,7 @@
 		bottom: -18%;
 		height: 120%;
 		width: auto;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		opacity: 0.35;
 		pointer-events: none;
 	}
@@ -1701,7 +1737,7 @@
 		height: 2.5rem;
 		border-radius: 4px;
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-family: var(--font-mono);
 		font-size: 1.25rem;
 		font-weight: 700;
@@ -1724,7 +1760,7 @@
 		font-weight: 700;
 		line-height: 1.3;
 		letter-spacing: -0.01em;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.faq-plus {
@@ -1811,7 +1847,7 @@
 		overflow: hidden;
 		border: 1px solid color-mix(in oklab, var(--color-sky) 28%, transparent);
 		border-radius: 4px;
-		background: color-mix(in oklab, var(--color-navy-deep) 72%, #000);
+		background: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
 		font-family: var(--font-mono);
 	}
 
@@ -1896,7 +1932,7 @@
 		font-stretch: 118%;
 		font-weight: 700;
 		line-height: 1.3;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.faq-guide-hint {
@@ -1934,7 +1970,7 @@
 
 	.term-line.is-in {
 		margin-top: 0.875rem;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.term-line.is-in:first-child {
@@ -1972,7 +2008,7 @@
 	.term-line.is-question {
 		margin-top: 0.375rem;
 		font-weight: 700;
-		color: #fff;
+		color: var(--color-ink);
 	}
 
 	.term-line.is-question::before {
@@ -1987,7 +2023,7 @@
 
 	/* Signal fails contrast as text on navy, so errors use a light tint of it. */
 	.term-line.is-error {
-		color: color-mix(in oklab, var(--color-signal) 40%, #fff);
+		color: color-mix(in oklab, var(--color-signal) 40%, var(--color-ink));
 	}
 
 	.faq-prompt {
@@ -2007,7 +2043,7 @@
 		flex: 1;
 		min-width: 0;
 		background: transparent;
-		color: #fff;
+		color: var(--color-ink);
 		font: inherit;
 		/* 16px keeps iOS from zooming into the field. */
 		font-size: 1rem;
@@ -2093,7 +2129,7 @@
 		padding: 1.5rem;
 		border-radius: 4px;
 		background: var(--color-navy-lift);
-		color: #fff;
+		color: var(--color-ink);
 		text-decoration: none;
 	}
 
@@ -2101,7 +2137,7 @@
 		min-height: 22rem;
 		padding: 2rem;
 		background: var(--color-sky);
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.social-logo {
@@ -2120,7 +2156,7 @@
 		top: -12%;
 		width: 78%;
 		height: auto;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		opacity: 0.16;
 		transform-origin: 50% 50%;
 	}
@@ -2133,7 +2169,7 @@
 		font-size: clamp(2rem, 3.6vw, 3.75rem);
 		line-height: 1.05;
 		letter-spacing: -0.01em;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.social-instagram .social-body {
@@ -2170,7 +2206,7 @@
 	}
 
 	.social-instagram .social-url {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.social-go {
@@ -2184,7 +2220,7 @@
 	}
 
 	.social-instagram .social-go {
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 	}
 
 	.social-sticker {
@@ -2233,7 +2269,7 @@
 	}
 
 	.social-instagram .social-link:hover {
-		background: #fff;
+		background: var(--color-ink);
 	}
 
 	.newcomer {
@@ -2303,7 +2339,7 @@
 		top: var(--node-y);
 		width: 1rem;
 		height: calc(var(--line) * 1.5);
-		background: #fff;
+		background: var(--color-ink);
 		opacity: 0;
 		pointer-events: none;
 	}
@@ -2341,7 +2377,7 @@
 		gap: 2rem;
 		padding-right: 2rem;
 		height: 3rem;
-		color: var(--color-navy);
+		color: var(--color-on-sky);
 		font-family: var(--font-mono);
 		font-size: 1rem;
 		font-weight: 700;
@@ -2352,7 +2388,7 @@
 		width: 0.5rem;
 		height: 0.5rem;
 		border-radius: 9999px;
-		background: var(--color-navy);
+		background: var(--color-on-sky);
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
