@@ -83,6 +83,10 @@ const es = {
 	'socials.lead': 'Todo se anuncia en redes, y por ahí mismo puedes escribirnos por mensaje directo.',
 
 	'footer.university': 'Universidad Nacional de Loja',
+	'footer.madeBy': 'Sitio hecho por {name}, estudiante de Computación en la UNL.',
+	'footer.contact': 'Contacto del autor',
+	'footer.portfolio': 'portafolio',
+	'footer.email': 'correo',
 } as const;
 
 const en: Record<keyof typeof es, string> = {
@@ -165,6 +169,10 @@ const en: Record<keyof typeof es, string> = {
 	'socials.lead': 'Everything is announced on socials, and you can send us a direct message there too.',
 
 	'footer.university': 'Universidad Nacional de Loja',
+	'footer.madeBy': 'Site built by {name}, a Computer Science student at UNL.',
+	'footer.contact': "Author's contact",
+	'footer.portfolio': 'portfolio',
+	'footer.email': 'email',
 };
 
 export type UiKey = keyof typeof es;
