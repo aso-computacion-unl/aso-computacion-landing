@@ -199,6 +199,18 @@ describe('composeSiteContent: fallback path', () => {
 		expect(real.pillars.map((p) => p.title)).toEqual(['Representamos']);
 	});
 
+	it('exposes the free commands, renamed when a FAQ topic already uses the name', () => {
+		const command = { id: '1', command: 'tiene-costo', description: 'd', output: 'o' };
+		const faqs = [{ question: '¿Tiene costo?', answer: 'No.', command: null }];
+		const result = compose(api(payload({ faqs, commands: [command, { ...command, id: '2', command: 'horario' }] })));
+		expect(result.faqItems.map((item) => item.topic)).toEqual(['tiene-costo']);
+		expect(result.faqCommands.map((item) => item.name)).toEqual(['tiene-costo-2', 'horario']);
+	});
+
+	it('builds with no free commands when the payload has none', () => {
+		expect(compose(api()).faqCommands).toEqual([]);
+	});
+
 	it('flags the FAQ as demo only while it is showing placeholders', () => {
 		expect(compose(fallback()).faqIsDemo).toBe(true);
 		expect(compose(fallback(payload({ events: [] }))).faqIsDemo).toBe(false);

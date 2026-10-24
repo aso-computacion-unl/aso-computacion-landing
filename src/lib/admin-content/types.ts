@@ -40,6 +40,19 @@ export interface PublicEvent {
 export interface PublicFaq {
 	question: string;
 	answer: string;
+	// The topic of `git help <command>`. Absent in older payloads, which `parsePublicContent` reads as null: the landing
+	// then derives the topic from the question.
+	command?: string | null;
+}
+
+// A published free command of the FAQ terminal: the shell runs `command` and prints `output`.
+export interface PublicCommand {
+	id: string;
+	command: string;
+	// One line, shown next to the command in `help`.
+	description: string;
+	// Multi-line text.
+	output: string;
 }
 
 export interface PublicPillar {
@@ -101,4 +114,6 @@ export interface PublicContent {
 	settings: PublicSiteSettings | null;
 	// Newest first. Added after version 1 shipped: a payload without it is read as [].
 	news: PublicNewsItem[];
+	// In display order. Added after version 1 shipped: a payload without it is read as [].
+	commands: PublicCommand[];
 }

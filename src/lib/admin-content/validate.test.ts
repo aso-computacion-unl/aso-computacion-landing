@@ -359,3 +359,53 @@ describe('parsePublicContent: news', () => {
 		expect(reason(payload({ news: [good, newsItem({ slug: 'malo', summary: '' })] }))).toContain('news[1].summary');
 	});
 });
+
+describe('parsePublicContent: FAQ commands and free commands', () => {
+	const faq = (command: unknown) => ({ question: '¿Q?', answer: 'A', command }) as never;
+	const free = (overrides: Record<string, unknown> = {}) =>
+		({ id: 'c1', command: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.', ...overrides }) as never;
+
+	it('reads a payload from an older admin, without either field, as having no commands', () => {
+		const old = JSON.parse(JSON.stringify(payload()));
+		for (const item of old.faqs) delete item.command;
+		delete old.commands;
+		const content = ok(old);
+		expect(content.commands).toEqual([]);
+		expect(content.faqs[0].command).toBeNull();
+	});
+
+	it('keeps a FAQ command and a null one', () => {
+		const content = ok(payload({ faqs: [faq('quien-participa'), faq(null)] }));
+		expect(content.faqs.map((item) => item.command)).toEqual(['quien-participa', null]);
+	});
+
+	it('keeps the free commands in order, multi-line output included', () => {
+		const content = ok(payload({ commands: [free(), free({ id: 'c2', command: 'horario' })] }));
+		expect(content.commands.map((item) => item.command)).toEqual(['whoami', 'horario']);
+		expect(content.commands[0]).toEqual({ id: 'c1', command: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.' });
+	});
+
+	it('rejects a command name that breaks the format, in a FAQ and in a free command', () => {
+		for (const bad of ['', 'a', 'Mayus', '1abc', 'con espacio', 'doble--guion', '-inicio', 'fin-', 'ñandú', 'a'.repeat(29)]) {
+			expect(reason(payload({ faqs: [faq(bad)] }))).toContain('faqs[0].command');
+			expect(reason(payload({ commands: [free({ command: bad })] }))).toContain('commands[0].command');
+		}
+		expect(ok(payload({ commands: [free({ command: 'a'.repeat(28) })] })).commands).toHaveLength(1);
+	});
+
+	it('rejects a description over 80 characters and an output over 600', () => {
+		expect(reason(payload({ commands: [free({ description: 'x'.repeat(81) })] }))).toContain('commands[0].description');
+		expect(reason(payload({ commands: [free({ output: 'x'.repeat(601) })] }))).toContain('commands[0].output');
+		expect(ok(payload({ commands: [free({ description: 'x'.repeat(80), output: 'x'.repeat(600) })] })).commands).toHaveLength(1);
+	});
+
+	it('rejects a free command without output or description', () => {
+		expect(reason(payload({ commands: [free({ output: '  ' })] }))).toContain('commands[0].output');
+		expect(reason(payload({ commands: [free({ description: '' })] }))).toContain('commands[0].description');
+	});
+
+	it('drops keys of a free command that are not part of the contract', () => {
+		const content = ok(payload({ commands: [free({ isPublished: true, position: 3 })] }));
+		expect(Object.keys(content.commands[0]).sort()).toEqual(['command', 'description', 'id', 'output']);
+	});
+});
