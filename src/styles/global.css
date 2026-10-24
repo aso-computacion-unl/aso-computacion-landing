@@ -428,7 +428,6 @@
 
 		.card-meta {
 			order: 0;
-			flex-basis: auto;
 			flex: none;
 			flex-direction: column;
 			align-self: center;
@@ -448,7 +447,6 @@
 
 		.photo {
 			order: 0;
-			flex-basis: auto;
 			align-self: stretch;
 			flex: none;
 			width: 34%;
@@ -672,7 +670,6 @@
 	/* Wide desktop: the two large cards split in two (photo left, role and name right); the panel slides over the right half. */
 	@media (min-width: 80rem) {
 		.rest-hint {
-			display: flex;
 			position: absolute;
 			z-index: 3;
 			top: 1.5rem;
