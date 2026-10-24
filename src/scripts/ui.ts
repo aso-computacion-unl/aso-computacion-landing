@@ -1,6 +1,6 @@
 import { toLocale } from '../i18n/locales';
 import { typeLabel, useTranslations } from '../i18n/ui';
-import { helpLines, runFaqCommand, tabFaqCommand, type FaqEntry, type FaqLine } from './faq-shell';
+import { helpLines, runFaqCommand, tabFaqCommand, type FaqCommandEntry, type FaqEntry, type FaqLine } from './faq-shell';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
@@ -100,6 +100,12 @@ const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLEleme
 	q: entry.querySelector('[data-faq-q]')?.textContent?.trim() ?? '',
 	a: entry.querySelector('[data-faq-a]')?.textContent?.trim() ?? '',
 }));
+// Free commands exist only in the guide list, as rows carrying their description and output.
+const faqCommands: FaqCommandEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-command]') ?? []).map((row) => ({
+	name: row.dataset.faqRun ?? '',
+	description: row.dataset.description ?? '',
+	output: row.dataset.output ?? '',
+}));
 if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntries.length > 0) {
 	const MAX_LINES = 120;
 	const MAX_HISTORY = 50;
@@ -152,7 +158,7 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 	};
 
 	const run = (command: string) => {
-		const result = runFaqCommand(command, faqEntries, locale);
+		const result = runFaqCommand(command, faqEntries, locale, faqCommands);
 		if (command.trim() !== '') {
 			typed.push(command.trim());
 			if (typed.length > MAX_HISTORY) typed.shift();
@@ -212,7 +218,7 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 		}
 		if (event.key === 'Tab') {
 			// Only take Tab when there is something to complete, so keyboard users can still tab out of the shell.
-			const tab = tabFaqCommand(faqInput.value, faqEntries);
+			const tab = tabFaqCommand(faqInput.value, faqEntries, faqCommands);
 			if (!tab) return;
 			event.preventDefault();
 			faqInput.value = tab.value;
@@ -220,7 +226,7 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 		}
 	});
 
-	append([echo('help'), ...helpLines(faqEntries, locale).map(render)]);
+	append([echo('help'), ...helpLines(faqEntries, locale, faqCommands).map(render)]);
 	faqStatic.hidden = true;
 	faqTerm.hidden = false;
 }
