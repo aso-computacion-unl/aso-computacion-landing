@@ -96,3 +96,15 @@ export const completeFaqCommand = (input: string, items: readonly FaqEntry[]): s
 	const candidates = ['help', 'ayuda', 'ls', 'clear', ...items.map((item) => item.topic), ...items.map((item) => `git help ${item.topic}`)];
 	return candidates.filter((candidate) => candidate.startsWith(prefix) && candidate !== prefix);
 };
+
+// What Tab does, as in a shell: one match completes in place; several first extend the input to what they all share,
+// and only list themselves once there is nothing more to extend. Null means no match, so Tab can leave the shell.
+export const tabFaqCommand = (input: string, items: readonly FaqEntry[]): { value: string; options: string[] } | null => {
+	const matches = completeFaqCommand(input, items);
+	if (matches.length === 0) return null;
+	if (matches.length === 1) return { value: matches[0], options: [] };
+	let shared = matches[0];
+	for (const match of matches) while (!match.startsWith(shared)) shared = shared.slice(0, -1);
+	const typed = input.replace(/^\s+/, '').replace(/\s+/g, ' ').toLowerCase();
+	return shared.length > typed.length ? { value: shared, options: [] } : { value: typed, options: matches };
+};

@@ -2,8 +2,9 @@
 import IsotypeColor from '../assets/brand/isotype-color.svg';
 import IsotypeWhite from '../assets/brand/isotype-white.svg';
 import { getContent } from '../data/content';
-import { alternatePath, localizedPath, toLocale } from '../i18n/locales';
+import { alternatePath, toLocale } from '../i18n/locales';
 import type { Locale } from '../i18n/locales';
+import { navRouting } from '../i18n/nav';
 import { useTranslations } from '../i18n/ui';
 
 const locale = toLocale(Astro.currentLocale);
@@ -11,16 +12,7 @@ const t = useTranslations(locale);
 const { navLinks, site } = getContent(locale);
 const other: Locale = locale === 'es' ? 'en' : 'es';
 
-// Section anchors only exist on the home page: from /novedades they point back to it.
-const homePath = localizedPath('/', locale);
-const onHome = Astro.url.pathname.replace(/\/$/, '') === homePath.replace(/\/$/, '');
-const pathFor = (href: string) => (href.startsWith('#') ? href : localizedPath(href, locale));
-const hrefFor = (href: string) => (href.startsWith('#') && !onHome ? `${homePath}${href}` : pathFor(href));
-const isCurrent = (href: string) => {
-	if (href.startsWith('#')) return false;
-	const path = pathFor(href);
-	return Astro.url.pathname === path || Astro.url.pathname.startsWith(`${path}/`);
-};
+const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, locale);
 ---
 
 <header class="sticky top-0 z-50 border-b border-sky/30 bg-navy">
