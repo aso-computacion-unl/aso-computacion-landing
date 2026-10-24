@@ -6,11 +6,64 @@ import { useTranslations } from '../i18n/ui';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { site } = getContent(locale);
+
+// Who built the site, for anyone who wants to reach them: a credit, not a pitch.
+const author = 'Alejandro Padilla';
+const authorLinks = [
+	{ label: t('footer.portfolio'), href: 'https://alejandrotatum.github.io/', external: true },
+	{ label: 'GitHub', href: 'https://github.com/AlejandroTatum', external: true },
+	{ label: 'LinkedIn', href: 'https://www.linkedin.com/in/alejandro-emanuel-padilla-espinoza-58003b408/', external: true },
+	{ label: t('footer.email'), href: 'mailto:alejandro.padilla@unl.edu.ec', external: false },
+];
+const [before, after] = t('footer.madeBy').split('{name}');
 ---
 
 <footer class="deep bg-navy-deep py-10">
-	<div class="wrap flex flex-col gap-2 font-mono text-[0.8125rem] text-mist sm:flex-row sm:items-center sm:justify-between">
-		<p>{site.name} · {t('footer.university')}</p>
-		<p>© {new Date().getFullYear()}</p>
+	<div class="wrap grid gap-6 font-mono text-[0.8125rem] text-mist">
+		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+			<p>{site.name} · {t('footer.university')}</p>
+			<p>© {new Date().getFullYear()}</p>
+		</div>
+		<div class="credit flex flex-col gap-3 pt-6 lg:flex-row lg:items-center lg:justify-between">
+			<p>
+				<span class="text-sky" aria-hidden="true">$ whoami</span>
+				<span class="ml-2">{before}<span class="text-ink">{author}</span>{after}</span>
+			</p>
+			<ul class="flex flex-wrap gap-x-5 gap-y-2" aria-label={t('footer.contact')}>
+				{
+					authorLinks.map((link) => (
+						<li>
+							<a
+								href={link.href}
+								class="credit-link"
+								{...(link.external ? { target: '_blank', rel: 'noopener' } : {})}
+							>
+								{link.label}
+								{link.external && <span class="sr-only">{t('newTab')}</span>}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
 	</div>
 </footer>
+
+<style>
+	.credit {
+		border-top: 1px dashed color-mix(in srgb, var(--color-mist) 35%, transparent);
+	}
+
+	.credit-link {
+		color: var(--color-mist);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--color-sky) 50%, transparent);
+		text-underline-offset: 0.25em;
+		transition: color 150ms ease;
+	}
+
+	.credit-link:hover,
+	.credit-link:focus-visible {
+		color: var(--color-sky);
+	}
+</style>
