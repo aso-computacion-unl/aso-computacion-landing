@@ -78,6 +78,15 @@ export interface FaqItem {
 	a: string;
 }
 
+// A free command of the FAQ terminal, typed by its exact name (S6).
+export interface FaqCommand {
+	name: string;
+	// One line, shown in `help` and in the guide list.
+	description: string;
+	// Multi-line text the shell prints.
+	output: string;
+}
+
 // DEMO: playful placeholders for the "git show" panel. Never part of the admin payload (S4).
 export interface BoardFun {
 	language: string;

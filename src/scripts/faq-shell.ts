@@ -2,6 +2,9 @@
 
 export type FaqEntry = { topic: string; q: string; a: string };
 
+// A free command managed from the admin: typed by its exact name, it prints `output` as is (it may span lines).
+export type FaqCommandEntry = { name: string; description: string; output: string };
+
 export type FaqLine = {
 	tone: 'out' | 'topic' | 'question' | 'answer' | 'error';
 	text: string;
@@ -16,6 +19,7 @@ const MESSAGES = {
 		noTopic: (topic: string) => `git help: no hay ningún tema '${topic}'.`,
 		notFound: (input: string) => `comando no encontrado: '${input}'.`,
 		didYouMean: (topic: string) => ` ¿Quisiste decir 'git help ${topic}'?`,
+		didYouMeanCommand: (name: string) => ` ¿Quisiste decir '${name}'?`,
 		typeHelp: " Escribe 'help' para ver los temas.",
 	},
 	en: {
@@ -23,6 +27,7 @@ const MESSAGES = {
 		noTopic: (topic: string) => `git help: no topic named '${topic}'.`,
 		notFound: (input: string) => `command not found: '${input}'.`,
 		didYouMean: (topic: string) => ` Did you mean 'git help ${topic}'?`,
+		didYouMeanCommand: (name: string) => ` Did you mean '${name}'?`,
 		typeHelp: " Type 'help' to see the topics.",
 	},
 };
@@ -50,26 +55,29 @@ const distance = (a: string, b: string): number => {
 	return row[b.length];
 };
 
-const closestTopic = (word: string, items: readonly FaqEntry[]): string | undefined => {
-	let best: { topic: string; score: number } | undefined;
-	for (const { topic } of items) {
-		const score = distance(word, topic);
-		if (score <= MAX_TYPO_DISTANCE && (!best || score < best.score)) best = { topic, score };
+// The nearest FAQ topic or free command within the typo distance; the first of them wins a tie.
+const closestName = (word: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[]): { name: string; free: boolean } | undefined => {
+	let best: { name: string; free: boolean; score: number } | undefined;
+	const candidates = [...items.map(({ topic }) => ({ name: topic, free: false })), ...commands.map(({ name }) => ({ name, free: true }))];
+	for (const candidate of candidates) {
+		const score = distance(word, candidate.name);
+		if (score <= MAX_TYPO_DISTANCE && (!best || score < best.score)) best = { ...candidate, score };
 	}
-	return best?.topic;
+	return best;
 };
 
-export const helpLines = (items: readonly FaqEntry[], locale: FaqLocale = 'es'): FaqLine[] => [
+export const helpLines = (items: readonly FaqEntry[], locale: FaqLocale = 'es', commands: readonly FaqCommandEntry[] = []): FaqLine[] => [
 	{ tone: 'out', text: MESSAGES[locale].help },
 	...items.map((item) => ({ tone: 'topic' as const, text: `git help ${item.topic}`, note: item.q })),
+	...commands.map((command) => ({ tone: 'topic' as const, text: command.name, note: command.description })),
 ];
 
-export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale: FaqLocale = 'es'): FaqResult => {
+export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale: FaqLocale = 'es', commands: readonly FaqCommandEntry[] = []): FaqResult => {
 	const m = MESSAGES[locale];
 	const command = normalize(input);
 	if (command === '') return { kind: 'lines', lines: [] };
 	if (command === 'clear') return { kind: 'clear' };
-	if (HELP_WORDS.has(command)) return { kind: 'lines', lines: helpLines(items, locale) };
+	if (HELP_WORDS.has(command)) return { kind: 'lines', lines: helpLines(items, locale, commands) };
 
 	const asked = command.startsWith('git help ') ? command.slice('git help '.length) : command;
 	const item = items.find((entry) => entry.topic === asked);
@@ -83,24 +91,28 @@ export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale:
 		};
 	}
 
-	const suggestion = closestTopic(asked, items);
+	const free = commands.find((entry) => entry.name === command);
+	if (free) return { kind: 'lines', lines: [{ tone: 'answer', text: free.output }] };
+
+	const suggestion = closestName(asked, items, commands);
 	const head = command.startsWith('git help ') ? m.noTopic(asked) : m.notFound(input.trim());
-	const text = head + (suggestion ? m.didYouMean(suggestion) : m.typeHelp);
+	const hint = suggestion ? (suggestion.free ? m.didYouMeanCommand(suggestion.name) : m.didYouMean(suggestion.name)) : m.typeHelp;
+	const text = head + hint;
 	return { kind: 'lines', lines: [{ tone: 'error', text }] };
 };
 
-export const completeFaqCommand = (input: string, items: readonly FaqEntry[]): string[] => {
+export const completeFaqCommand = (input: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[] = []): string[] => {
 	const prefix = input.replace(/^\s+/, '').replace(/\s+/g, ' ').toLowerCase();
 	if (prefix === '') return [];
-	// Every form runFaqCommand accepts: the help aliases, clear, bare topics and `git help <topic>`.
-	const candidates = ['help', 'ayuda', 'ls', 'clear', ...items.map((item) => item.topic), ...items.map((item) => `git help ${item.topic}`)];
+	// Every form runFaqCommand accepts: the help aliases, clear, bare topics, `git help <topic>` and the free commands.
+	const candidates = ['help', 'ayuda', 'ls', 'clear', ...items.map((item) => item.topic), ...commands.map((command) => command.name), ...items.map((item) => `git help ${item.topic}`)];
 	return candidates.filter((candidate) => candidate.startsWith(prefix) && candidate !== prefix);
 };
 
 // What Tab does, as in a shell: one match completes in place; several first extend the input to what they all share,
 // and only list themselves once there is nothing more to extend. Null means no match, so Tab can leave the shell.
-export const tabFaqCommand = (input: string, items: readonly FaqEntry[]): { value: string; options: string[] } | null => {
-	const matches = completeFaqCommand(input, items);
+export const tabFaqCommand = (input: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[] = []): { value: string; options: string[] } | null => {
+	const matches = completeFaqCommand(input, items, commands);
 	if (matches.length === 0) return null;
 	if (matches.length === 1) return { value: matches[0], options: [] };
 	let shared = matches[0];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { completeFaqCommand, helpLines, runFaqCommand, tabFaqCommand, type FaqEntry } from './faq-shell';
+import { completeFaqCommand, helpLines, runFaqCommand, tabFaqCommand, type FaqCommandEntry, type FaqEntry } from './faq-shell';
 
 const items: FaqEntry[] = [
 	{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante.' },
@@ -130,5 +130,60 @@ describe('FAQ terminal in English', () => {
 
 	it('keeps Spanish as the default', () => {
 		expect(helpLines(items)[0]?.text).toBe('Temas disponibles. Escribe uno o tócalo en la lista:');
+	});
+});
+
+describe('FAQ terminal: free commands', () => {
+	const commands: FaqCommandEntry[] = [
+		{ name: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.' },
+		{ name: 'horario', description: 'Cuándo atendemos', output: 'Lunes a viernes.' },
+	];
+	const run = (input: string, locale: 'es' | 'en' = 'es') => runFaqCommand(input, items, locale, commands);
+
+	it('runs a free command by its exact name and prints its multi-line output', () => {
+		expect(run('whoami')).toEqual({ kind: 'lines', lines: [{ tone: 'answer', text: 'Somos la ASO.\nTe esperamos.' }] });
+	});
+
+	it('normalizes the name like any other command', () => {
+		expect(run('  WhoAmI ')).toEqual(run('whoami'));
+	});
+
+	it('does not run a free command through "git help"', () => {
+		const result = run('git help whoami');
+		expect(result.kind === 'lines' && result.lines[0]?.tone).toBe('error');
+	});
+
+	it('lists the free commands in help after the FAQ topics, with their description', () => {
+		const lines = helpLines(items, 'es', commands);
+		expect(lines.slice(1).map((line) => line.text)).toEqual([
+			'git help participar',
+			'git help costo',
+			'git help contacto',
+			'whoami',
+			'horario',
+		]);
+		expect(lines[4]).toEqual({ tone: 'topic', text: 'whoami', note: 'Quiénes somos' });
+		expect(run('help')).toEqual({ kind: 'lines', lines });
+	});
+
+	it('suggests a free command for a typo, without the "git help" prefix', () => {
+		const text = (result: ReturnType<typeof run>) => (result.kind === 'lines' ? result.lines[0]?.text : undefined);
+		expect(text(run('whoai'))).toBe("comando no encontrado: 'whoai'. ¿Quisiste decir 'whoami'?");
+		expect(text(run('horaro', 'en'))).toBe("command not found: 'horaro'. Did you mean 'horario'?");
+	});
+
+	it('still suggests a FAQ topic when that one is closer', () => {
+		const result = run('cotso');
+		expect(result.kind === 'lines' && result.lines[0]?.text).toContain("'git help costo'");
+	});
+
+	it('completes free command names', () => {
+		expect(completeFaqCommand('who', items, commands)).toEqual(['whoami']);
+		expect(tabFaqCommand('ho', items, commands)).toEqual({ value: 'horario', options: [] });
+	});
+
+	it('behaves as before when there are no free commands', () => {
+		expect(runFaqCommand('whoami', items)).toEqual(runFaqCommand('whoami', items, 'es', []));
+		expect(helpLines(items)).toHaveLength(items.length + 1);
 	});
 });

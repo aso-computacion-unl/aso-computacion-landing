@@ -2,8 +2,8 @@
 // on the fallback path only, the demo placeholders. Pure: `now` and the bundled-image lookup are passed in.
 import type { Locale } from '../../i18n/locales';
 import type { LoadedContent } from './load';
-import { countWord, toBoard, toFaqItems, toPillars, toSite, toSocials, type MapContext } from './map';
-import type { BoardFun, FaqItem, NewsItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
+import { countWord, toBoard, toFaqItems, toFreeCommands, toPillars, toSite, toSocials, type MapContext } from './map';
+import type { BoardFun, FaqCommand, FaqItem, NewsItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
 import { NEWS_PATH, latestNews, toNews } from './news';
 import { sortEvents, toTimelineEntry, todayInEcuador } from './timeline';
 
@@ -34,6 +34,8 @@ export interface SiteContent {
 	faqItems: FaqItem[];
 	// True while the FAQ shown is the demo placeholder set (drives the section's "demo" tag).
 	faqIsDemo: boolean;
+	// Free commands of the FAQ terminal, in order, named apart from every FAQ topic.
+	faqCommands: FaqCommand[];
 	team: TeamMember[];
 	socials: Social[];
 	collage: Photo[];
@@ -89,6 +91,7 @@ export function composeSiteContent(options: {
 	const pillars = content.pillars.length > 0 || !withDemo ? toPillars(content.pillars, ctx) : baseline.demo.pillars;
 	const faqIsDemo = withDemo && content.faqs.length === 0 && baseline.demo.faqItems.length > 0;
 	const faqItems = faqIsDemo ? baseline.demo.faqItems : toFaqItems(content.faqs);
+	const faqCommands = toFreeCommands(content.commands, faqItems.map((item) => item.topic));
 	const socials = toSocials(content.socials);
 
 	const seen = new Set<Photo['src']>();
@@ -103,6 +106,6 @@ export function composeSiteContent(options: {
 	const hasContent: Record<string, boolean> = { [NEWS_PATH]: news.length > 0, '#faq': faqItems.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
 	const navLinks = baseline.navLinks.filter((link) => hasContent[link.href] ?? true);
 
-	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, team, socials, collage, news, latestNews: latestNews(news) };
+	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, faqCommands, team, socials, collage, news, latestNews: latestNews(news) };
 }
 

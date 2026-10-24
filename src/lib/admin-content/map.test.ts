@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { siInstagram } from 'simple-icons';
 import type { ImageMetadata } from 'astro';
-import { countWord, faqTopic, slugify, toBoard, toFaqItems, toPhoto, toPillars, toSite, toSocials } from './map';
+import { countWord, faqTopic, slugify, toBoard, toFaqItems, toFreeCommands, toPhoto, toPillars, toSite, toSocials } from './map';
 import { platformIcon } from './platform-icons';
 import { image, payload } from './test-fixtures';
 
@@ -55,6 +55,47 @@ describe('toFaqItems', () => {
 			{ topic: 'quien-puede-participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante.' },
 			{ topic: 'tiene-costo', q: '¿Tiene costo?', a: 'No.' },
 		]);
+	});
+});
+
+describe('toFaqItems: commands', () => {
+	it('uses the command as the topic when the FAQ has one', () => {
+		const [item] = toFaqItems([{ question: '¿Cómo me entero de las actividades?', answer: 'Por Instagram.', command: 'actividades' }]);
+		expect(item.topic).toBe('actividades');
+	});
+
+	it('falls back to the auto slug when the command is null or missing', () => {
+		const items = toFaqItems([
+			{ question: '¿Tiene costo?', answer: 'No.', command: null },
+			{ question: '¿Quién puede participar?', answer: 'Todos.' },
+		]);
+		expect(items.map((item) => item.topic)).toEqual(['tiene-costo', 'quien-puede-participar']);
+	});
+
+	it('suffixes a repeated topic and lets the first one win', () => {
+		const items = toFaqItems([
+			{ question: '¿Tiene costo?', answer: 'a', command: 'costo' },
+			{ question: 'Costo', answer: 'b' },
+			{ question: 'COSTO?', answer: 'c' },
+			{ question: 'Otra', answer: 'd', command: 'costo' },
+		]);
+		expect(items.map((item) => item.topic)).toEqual(['costo', 'costo-2', 'costo-3', 'costo-4']);
+	});
+});
+
+describe('toFreeCommands', () => {
+	const free = (command: string) => ({ id: command, command, description: `desc ${command}`, output: `out ${command}` });
+
+	it('maps the commands to what the shell runs, in order', () => {
+		expect(toFreeCommands([free('whoami'), free('horario')], [])).toEqual([
+			{ name: 'whoami', description: 'desc whoami', output: 'out whoami' },
+			{ name: 'horario', description: 'desc horario', output: 'out horario' },
+		]);
+	});
+
+	it('suffixes a name that a FAQ topic or an earlier command already took', () => {
+		const result = toFreeCommands([free('costo'), free('horario'), free('horario')], ['costo']);
+		expect(result.map((command) => command.name)).toEqual(['costo-2', 'horario', 'horario-2']);
 	});
 });
 
