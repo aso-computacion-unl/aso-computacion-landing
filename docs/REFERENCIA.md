@@ -153,6 +153,10 @@ Where it shows up:
   summary) and share image (the cover). The post ends with "Sigue leyendo" / "Keep reading": up to 3
   other posts of the same language, newest first (`relatedNews` in `src/lib/admin-content/news.ts`),
   left out when there are none.
+- **Share** (`src/components/ShareBar.astro`): every post has "Compartir" / "Share" controls built from its
+  canonical URL (`src/lib/share.ts`). Without JS they are links to WhatsApp, X and LinkedIn. With JS,
+  `src/scripts/share.ts` shows the browser's share sheet (`navigator.share`) alone when there is one, and
+  otherwise keeps the links and adds a "Copiar enlace" button that confirms in an `aria-live` region.
 - **No news** (the fallback snapshot has `"news": []`, and so does an admin that has none
   published): there are no `/novedades/<slug>` pages, and `/novedades` still builds as a short
   empty state marked `noindex`, so a shared or bookmarked link never ends in a 404.
