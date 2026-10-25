@@ -196,6 +196,12 @@ All URLs are built from `site` in `astro.config.mjs`, the only place that names 
 domain is a one-line change there. A page without its own share image (news posts use their cover) gets the
 default one, `public/og-default.png` (1200×630).
 
+Structured data (JSON-LD, `src/lib/seo/jsonld.ts`): every page carries the `Organization` (name, URL, logo,
+`sameAs` from the socials in the admin, contact email) and each news post adds a `NewsArticle` (headline, summary,
+date, cover, language, the organization as publisher). Content can never close the `<script>` tag: `<` is
+escaped by `serializeJsonLd`. The contact email is `contactEmail` in `src/data/site.ts`, used by the footer and
+the structured data: change it there only.
+
 The raster brand files under `public/` are generated from the vectors in `src/assets/brand/`:
 
 ```sh
