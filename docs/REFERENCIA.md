@@ -188,6 +188,20 @@ To add a UI word: add the key to `es` and to `en` in `src/i18n/ui.ts`, then `t('
 `<html lang>`. To add a language: extend `locales` in `src/i18n/locales.ts` and `astro.config.mjs`, add its
 dictionary and `copy` entry, and a route folder next to `src/pages/en/` (thin files that render the views).
 
+## SEO and sharing
+
+Every page gets, from `src/lib/seo/meta.ts` (printed by `Layout.astro`): a `<link rel="canonical">`, Open Graph
+(`og:url`, `og:site_name`, `og:locale` + alternate, `og:image`) and Twitter Card (`summary_large_image`) tags.
+All URLs are built from `site` in `astro.config.mjs`, the only place that names the host: moving to a custom
+domain is a one-line change there. A page without its own share image (news posts use their cover) gets the
+default one, `public/og-default.png` (1200×630).
+
+The raster brand files under `public/` are generated from the vectors in `src/assets/brand/`:
+
+```sh
+pnpm assets:brand   # scripts/generate-brand-assets.mjs (sharp); commit the PNGs it writes
+```
+
 ## Structure
 
 ```text
@@ -198,7 +212,8 @@ src/
 │   └── site.ts           # landing-owned copy and demo placeholders
 ├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
 ├── i18n/                 # locales, localized paths, UI dictionary (es/en)
-├── layouts/Layout.astro  # HTML shell, theme script, hreflang
+├── lib/seo/              # canonical URL and social meta (+ tests)
+├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
 ├── views/                # the pages' bodies, shared by both languages
 ├── pages/                # thin routes: / and /novedades (es), /en/... (en)
 └── styles/global.css     # Tailwind entry point
