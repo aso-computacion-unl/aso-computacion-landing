@@ -248,6 +248,22 @@ The raster brand files under `public/` are generated from the vectors in `src/as
 pnpm assets:brand   # scripts/generate-brand-assets.mjs (sharp); commit the PNGs it writes
 ```
 
+## Motion
+
+The scroll choreography (`src/scripts/motion.ts`) uses GSAP + ScrollTrigger, and Lenis for smooth scrolling. What a
+visitor downloads is decided by `planMotion` in `src/scripts/motion-policy.ts` (pure, unit-tested):
+
+| Visitor | GSAP + ScrollTrigger | Lenis |
+|---------|----------------------|-------|
+| `prefers-reduced-motion: reduce` | not loaded; the page is static | not loaded |
+| Touch screen (no `(pointer: fine) and (hover: hover)`) | loaded | not loaded; native scrolling |
+| Mouse | loaded | loaded |
+
+The libraries are separate chunks fetched with a dynamic `import()` after the first paint, once the browser is
+idle (a second at most), so they never compete with the HTML, CSS and fonts. Everything is visible without them;
+the pre-motion state lives behind `html.motion`, which the layout adds only when motion is allowed and removes
+if the script fails or never starts.
+
 ## Structure
 
 ```text
