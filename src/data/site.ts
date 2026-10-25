@@ -37,7 +37,7 @@ export const site: SiteCopy = {
 
 // The address people can write to. Shown in the footer and published as the organization's contact in the structured
 // data: change it here only.
-export const contactEmail = 'alejandro.padilla@unl.edu.ec';
+export const contactEmail = 'aso.computacion@gmail.com';
 
 // Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
 export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
