@@ -64,6 +64,11 @@ const es = {
 	'news.postAside': 'Datos de la novedad',
 	'news.backAll': '← Todas las novedades',
 	'news.related': 'Sigue leyendo',
+	'share.title': 'Compartir',
+	'share.native': 'Compartir…',
+	'share.copy': 'Copiar enlace',
+	'share.copied': 'Enlace copiado',
+	'share.copyFailed': 'No se pudo copiar el enlace',
 
 	'notFound.eyebrow': '$ git checkout pagina',
 	'notFound.title': 'No encontramos esa página',
@@ -158,6 +163,11 @@ const en: Record<keyof typeof es, string> = {
 	'news.postAside': 'News details',
 	'news.backAll': '← All news',
 	'news.related': 'Keep reading',
+	'share.title': 'Share',
+	'share.native': 'Share…',
+	'share.copy': 'Copy link',
+	'share.copied': 'Link copied',
+	'share.copyFailed': 'Could not copy the link',
 
 	'notFound.eyebrow': '$ git checkout page',
 	'notFound.title': 'We could not find that page',

@@ -2,6 +2,7 @@
 import Button from '../components/Button.astro';
 import NewsProse from '../components/NewsProse.astro';
 import RelatedNews from '../components/RelatedNews.astro';
+import ShareBar from '../components/ShareBar.astro';
 import Photo from '../components/Photo.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -13,6 +14,7 @@ import Layout from '../layouts/Layout.astro';
 import { deliveryUrl } from '../lib/admin-content/cloudinary';
 import { isRemote } from '../lib/admin-content/map';
 import type { NewsItem } from '../lib/admin-content/model';
+import { canonicalUrl } from '../lib/seo/meta';
 
 interface Props {
 	item: NewsItem;
@@ -25,6 +27,7 @@ const { site } = getContent(locale);
 const newsHref = localizedPath('/novedades', locale);
 const { cover } = item;
 // Cloudinary resizes the share image; a bundled cover (fallback only) has no public URL worth sharing.
+const canonical = canonicalUrl(Astro.site ?? new URL(Astro.url.origin), Astro.url.pathname);
 const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : undefined;
 ---
 
@@ -72,6 +75,8 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 				<div class="mt-10 lg:mt-12">
 					<NewsProse body={item.body} />
 				</div>
+
+				<ShareBar url={canonical} title={item.title} />
 
 				<RelatedNews slug={item.slug} />
 

@@ -1,0 +1,116 @@
+---
+// Share controls at the end of a news post. Without JS: links to WhatsApp, X and LinkedIn. With JS the script swaps
+// them for the browser's share sheet, or adds a "Copy link" button (see src/scripts/share.ts, src/lib/share.ts).
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import { buildShareLinks } from '../lib/share';
+
+interface Props {
+	// The post's canonical URL.
+	url: string;
+	title: string;
+}
+
+const { url, title } = Astro.props;
+const t = useTranslations(toLocale(Astro.currentLocale));
+const links = buildShareLinks({ url, title });
+const networks = [
+	{ name: 'WhatsApp', href: links.whatsapp },
+	{ name: 'X', href: links.x },
+	{ name: 'LinkedIn', href: links.linkedin },
+];
+---
+
+<section
+	class="share"
+	aria-labelledby="share-title"
+	data-share
+	data-url={url}
+	data-title={title}
+	data-copied={t('share.copied')}
+	data-failed={t('share.copyFailed')}
+>
+	<h2 id="share-title" class="share-title">
+		{t('share.title')}
+	</h2>
+	<div class="share-actions">
+		<button type="button" class="share-btn" data-share-native hidden>
+			{t('share.native')}
+		</button>
+		<ul class="share-links" data-share-links>
+			{networks.map((network) => (
+				<li>
+					<a class="share-btn" href={network.href} target="_blank" rel="noopener noreferrer">
+						{network.name}
+						<span class="sr-only"> {t('newTab')}</span>
+					</a>
+				</li>
+			))}
+		</ul>
+		<button type="button" class="share-btn" data-share-copy hidden>
+			{t('share.copy')}
+		</button>
+	</div>
+	<p class="share-status" role="status" aria-live="polite" data-share-status></p>
+</section>
+
+<script>
+	import '../scripts/share';
+</script>
+
+<style>
+	.share {
+		margin-top: 3.5rem;
+	}
+
+	.share-title {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-sky);
+	}
+
+	.share-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+	}
+
+	.share-links {
+		display: contents;
+		list-style: none;
+	}
+
+	.share-btn {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+		padding-inline: 1rem;
+		border: 1px solid var(--color-sky);
+		border-radius: 4px;
+		background: transparent;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--color-ink);
+		cursor: pointer;
+	}
+
+	.share-btn:hover {
+		background: color-mix(in srgb, var(--color-sky) 14%, transparent);
+	}
+
+	.share-btn:focus-visible {
+		outline: 2px solid var(--color-sky);
+		outline-offset: 3px;
+	}
+
+	.share-status {
+		min-height: 1.25rem;
+		margin-top: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-mist);
+	}
+</style>
