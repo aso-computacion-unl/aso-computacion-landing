@@ -38,6 +38,8 @@ triggers one through a deploy hook, plus a daily rebuild as a safety net).
 ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 ```
 
+| `PRODUCTION_BRANCH` | build environment | Branch whose builds count as production for the content gate. Defaults to `main`. Compared with `CF_PAGES_BRANCH`, which Cloudflare Pages sets. |
+| `ALLOW_CONTENT_FALLBACK` | build environment | `1` (or `true`) downgrades the production gate failure to a warning, for an emergency deploy. Any other value is ignored. |
 | `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered. Not secret: it ends up in the page. |
 
 Alternative to the variable: enable Web Analytics in the Cloudflare Pages project (Settings → Web Analytics), which
@@ -49,12 +51,11 @@ build (or `pnpm dev`) starts, so restart the dev server to fetch again.
 See [DEPLOY.md](DEPLOY.md) for the Cloudflare Pages setup, the deploy hook, the daily
 rebuild workflow and a first-deploy checklist.
 
-### The build never fails because of the admin
+### The loader never throws; the production gate decides
 
 The fetch has a 10 second timeout and the payload is validated against the version 1 shape
-(`src/lib/admin-content/validate.ts`). On **any** of these, the build logs one warning
-(`[admin-content] Using src/data/fallback.json: <reason>`) and uses the committed
-`src/data/fallback.json` instead:
+(`src/lib/admin-content/validate.ts`). On **any** of these, the loader uses the committed
+`src/data/fallback.json` instead of throwing:
 
 - `ADMIN_CONTENT_URL` is unset, blank or not a URL
 - network error or timeout
@@ -68,6 +69,22 @@ The fetch has a 10 second timeout and the payload is validated against the versi
   no news (an admin that does not send the field yet)
 - a string or an array over its cap (text up to 2000 characters, titles 240, at most 100
   events, 12 photos per event and 50 FAQs, pillars, socials or board members)
+
+Whether that build may ship is decided by the **content gate** (`src/lib/admin-content/gate.ts`, a pure
+function run once per build from `src/data/content.ts`):
+
+| Build | Fallback or demo content | Result |
+| --- | --- | --- |
+| Production (`CF_PAGES_BRANCH` equals `PRODUCTION_BRANCH`, default `main`) | none | ok |
+| Production | yes | **fails** with one `[content-gate]` line (reason, admin host, "the previous deployment stays live") |
+| Production with `ALLOW_CONTENT_FALLBACK=1` | yes | continues, multi-line `[content-gate] WARNING` |
+| Anything else: local, GitHub CI, Pages preview branches | yes | continues, multi-line `[content-gate] WARNING` with the reason |
+
+"Demo content" is what the composed pages would render with a demo flag: events, pillars, FAQ or
+board extras. Only the admin host is ever printed, never the path, query or a token. The join
+section copy is still flagged `demo` pending board approval: it is reported as a separate note and
+does not fail production until `STRICT_JOIN` in `src/data/content.ts` is turned on (see
+[DEPLOY.md](DEPLOY.md#when-the-admin-is-down) for the runbook).
 
 Images are never downloaded at build time, so no image can fail the build (see Photos below).
 
@@ -83,7 +100,7 @@ copy in `src/data/site.ts`". Update the snapshot by hand when real content chang
 admin is expected to be down; `pnpm test` checks that it is valid and that its images exist.
 
 Placeholder (demo) content lives in `src/data/site.ts` and is shown **only on the fallback
-path**: demo events are merged into the timeline by date, and demo FAQ items and pillars fill
+path** (a production build refuses that path, see above): demo events are merged into the timeline by date, and demo FAQ items and pillars fill
 in while the snapshot has none. When the admin answers, its content is the whole truth: a
 section with nothing to show is left out.
 
