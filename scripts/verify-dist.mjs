@@ -14,6 +14,23 @@ const expectations = [
 	['novedades/rss.xml', ['<rss version="2.0">', '<language>es</language>']],
 	['en/novedades/rss.xml', ['<rss version="2.0">', '<language>en</language>']],
 	['og-default.png', []],
+	['404.html', ['name="robots" content="noindex"', 'href="/en/"', 'lang="en"']],
+	[
+		'_headers',
+		[
+			'/_astro/*',
+			'immutable',
+			'X-Content-Type-Options: nosniff',
+			'Referrer-Policy: strict-origin-when-cross-origin',
+			'Permissions-Policy: camera=(), microphone=(), geolocation=()',
+			"frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
+		],
+	],
+	['site.webmanifest', ['"name"', '"theme_color": "#053066"', '/icon-192.png', '/icon-512.png']],
+	['apple-touch-icon.png', []],
+	['favicon-32.png', []],
+	['icon-192.png', []],
+	['icon-512.png', []],
 	[
 		'index.html',
 		['rel="canonical"', 'property="og:image"', 'name="twitter:card"', 'application/ld+json', 'application/rss+xml'],
