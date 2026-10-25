@@ -1,11 +1,14 @@
 ---
 import '../styles/global.css';
+import { getContent } from '../data/content';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
+import { buildSocialMeta } from '../lib/seo/meta';
 
 interface Props {
 	title: string;
 	description: string;
-	// Share image (absolute or site-relative URL), for pages that have their own picture.
+	// Share image (absolute or site-relative URL), for pages that have their own picture. Without one, the brand's
+	// default 1200x630 image is used.
 	image?: string;
 	type?: 'website' | 'article';
 	// For pages that exist only as an empty state.
@@ -15,9 +18,20 @@ interface Props {
 const { title, description, image, type = 'website', noindex = false } = Astro.props;
 
 const locale = toLocale(Astro.currentLocale);
-const ogLocale = { es: 'es_EC', en: 'en_US' } as const;
-// The same page in every language. Absolute when the site URL is configured, which is what hreflang asks for.
-const alternateHref = (path: string) => (Astro.site ? new URL(path, Astro.site).href : path);
+// `site` is set in astro.config.mjs; every absolute URL of the page is built from it.
+const site = Astro.site ?? new URL(Astro.url.origin);
+const meta = buildSocialMeta({
+	site,
+	pathname: Astro.url.pathname,
+	locale,
+	title,
+	description,
+	siteName: getContent(locale).site.name,
+	image,
+	type,
+});
+// The same page in every language, absolute as hreflang asks for.
+const alternateHref = (path: string) => new URL(path, site).href;
 const alternates = locales.map((code) => ({ code, href: alternateHref(alternatePath(Astro.url.pathname, code)) }));
 ---
 
@@ -29,12 +43,23 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 		<meta name="description" content={description} />
 		<meta name="theme-color" content="#053066" />
 		{noindex && <meta name="robots" content="noindex" />}
-		<meta property="og:type" content={type} />
-		<meta property="og:locale" content={ogLocale[locale]} />
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
-		{image && <meta property="og:image" content={image} />}
-		{image && <meta name="twitter:card" content="summary_large_image" />}
+		<link rel="canonical" href={meta.canonical} />
+		<meta property="og:type" content={meta.type} />
+		<meta property="og:url" content={meta.url} />
+		<meta property="og:site_name" content={meta.siteName} />
+		<meta property="og:locale" content={meta.locale} />
+		{meta.alternateLocales.map((code) => (
+			<meta property="og:locale:alternate" content={code} />
+		))}
+		<meta property="og:title" content={meta.title} />
+		<meta property="og:description" content={meta.description} />
+		<meta property="og:image" content={meta.image} />
+		{meta.imageSize && <meta property="og:image:width" content={String(meta.imageSize.width)} />}
+		{meta.imageSize && <meta property="og:image:height" content={String(meta.imageSize.height)} />}
+		<meta name="twitter:card" content={meta.twitterCard} />
+		<meta name="twitter:title" content={meta.title} />
+		<meta name="twitter:description" content={meta.description} />
+		<meta name="twitter:image" content={meta.image} />
 		{alternates.map((alternate) => (
 			<link rel="alternate" hreflang={alternate.code} href={alternate.href} />
 		))}
