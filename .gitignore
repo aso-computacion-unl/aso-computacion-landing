@@ -26,3 +26,8 @@ pnpm-debug.log*
 # impeccable working files (keep surface briefs)
 .impeccable/*
 !.impeccable/surfaces/
+
+# test and audit output
+test-results/
+playwright-report/
+.lighthouseci/

@@ -83,21 +83,21 @@ const handle = (name: string) =>
 							<span>git show @{handle(member.name)}</span>
 							<span>{t('board.more')}</span>
 							{member.fun && (
-								<dl class="rest-fun">
-									<div>
-										<dt>{t('board.language')}</dt>
-										<dd>{member.fun.language}</dd>
-									</div>
-									<div>
-										<dt>commit message</dt>
-										<dd>"{member.fun.motto}"</dd>
-									</div>
-									<div>
-										<span class="demo-tag" style="margin-left:0">
-											demo
-										</span>
-									</div>
-								</dl>
+								<div class="rest-fun">
+									<dl>
+										<div>
+											<dt>{t('board.language')}</dt>
+											<dd>{member.fun.language}</dd>
+										</div>
+										<div>
+											<dt>commit message</dt>
+											<dd>"{member.fun.motto}"</dd>
+										</div>
+									</dl>
+									<span class="demo-tag" style="margin-left:0">
+										demo
+									</span>
+								</div>
 							)}
 						</div>
 					)}
@@ -113,21 +113,21 @@ const handle = (name: string) =>
 							<p class="show-role">{member.role}</p>
 							<p class="show-name">{member.name}</p>
 							{member.fun && (
-								<dl class="show-fun">
-									<div>
-										<dt>{t('board.language')}</dt>
-										<dd>{member.fun.language}</dd>
-									</div>
-									<div>
-										<dt>commit message</dt>
-										<dd>"{member.fun.motto}"</dd>
-									</div>
-									<div>
-										<span class="demo-tag" style="margin-left:0" title={t('demo.detail')}>
-											demo
-										</span>
-									</div>
-								</dl>
+								<div class="show-fun">
+									<dl>
+										<div>
+											<dt>{t('board.language')}</dt>
+											<dd>{member.fun.language}</dd>
+										</div>
+										<div>
+											<dt>commit message</dt>
+											<dd>"{member.fun.motto}"</dd>
+										</div>
+									</dl>
+									<span class="demo-tag" style="margin-left:0" title={t('demo.detail')}>
+										demo
+									</span>
+								</div>
 							)}
 						</div>
 					</div>
