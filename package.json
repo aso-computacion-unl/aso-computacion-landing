@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "assets:brand": "node scripts/generate-brand-assets.mjs"
+    "assets:brand": "node scripts/generate-brand-assets.mjs",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

@@ -202,6 +202,18 @@ date, cover, language, the organization as publisher). Content can never close t
 escaped by `serializeJsonLd`. The contact email is `contactEmail` in `src/data/site.ts`, used by the footer and
 the structured data: change it there only.
 
+Crawlers and readers:
+
+| What | Where |
+|------|-------|
+| `/sitemap-index.xml`, `/sitemap-0.xml` (every page with its `es-EC` / `en-US` alternates) | `@astrojs/sitemap` in `astro.config.mjs` |
+| `/robots.txt` (allows everything, points at the sitemap) | `src/pages/robots.txt.ts`, from `site` |
+| `/novedades/rss.xml` and `/en/novedades/rss.xml`, announced with `<link rel="alternate" type="application/rss+xml">` | `src/pages/**/rss.xml.ts` via `src/views/newsFeed.ts` (`@astrojs/rss`) |
+
+With no news, `/novedades` is `noindex` but the sitemap still lists it (the integration cannot see page content);
+the feed is valid and empty. `pnpm build && pnpm verify:dist` checks that these files exist and carry their key
+lines.
+
 The raster brand files under `public/` are generated from the vectors in `src/assets/brand/`:
 
 ```sh
@@ -218,7 +230,7 @@ src/
 │   └── site.ts           # landing-owned copy and demo placeholders
 ├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
 ├── i18n/                 # locales, localized paths, UI dictionary (es/en)
-├── lib/seo/              # canonical URL and social meta (+ tests)
+├── lib/seo/              # canonical URL, social meta, JSON-LD, robots.txt, RSS items (+ tests)
 ├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
 ├── views/                # the pages' bodies, shared by both languages
 ├── pages/                # thin routes: / and /novedades (es), /en/... (en)
