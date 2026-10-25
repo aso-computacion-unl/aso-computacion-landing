@@ -19,7 +19,8 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
 - Nadie empuja directo a `main`: todo cambio entra por un Pull Request.
 - Cada PR necesita **1 aprobación** de otra persona.
 - No se permite `force push` ni borrar `main`.
-- La CI (GitHub Actions) tiene que pasar en verde para mergear: corre `pnpm test` y `pnpm build` en cada PR. No usa secretos.
+- La CI (GitHub Actions) tiene que pasar en verde para mergear: corre auditoría de dependencias de producción (`pnpm audit`, falla con avisos altos o críticos), `pnpm lint`, `pnpm check`, `pnpm format:check`, `pnpm test` y `pnpm build` en cada PR. No usa secretos.
+- Dependabot abre PRs semanales: las actualizaciones menores y de parche llegan agrupadas; las mayores, por separado.
 
 ## Flujo de trabajo
 
@@ -33,6 +34,9 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
 4. **Comprobá localmente** (requiere Node 22 y pnpm); la CI corre lo mismo en el PR:
    ```sh
    pnpm install
+   pnpm lint
+   pnpm check          # astro check: tipos de .astro y .ts
+   pnpm format:check   # pnpm format lo arregla
    pnpm test
    pnpm build
    ```

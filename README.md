@@ -61,6 +61,7 @@ Requiere Node.js 22.23.4 o superior y [pnpm](https://pnpm.io).
 pnpm install
 pnpm dev      # http://localhost:4321
 pnpm test     # pruebas
+pnpm lint     # ESLint; pnpm check (tipos) y pnpm format:check completan lo que corre la CI
 pnpm build    # genera ./dist
 ```
 

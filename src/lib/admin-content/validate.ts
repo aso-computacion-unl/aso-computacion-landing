@@ -133,7 +133,6 @@ const eventType = (value: unknown, path: string): EventType =>
 	(eventTypes as readonly unknown[]).includes(value) ? (value as EventType) : fail(path, `expected one of ${eventTypes.join(', ')}`);
 
 const short = (value: unknown, path: string) => text(value, path, LIMIT.short);
-const title = (value: unknown, path: string) => text(value, path, LIMIT.title);
 const body = (value: unknown, path: string) => text(value, path, LIMIT.text);
 
 const LOCAL_IMAGE = /^\/src\/assets\/[\w./-]+$/;

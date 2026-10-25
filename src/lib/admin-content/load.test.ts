@@ -7,7 +7,7 @@ const fallback = payload({ events: [], faqs: [], settings: null });
 const api = payload();
 
 const respond = (body: unknown, init: ResponseInit = { status: 200 }) =>
-	vi.fn(async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), init));
+	vi.fn<typeof fetch>(async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), init));
 
 const setup = (overrides: Partial<Parameters<typeof loadPublicContent>[0]> = {}) => {
 	const warn = vi.fn();
