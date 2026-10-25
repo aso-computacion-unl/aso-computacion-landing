@@ -1,6 +1,7 @@
 ---
 import Button from '../components/Button.astro';
 import NewsProse from '../components/NewsProse.astro';
+import RelatedNews from '../components/RelatedNews.astro';
 import Photo from '../components/Photo.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -71,6 +72,8 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 				<div class="mt-10 lg:mt-12">
 					<NewsProse body={item.body} />
 				</div>
+
+				<RelatedNews slug={item.slug} />
 
 				<div class="mt-14 border-t border-sky/30 pt-8">
 					<Button href={newsHref} variant="ghost">

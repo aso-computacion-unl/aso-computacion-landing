@@ -63,6 +63,7 @@ const es = {
 	'news.postTitle': '{title} · Novedades · {name}',
 	'news.postAside': 'Datos de la novedad',
 	'news.backAll': '← Todas las novedades',
+	'news.related': 'Sigue leyendo',
 
 	'notFound.eyebrow': '$ git checkout pagina',
 	'notFound.title': 'No encontramos esa página',
@@ -156,6 +157,7 @@ const en: Record<keyof typeof es, string> = {
 	'news.postTitle': '{title} · News · {name}',
 	'news.postAside': 'News details',
 	'news.backAll': '← All news',
+	'news.related': 'Keep reading',
 
 	'notFound.eyebrow': '$ git checkout page',
 	'notFound.title': 'We could not find that page',

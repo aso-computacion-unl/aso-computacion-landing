@@ -150,7 +150,9 @@ Where it shows up:
   `/novedades`. It is left out when there are no news, and so is the "Novedades" nav link.
 - **`/novedades`**: every item. **`/novedades/<slug>`**: one static page per item, built by
   `getStaticPaths` from the resolved content, with its own `<title>`, meta description (the
-  summary) and share image (the cover).
+  summary) and share image (the cover). The post ends with "Sigue leyendo" / "Keep reading": up to 3
+  other posts of the same language, newest first (`relatedNews` in `src/lib/admin-content/news.ts`),
+  left out when there are none.
 - **No news** (the fallback snapshot has `"news": []`, and so does an admin that has none
   published): there are no `/novedades/<slug>` pages, and `/novedades` still builds as a short
   empty state marked `noindex`, so a shared or bookmarked link never ends in a 404.
