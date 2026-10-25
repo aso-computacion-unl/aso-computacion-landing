@@ -62,15 +62,18 @@ const claim = (name: string, taken: Set<string>): string => {
 	return unique;
 };
 
+// The shell answers these before it looks up a topic or a command, so content cannot take them.
+const RESERVED_NAMES = ['help', 'ayuda', 'ls', 'clear'];
+
 // S6: the FAQ's own command is its topic; without one the topic is the question as a slug.
 export const toFaqItems = (faqs: readonly PublicFaq[]): FaqItem[] => {
-	const taken = new Set<string>();
+	const taken = new Set(RESERVED_NAMES);
 	return faqs.map((faq) => ({ topic: claim(faq.command ?? faqTopic(faq.question), taken), q: faq.question, a: faq.answer }));
 };
 
 // `topics` are the names the FAQ items already use; a free command that collides with one is renamed.
 export const toFreeCommands = (commands: readonly PublicCommand[], topics: Iterable<string>): FaqCommand[] => {
-	const taken = new Set(topics);
+	const taken = new Set([...RESERVED_NAMES, ...topics]);
 	return commands.map((item) => ({ name: claim(item.command, taken), description: item.description, output: item.output }));
 };
 

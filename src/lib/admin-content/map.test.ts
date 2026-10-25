@@ -83,6 +83,13 @@ describe('toFaqItems: commands', () => {
 	});
 });
 
+describe('toFaqItems: reserved names', () => {
+	it('suffixes a FAQ command the shell reserves for its built-ins', () => {
+		const items = toFaqItems(['help', 'ayuda', 'ls', 'clear'].map((command) => ({ question: `¿${command}?`, answer: 'Sí.', command })));
+		expect(items.map((item) => item.topic)).toEqual(['help-2', 'ayuda-2', 'ls-2', 'clear-2']);
+	});
+});
+
 describe('toFreeCommands', () => {
 	const free = (command: string) => ({ id: command, command, description: `desc ${command}`, output: `out ${command}` });
 
@@ -96,6 +103,11 @@ describe('toFreeCommands', () => {
 	it('suffixes a name that a FAQ topic or an earlier command already took', () => {
 		const result = toFreeCommands([free('costo'), free('horario'), free('horario')], ['costo']);
 		expect(result.map((command) => command.name)).toEqual(['costo-2', 'horario', 'horario-2']);
+	});
+
+	it('suffixes a name the shell reserves for its built-ins', () => {
+		const result = toFreeCommands([free('help'), free('ayuda'), free('ls'), free('clear')], []);
+		expect(result.map((command) => command.name)).toEqual(['help-2', 'ayuda-2', 'ls-2', 'clear-2']);
 	});
 });
 

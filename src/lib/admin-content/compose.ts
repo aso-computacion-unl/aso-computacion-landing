@@ -103,7 +103,7 @@ export function composeSiteContent(options: {
 
 	const news = toNews(content.news, ctx);
 
-	const hasContent: Record<string, boolean> = { [NEWS_PATH]: news.length > 0, '#faq': faqItems.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
+	const hasContent: Record<string, boolean> = { [NEWS_PATH]: news.length > 0, '#faq': faqItems.length > 0 || faqCommands.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
 	const navLinks = baseline.navLinks.filter((link) => hasContent[link.href] ?? true);
 
 	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, faqCommands, team, socials, collage, news, latestNews: latestNews(news) };
