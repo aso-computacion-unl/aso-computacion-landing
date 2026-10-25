@@ -35,6 +35,10 @@ export const site: SiteCopy = {
 		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
 };
 
+// The address people can write to. Shown in the footer and published as the organization's contact in the structured
+// data: change it here only.
+export const contactEmail = 'alejandro.padilla@unl.edu.ec';
+
 // Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
 export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
 

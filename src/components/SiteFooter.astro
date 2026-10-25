@@ -1,5 +1,6 @@
 ---
 import { getContent } from '../data/content';
+import { contactEmail } from '../data/site';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 
@@ -17,7 +18,7 @@ const authorLinks = [
 		href: 'https://www.linkedin.com/in/alejandro-emanuel-padilla-espinoza-58003b408/',
 		external: true,
 	},
-	{ label: t('footer.email'), href: 'mailto:alejandro.padilla@unl.edu.ec', external: false },
+	{ label: t('footer.email'), href: `mailto:${contactEmail}`, external: false },
 ];
 const [before, after] = t('footer.madeBy').split('{name}');
 ---

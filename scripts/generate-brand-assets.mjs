@@ -19,4 +19,14 @@ async function shareImage() {
 		.toFile(out('og-default.png'));
 }
 
+// The white isotype on a navy square: app icon, and the logo structured data points at. The isotype takes `fill` of
+// the side, which leaves the margin launchers and tab bars expect.
+async function icon(name, size, fill = 0.62) {
+	await sharp({ create: { width: size, height: size, channels: 3, background: NAVY } })
+		.composite([{ input: await logo('isotype-white.svg', Math.round(size * fill)), gravity: 'center' }])
+		.png({ compressionLevel: 9 })
+		.toFile(out(name));
+}
+
 await shareImage();
+await icon('icon-512.png', 512);

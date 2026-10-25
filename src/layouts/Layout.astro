@@ -1,7 +1,9 @@
 ---
 import '../styles/global.css';
 import { getContent } from '../data/content';
+import { contactEmail } from '../data/site';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
+import { buildNewsArticle, buildOrganization, serializeJsonLd } from '../lib/seo/jsonld';
 import { buildSocialMeta } from '../lib/seo/meta';
 
 interface Props {
@@ -13,23 +15,48 @@ interface Props {
 	type?: 'website' | 'article';
 	// For pages that exist only as an empty state.
 	noindex?: boolean;
+	// A news post: adds its NewsArticle structured data (the description and image are the page's own).
+	article?: { headline: string; datePublished: string };
 }
 
-const { title, description, image, type = 'website', noindex = false } = Astro.props;
+const { title, description, image, type = 'website', noindex = false, article } = Astro.props;
 
 const locale = toLocale(Astro.currentLocale);
 // `site` is set in astro.config.mjs; every absolute URL of the page is built from it.
 const site = Astro.site ?? new URL(Astro.url.origin);
+const content = getContent(locale);
 const meta = buildSocialMeta({
 	site,
 	pathname: Astro.url.pathname,
 	locale,
 	title,
 	description,
-	siteName: getContent(locale).site.name,
+	siteName: content.site.name,
 	image,
 	type,
 });
+const organization = {
+	site,
+	name: content.site.name,
+	logoPath: '/icon-512.png',
+	email: contactEmail,
+	sameAs: content.socials.map((social) => social.href),
+};
+const structuredData = [
+	buildOrganization(organization),
+	...(article
+		? [
+				buildNewsArticle({
+					organization,
+					...article,
+					description,
+					image: meta.image,
+					inLanguage: htmlLang[locale],
+					url: meta.canonical,
+				}),
+			]
+		: []),
+];
 // The same page in every language, absolute as hreflang asks for.
 const alternateHref = (path: string) => new URL(path, site).href;
 const alternates = locales.map((code) => ({ code, href: alternateHref(alternatePath(Astro.url.pathname, code)) }));
@@ -65,6 +92,9 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 		))}
 		<link rel="alternate" hreflang="x-default" href={alternateHref(alternatePath(Astro.url.pathname, defaultLocale))} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		{structuredData.map((data) => (
+			<script type="application/ld+json" set:html={serializeJsonLd(data)} />
+		))}
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<script is:inline>
