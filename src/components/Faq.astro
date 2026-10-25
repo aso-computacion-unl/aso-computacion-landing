@@ -50,6 +50,24 @@ const { faq } = getContent(locale);
 							</li>
 						))
 					}
+					{
+						/* Free commands: the shell reads their name, description and output from these rows (they exist only in the terminal). */
+						faq.commands.map((command) => (
+							<li>
+								<button
+									type="button"
+									class="faq-guide-row"
+									data-faq-run={command.name}
+									data-faq-command
+									data-description={command.description}
+									data-output={command.output}
+								>
+									<span class="faq-guide-cmd">❯ {command.name}</span>
+									<span class="faq-guide-q">{command.description}</span>
+								</button>
+							</li>
+						))
+					}
 				</ul>
 				<p class="faq-guide-hint">{t('faq.hint')} <code>help</code>, <code>git help &lt;{t('faq.topicWord')}&gt;</code>, <code>clear</code></p>
 			</div>

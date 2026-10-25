@@ -150,6 +150,12 @@ describe('composeSiteContent: API path', () => {
 		expect(compose(api()).navLinks).toHaveLength(5);
 	});
 
+	it('keeps the FAQ link when there are free commands but no FAQs', () => {
+		const commands = [{ id: '1', command: 'horario', description: 'd', output: 'o' }];
+		const result = compose(api(payload({ faqs: [], board: [], socials: [], commands })));
+		expect(result.navLinks.map((l) => l.href)).toEqual(['#actividades', '#nosotros', '#faq']);
+	});
+
 	it('lists news newest first, with the three latest for the home, and shows the nav link only when there are news', () => {
 		const news = ['2026-01-01', '2026-04-01', '2026-02-01', '2026-03-01'].map((publishedAt) => newsItem({ slug: `n-${publishedAt}`, publishedAt }));
 		const withNews = compose(api(payload({ news })));
@@ -197,6 +203,18 @@ describe('composeSiteContent: fallback path', () => {
 		const real = compose(fallback(payload({ events: [] })));
 		expect(real.faqItems.map((f) => f.q)).toEqual(['¿Quién puede participar?']);
 		expect(real.pillars.map((p) => p.title)).toEqual(['Representamos']);
+	});
+
+	it('exposes the free commands, renamed when a FAQ topic already uses the name', () => {
+		const command = { id: '1', command: 'tiene-costo', description: 'd', output: 'o' };
+		const faqs = [{ question: '¿Tiene costo?', answer: 'No.', command: null }];
+		const result = compose(api(payload({ faqs, commands: [command, { ...command, id: '2', command: 'horario' }] })));
+		expect(result.faqItems.map((item) => item.topic)).toEqual(['tiene-costo']);
+		expect(result.faqCommands.map((item) => item.name)).toEqual(['tiene-costo-2', 'horario']);
+	});
+
+	it('builds with no free commands when the payload has none', () => {
+		expect(compose(api()).faqCommands).toEqual([]);
 	});
 
 	it('flags the FAQ as demo only while it is showing placeholders', () => {

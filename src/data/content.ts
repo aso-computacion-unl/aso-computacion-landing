@@ -46,7 +46,7 @@ function build(locale: Locale) {
 		timeline: resolved.timeline,
 		nextEvent: resolved.nextEvent,
 		pillars: resolved.pillars,
-		faq: { ...landing.faqCopy, demo: resolved.faqIsDemo, items: resolved.faqItems },
+		faq: { ...landing.faqCopy, demo: resolved.faqIsDemo, items: resolved.faqItems, commands: resolved.faqCommands },
 		team: resolved.team,
 		socials: resolved.socials,
 		collagePhotos: resolved.collage,

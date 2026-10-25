@@ -2,10 +2,11 @@
 // I/O: the bundled-image lookup is passed in, so every rule here is unit-testable. Events live in timeline.ts.
 import type { ImageMetadata } from 'astro';
 import type { Locale } from '../../i18n/locales';
-import type { BoardFun, FaqItem, Photo, Pillar, SiteCopy, Social, TeamMember } from './model';
+import type { BoardFun, FaqCommand, FaqItem, Photo, Pillar, SiteCopy, Social, TeamMember } from './model';
 import { platformIcon } from './platform-icons';
 import type {
 	PublicBoardMember,
+	PublicCommand,
 	PublicFaq,
 	PublicImage,
 	PublicPillar,
@@ -53,8 +54,28 @@ export const toPhoto = (image: PublicImage, ctx: MapContext): Photo => {
 
 export const isRemote = (photo: Photo): photo is Extract<Photo, { src: string }> => typeof photo.src === 'string';
 
-export const toFaqItems = (faqs: readonly PublicFaq[]): FaqItem[] =>
-	faqs.map((faq) => ({ topic: faqTopic(faq.question), q: faq.question, a: faq.answer }));
+// S7: the first holder of a name keeps it; later ones get -2, -3... instead of failing the build.
+const claim = (name: string, taken: Set<string>): string => {
+	let unique = name;
+	for (let n = 2; taken.has(unique); n += 1) unique = `${name}-${n}`;
+	taken.add(unique);
+	return unique;
+};
+
+// The shell answers these before it looks up a topic or a command, so content cannot take them.
+const RESERVED_NAMES = ['help', 'ayuda', 'ls', 'clear'];
+
+// S6: the FAQ's own command is its topic; without one the topic is the question as a slug.
+export const toFaqItems = (faqs: readonly PublicFaq[]): FaqItem[] => {
+	const taken = new Set(RESERVED_NAMES);
+	return faqs.map((faq) => ({ topic: claim(faq.command ?? faqTopic(faq.question), taken), q: faq.question, a: faq.answer }));
+};
+
+// `topics` are the names the FAQ items already use; a free command that collides with one is renamed.
+export const toFreeCommands = (commands: readonly PublicCommand[], topics: Iterable<string>): FaqCommand[] => {
+	const taken = new Set([...RESERVED_NAMES, ...topics]);
+	return commands.map((item) => ({ name: claim(item.command, taken), description: item.description, output: item.output }));
+};
 
 export const toPillars = (pillars: readonly PublicPillar[], ctx: MapContext): Pillar[] =>
 	pillars.map((pillar) => ({

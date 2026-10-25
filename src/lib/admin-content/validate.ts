@@ -5,6 +5,7 @@ import {
 	type DatePrecision,
 	type EventType,
 	type PublicBoardMember,
+	type PublicCommand,
 	type PublicContent,
 	type PublicEvent,
 	type PublicFaq,
@@ -52,6 +53,12 @@ const LIMIT = {
 	newsBody: 10_000,
 	newsAlt: 200,
 	newsSlug: 100,
+	// Free commands follow the admin's contract (S2, S4) exactly.
+	commandMin: 2,
+	commandMax: 28,
+	commandDescription: 80,
+	commandOutput: 600,
+	commandId: 100,
 } as const;
 
 const COUNT = {
@@ -107,6 +114,16 @@ const NEWS_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const newsSlug = (value: unknown, path: string): string => {
 	const slug = text(value, path, LIMIT.newsSlug);
 	return NEWS_SLUG.test(slug) ? slug : fail(path, 'expected lowercase letters and digits joined by single hyphens');
+};
+
+// A command is typed in the FAQ terminal: lowercase letters and digits joined by single hyphens, starting with a letter.
+const COMMAND_NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+
+const commandName = (value: unknown, path: string): string => {
+	const name = typeof value === 'string' ? value : fail(path, 'expected a string');
+	return name.length >= LIMIT.commandMin && name.length <= LIMIT.commandMax && COMMAND_NAME.test(name)
+		? name
+		: fail(path, `expected ${LIMIT.commandMin}-${LIMIT.commandMax} lowercase letters, digits and single hyphens, starting with a letter`);
 };
 
 const datePrecision = (value: unknown, path: string): DatePrecision =>
@@ -200,7 +217,22 @@ const readers = (options: ParseOptions) => {
 
 	const readFaq = (value: unknown, path: string): PublicFaq => {
 		const raw = object(value, path);
-		return { question: nonEmpty(raw.question, `${path}.question`, LIMIT.title), answer: body(raw.answer, `${path}.answer`) };
+		return {
+			question: nonEmpty(raw.question, `${path}.question`, LIMIT.title),
+			answer: body(raw.answer, `${path}.answer`),
+			// Added after version 1 shipped: a payload without it has no custom topic.
+			command: raw.command === undefined ? null : nullable(raw.command, `${path}.command`, commandName),
+		};
+	};
+
+	const readCommand = (value: unknown, path: string): PublicCommand => {
+		const raw = object(value, path);
+		return {
+			id: nonEmpty(raw.id, `${path}.id`, LIMIT.commandId),
+			command: commandName(raw.command, `${path}.command`),
+			description: nonEmpty(raw.description, `${path}.description`, LIMIT.commandDescription),
+			output: nonEmpty(raw.output, `${path}.output`, LIMIT.commandOutput),
+		};
 	};
 
 	const readPillar = (value: unknown, path: string): PublicPillar => {
@@ -243,7 +275,7 @@ const readers = (options: ParseOptions) => {
 		};
 	};
 
-	return { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings, readNewsItem };
+	return { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem };
 };
 
 // Two items with one slug would be two pages at one URL.
@@ -264,7 +296,7 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 		if (root.version !== PUBLIC_CONTENT_VERSION) {
 			fail('version', `unsupported version ${JSON.stringify(root.version)} (this landing reads version ${PUBLIC_CONTENT_VERSION})`);
 		}
-		const { list, readEvent, readFaq, readPillar, readSocial, readMember, readSettings, readNewsItem } = readers(options);
+		const { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem } = readers(options);
 		return {
 			ok: true,
 			content: {
@@ -278,6 +310,8 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 				settings: nullable(root.settings, 'settings', readSettings),
 				// Added after version 1 shipped: an admin that does not send it yet has no news.
 				news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
+				// Added after version 1 shipped: an admin that does not send it yet has no free commands.
+				commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
 			},
 		};
 	} catch (error) {

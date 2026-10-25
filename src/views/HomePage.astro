@@ -28,7 +28,7 @@ const { faq, latestNews, site, socials, team } = getContent(toLocale(Astro.curre
 		<About />
 		{team.length > 0 && <Board />}
 		<Join />
-		{faq.items.length > 0 && <Faq />}
+		{(faq.items.length > 0 || faq.commands.length > 0) && <Faq />}
 		{socials.length > 0 && <Socials />}
 	</main>
 	<SiteFooter />
