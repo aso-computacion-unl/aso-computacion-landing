@@ -26,6 +26,10 @@ previews should read the admin too):
 | --- | --- |
 | `NODE_VERSION` | `22.23.4` or a newer 22.x. `package.json` requires `>=22.23.4`. |
 | `ADMIN_CONTENT_URL` | Full URL of the admin's `GET /api/public/content`, for example `https://your-admin.vercel.app/api/public/content`. |
+| `PUBLIC_CF_BEACON_TOKEN` | Optional. Token of the site in Cloudflare Web Analytics (Analytics & Logs → Web Analytics → the site's snippet). The build then adds the cookie-free beacon; unset, it adds nothing. |
+
+Instead of the variable you can switch on Web Analytics in the Pages project settings, which injects the beacon
+automatically. Do one or the other: with both, visits are counted twice.
 
 Package manager: the repo is **pnpm only**. Cloudflare picks pnpm because of `pnpm-lock.yaml`
 (lockfile version 9). If the install step complains about the pnpm version, pin it with the

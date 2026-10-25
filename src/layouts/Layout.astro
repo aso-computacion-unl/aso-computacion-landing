@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { getContent } from '../data/content';
 import { contactEmail } from '../data/site';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
+import { cloudflareBeacon } from '../lib/analytics';
 import { buildNewsArticle, buildOrganization, serializeJsonLd } from '../lib/seo/jsonld';
 import { buildSocialMeta } from '../lib/seo/meta';
 import { newsFeedPath } from '../lib/seo/rss';
@@ -27,6 +28,7 @@ const { title, description, image, type = 'website', noindex = false, article, s
 const locale = toLocale(Astro.currentLocale);
 // `site` is set in astro.config.mjs; every absolute URL of the page is built from it.
 const site = Astro.site ?? new URL(Astro.url.origin);
+const beacon = cloudflareBeacon(import.meta.env.PUBLIC_CF_BEACON_TOKEN);
 const content = getContent(locale);
 const meta = buildSocialMeta({
 	site,
@@ -152,5 +154,6 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 			initThemeToggle();
 			import '../scripts/motion';
 		</script>
+		{beacon && <script is:inline defer src={beacon.src} data-cf-beacon={beacon.config} />}
 	</body>
 </html>

@@ -38,7 +38,12 @@ triggers one through a deploy hook, plus a daily rebuild as a safety net).
 ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 ```
 
-On Cloudflare Pages, set it under Settings → Environment variables. It is read once when the
+| `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered. Not secret: it ends up in the page. |
+
+Alternative to the variable: enable Web Analytics in the Cloudflare Pages project (Settings → Web Analytics), which
+injects the beacon by itself. In that case leave `PUBLIC_CF_BEACON_TOKEN` unset, or visits are counted twice.
+
+On Cloudflare Pages, set them under Settings → Environment variables. They are read once when the
 build (or `pnpm dev`) starts, so restart the dev server to fetch again.
 
 See [DEPLOY.md](DEPLOY.md) for the Cloudflare Pages setup, the deploy hook, the daily
