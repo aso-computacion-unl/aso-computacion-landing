@@ -9,11 +9,13 @@
 //     collage rows slide against each other, board cards stagger up, the ribbon reacts to scroll velocity.
 // Everything is visible without JS. The pre-motion state lives behind `html.motion` (set in Layout, removed
 // when motion is reduced or this script fails), so reduced motion gets no pin and no movement at all.
+// Loading: GSAP and ScrollTrigger are fetched after the first paint, once the browser is idle, and never under reduced
+// motion; Lenis only where a mouse is the main input (see motion-policy.ts).
 
 import type { gsap } from 'gsap';
+import { planMotion, readMotionEnv, type MotionPlan } from './motion-policy';
 
 const root = document.documentElement;
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Cursor bar (underscore) of the isotype, in viewBox units: width and centre.
 const CURSOR_W = 32.29;
@@ -79,18 +81,20 @@ const q = <T extends Element>(selector: string, scope: ParentNode = document) =>
 const qa = <T extends Element>(selector: string, scope: ParentNode = document) =>
 	Array.from(scope.querySelectorAll<T>(selector));
 
-async function init() {
-	const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
+async function init(plan: MotionPlan) {
+	const [{ gsap }, { ScrollTrigger }, lenisModule] = await Promise.all([
 		import('gsap'),
 		import('gsap/ScrollTrigger'),
-		import('lenis'),
+		plan.lenis ? import('lenis') : null,
 	]);
 	gsap.registerPlugin(ScrollTrigger);
 	ScrollTrigger.config({ ignoreMobileResize: true });
 
-	const lenis = new Lenis({ anchors: { offset: -72 } });
-	lenis.on('scroll', ScrollTrigger.update);
-	gsap.ticker.add((time) => lenis.raf(time * 1000));
+	if (lenisModule) {
+		const lenis = new lenisModule.default({ anchors: { offset: -72 } });
+		lenis.on('scroll', ScrollTrigger.update);
+		gsap.ticker.add((time) => lenis.raf(time * 1000));
+	}
 	gsap.ticker.lagSmoothing(0);
 
 	// Fire as soon as the element is past `start`, even if the page loads already scrolled beyond it.
@@ -529,8 +533,13 @@ async function init() {
 	root.dataset.motionReady = 'true';
 }
 
-if (reduced) {
-	root.classList.remove('motion');
+// After the first paint, when the main thread is idle (a second at most; Safari has no idle callback).
+const whenIdle = (run: () => void) =>
+	'requestIdleCallback' in window ? window.requestIdleCallback(run, { timeout: 1000 }) : setTimeout(run, 200);
+
+const plan = planMotion(readMotionEnv((query) => window.matchMedia(query)));
+if (plan.gsap) {
+	whenIdle(() => init(plan).catch(() => root.classList.remove('motion')));
 } else {
-	init().catch(() => root.classList.remove('motion'));
+	root.classList.remove('motion');
 }
