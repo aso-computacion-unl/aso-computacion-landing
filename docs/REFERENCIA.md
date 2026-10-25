@@ -176,8 +176,19 @@ in that payload must be Cloudinary ones.
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback, mapping and the Markdown renderer
+pnpm test      # vitest: fetch, validation, fallback, mapping, Markdown, share links, related posts, motion plan
+pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
+
+`pnpm test:e2e` (CI job `e2e`) runs two suites in `e2e/`, on the fallback build so it needs no secrets:
+
+- `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/` (and the first news post
+  when the fallback has one), in the dark and the light theme with motion reduced. Any **serious or critical**
+  violation fails, and the failure prints the rule and the offending elements.
+- `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download.
+
+First time: `pnpm exec playwright install chromium`. To see what the home page downloads on first load:
+`pnpm build && pnpm preview` and, in another terminal, `pnpm measure:js`.
 
 ## Editing content
 
