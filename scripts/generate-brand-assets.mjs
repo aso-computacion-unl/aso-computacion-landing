@@ -19,7 +19,7 @@ async function shareImage() {
 		.toFile(out('og-default.png'));
 }
 
-// The white isotype on a navy square: app icon, and the logo structured data points at. The isotype takes `fill` of
+// The white isotype on a navy square: app and tab icons, and the logo the structured data points at. The isotype takes `fill` of
 // the side, which leaves the margin launchers and tab bars expect.
 async function icon(name, size, fill = 0.62) {
 	await sharp({ create: { width: size, height: size, channels: 3, background: NAVY } })
@@ -30,3 +30,7 @@ async function icon(name, size, fill = 0.62) {
 
 await shareImage();
 await icon('icon-512.png', 512);
+await icon('icon-192.png', 192);
+await icon('apple-touch-icon.png', 180);
+// Small sizes get a bigger isotype: the margin would eat it.
+await icon('favicon-32.png', 32, 0.78);

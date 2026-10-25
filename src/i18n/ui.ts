@@ -64,6 +64,11 @@ const es = {
 	'news.postAside': 'Datos de la novedad',
 	'news.backAll': '← Todas las novedades',
 
+	'notFound.eyebrow': '$ git checkout pagina',
+	'notFound.title': 'No encontramos esa página',
+	'notFound.lead': 'El enlace puede estar roto o la página ya no existe. Vuelve al inicio y sigue desde ahí.',
+	'notFound.home': 'Volver al inicio',
+
 	'board.title': 'Directiva',
 	'board.lead':
 		'Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas.',
@@ -151,6 +156,11 @@ const en: Record<keyof typeof es, string> = {
 	'news.postTitle': '{title} · News · {name}',
 	'news.postAside': 'News details',
 	'news.backAll': '← All news',
+
+	'notFound.eyebrow': '$ git checkout page',
+	'notFound.title': 'We could not find that page',
+	'notFound.lead': 'The link may be broken or the page may no longer exist. Head back home and pick up from there.',
+	'notFound.home': 'Back to the English home',
 
 	'board.title': 'Board',
 	'board.lead': 'The people who represent Computer Science students today. Hover or tap a card to meet them.',

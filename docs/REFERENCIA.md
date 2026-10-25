@@ -202,13 +202,19 @@ date, cover, language, the organization as publisher). Content can never close t
 escaped by `serializeJsonLd`. The contact email is `contactEmail` in `src/data/site.ts`, used by the footer and
 the structured data: change it there only.
 
-Crawlers and readers:
+Crawlers, readers and hosting:
 
 | What | Where |
 |------|-------|
 | `/sitemap-index.xml`, `/sitemap-0.xml` (every page with its `es-EC` / `en-US` alternates) | `@astrojs/sitemap` in `astro.config.mjs` |
 | `/robots.txt` (allows everything, points at the sitemap) | `src/pages/robots.txt.ts`, from `site` |
 | `/novedades/rss.xml` and `/en/novedades/rss.xml`, announced with `<link rel="alternate" type="application/rss+xml">` | `src/pages/**/rss.xml.ts` via `src/views/newsFeed.ts` (`@astrojs/rss`) |
+| `/404.html` (Spanish first, English below, `noindex`; Cloudflare Pages serves it for every unknown URL) | `src/pages/404.astro` |
+| Response headers: immutable cache for `/_astro/*`; `nosniff`, `Referrer-Policy`, `Permissions-Policy`, and a CSP limited to `frame-ancestors 'none'; base-uri 'self'; object-src 'none'` | `public/_headers` |
+| `/site.webmanifest`, `apple-touch-icon.png`, `favicon-32.png`, `icon-192.png`, `icon-512.png` | `public/`, linked from `Layout.astro`; the PNGs come from `pnpm assets:brand` |
+
+The CSP has no `script-src`/`style-src` on purpose: the layout has inline scripts (theme, motion) and a stricter policy
+would break the site until they are moved out. The manifest's `theme_color` matches the `theme-color` meta in the layout.
 
 With no news, `/novedades` is `noindex` but the sitemap still lists it (the integration cannot see page content);
 the feed is valid and empty. `pnpm build && pnpm verify:dist` checks that these files exist and carry their key
@@ -233,7 +239,7 @@ src/
 ├── lib/seo/              # canonical URL, social meta, JSON-LD, robots.txt, RSS items (+ tests)
 ├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
 ├── views/                # the pages' bodies, shared by both languages
-├── pages/                # thin routes: / and /novedades (es), /en/... (en)
+├── pages/                # thin routes: / and /novedades (es), /en/... (en); 404, robots.txt, RSS
 └── styles/global.css     # Tailwind entry point
 ```
 
