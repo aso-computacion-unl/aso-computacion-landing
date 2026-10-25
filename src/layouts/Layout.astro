@@ -35,7 +35,9 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 		<meta property="og:description" content={description} />
 		{image && <meta property="og:image" content={image} />}
 		{image && <meta name="twitter:card" content="summary_large_image" />}
-		{alternates.map((alternate) => <link rel="alternate" hreflang={alternate.code} href={alternate.href} />)}
+		{alternates.map((alternate) => (
+			<link rel="alternate" hreflang={alternate.code} href={alternate.href} />
+		))}
 		<link rel="alternate" hreflang="x-default" href={alternateHref(alternatePath(Astro.url.pathname, defaultLocale))} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
@@ -50,7 +52,12 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 				} catch {
 					// Storage blocked (private mode, policy): fall back to the system preference.
 				}
-				const theme = stored === 'light' || stored === 'dark' ? stored : window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+				const theme =
+					stored === 'light' || stored === 'dark'
+						? stored
+						: window.matchMedia('(prefers-color-scheme: light)').matches
+							? 'light'
+							: 'dark';
 				document.documentElement.dataset.theme = theme;
 				if (theme === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f4f7fb');
 			})();

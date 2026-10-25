@@ -32,22 +32,22 @@ const empty = news.length === 0;
 				lead={empty ? t('news.empty') : t('news.pageLead')}
 			/>
 
-			{
-				empty ? (
-					<div class="mt-12 flex flex-wrap gap-4 lg:mt-16">
-						<Button href={localizedPath('/#redes', locale)}>{t('news.seeSocials')}</Button>
-						<Button href={localizedPath('/', locale)} variant="ghost">{t('news.backHome')}</Button>
-					</div>
-				) : (
-					<ul class="mt-12 grid gap-4 lg:mt-16 xl:grid-cols-2 xl:gap-5">
-						{news.map((item) => (
-							<li class="min-w-0">
-								<NewsCard item={item} variant="row" as="h2" />
-							</li>
-						))}
-					</ul>
-				)
-			}
+			{empty ? (
+				<div class="mt-12 flex flex-wrap gap-4 lg:mt-16">
+					<Button href={localizedPath('/#redes', locale)}>{t('news.seeSocials')}</Button>
+					<Button href={localizedPath('/', locale)} variant="ghost">
+						{t('news.backHome')}
+					</Button>
+				</div>
+			) : (
+				<ul class="mt-12 grid gap-4 lg:mt-16 xl:grid-cols-2 xl:gap-5">
+					{news.map((item) => (
+						<li class="min-w-0">
+							<NewsCard item={item} variant="row" as="h2" />
+						</li>
+					))}
+				</ul>
+			)}
 		</div>
 	</main>
 	<SiteFooter />

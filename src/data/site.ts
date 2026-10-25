@@ -63,7 +63,10 @@ export const demoPillars: Pillar[] = [
 		word: 'VOZ',
 		title: 'Representamos',
 		text: 'Llevamos lo que piensan los estudiantes de Computación hasta quienes toman las decisiones en la carrera.',
-		image: { src: charlaCiberseguridad, alt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro' },
+		image: {
+			src: charlaCiberseguridad,
+			alt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro',
+		},
 		demo: true,
 	},
 	{
@@ -178,7 +181,10 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		description: 'Cómo se protege la información hoy y por dónde puedes empezar a aprender.',
 		meta: { hora: '16:00', lugar: 'Auditorio de la facultad', para: 'todos los ciclos' },
 		featured: true,
-		image: { src: charlaCiberseguridad, alt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro' },
+		image: {
+			src: charlaCiberseguridad,
+			alt: 'Foto de ejemplo: público sentado durante una charla en un auditorio oscuro',
+		},
 	},
 	{
 		id: 'torneo-programacion',
@@ -191,7 +197,10 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		description: 'Resolver problemas contra el reloj, en equipo, para cerrar el semestre.',
 		meta: { hora: '14:00', lugar: 'Laboratorios de la carrera', para: 'todos los ciclos' },
 		featured: true,
-		image: { src: torneoProgramacion, alt: 'Foto de ejemplo: laptops, cuadernos y manos trabajando sobre una mesa vista desde arriba' },
+		image: {
+			src: torneoProgramacion,
+			alt: 'Foto de ejemplo: laptops, cuadernos y manos trabajando sobre una mesa vista desde arriba',
+		},
 	},
 	{
 		id: 'taller-git',
@@ -217,10 +226,22 @@ export const join = {
 	lead: 'La carrera la mejoramos entre todos. Cuéntanos qué cambiarías y ayúdanos a fortalecer la comunidad.',
 	stickers: ['¡propón!', 'ideas de todos los ciclos'],
 	reasons: [
-		{ title: 'Propón un taller o una charla', text: 'Si hay algo que quieres aprender o enseñar, escríbenos y lo armamos juntos.' },
-		{ title: 'Cuéntanos qué mejorar en la carrera', text: 'Lo que ves desde tu ciclo ayuda a que la ASO lleve mejor la voz de todos.' },
-		{ title: 'Ayúdanos a difundir y participa', text: 'Ven a las actividades, comparte los anuncios y trae a tus compañeros.' },
-		{ title: 'Comparte lo que sabes con otros ciclos', text: 'Lo que aprendiste hace un año le sirve a quien está empezando.' },
+		{
+			title: 'Propón un taller o una charla',
+			text: 'Si hay algo que quieres aprender o enseñar, escríbenos y lo armamos juntos.',
+		},
+		{
+			title: 'Cuéntanos qué mejorar en la carrera',
+			text: 'Lo que ves desde tu ciclo ayuda a que la ASO lleve mejor la voz de todos.',
+		},
+		{
+			title: 'Ayúdanos a difundir y participa',
+			text: 'Ven a las actividades, comparte los anuncios y trae a tus compañeros.',
+		},
+		{
+			title: 'Comparte lo que sabes con otros ciclos',
+			text: 'Lo que aprendiste hace un año le sirve a quien está empezando.',
+		},
 	],
 	newcomer: {
 		title: 'Tu primera idea',
@@ -232,7 +253,16 @@ export const join = {
 	},
 	cta: 'Envíanos tu idea',
 	// Second collage row: activity-type tags (no photos of people here; board photos live only in Directiva).
-	tags: ['#talleres', '#charlas', '#hackatones', '#comunidad', '#primer-ciclo', '#todos-los-ciclos', '#voz-estudiantil', '#aprender-haciendo'],
+	tags: [
+		'#talleres',
+		'#charlas',
+		'#hackatones',
+		'#comunidad',
+		'#primer-ciclo',
+		'#todos-los-ciclos',
+		'#voz-estudiantil',
+		'#aprender-haciendo',
+	],
 };
 
 // DEMO: extra stock photos used only by the Join collage (see src/assets/demo/SOURCES.md), on the fallback path.
@@ -251,12 +281,36 @@ export const faqCopy = {
 // DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). `topic` is the slug shown as
 // `git help <topic>`.
 export const demoFaqItems: FaqItem[] = [
-	{ topic: 'participar', q: '¿Quién puede participar?', a: 'Las actividades están abiertas a cualquier estudiante de Computación, de primer ciclo a último, sin experiencia previa. La directiva, en cambio, es elegida: aquí lo que sí puedes hacer es aportar ideas.' },
-	{ topic: 'costo', q: '¿Tiene algún costo?', a: 'Participar en las actividades de la ASO es gratis. Si alguna actividad necesitara un aporte, se avisa de antemano en Instagram.' },
-	{ topic: 'avisos', q: '¿Cómo me entero de las actividades?', a: 'Todo se anuncia primero en nuestro Instagram. También publicamos en TikTok y LinkedIn.' },
-	{ topic: 'proponer', q: '¿Puedo proponer un taller o una charla?', a: 'Claro, nos encantan. Envíanos tu idea por mensaje directo y la revisamos con la directiva.' },
-	{ topic: 'aso', q: '¿Qué hace la ASO por mí?', a: 'Representamos a los estudiantes, organizamos actividades para aprender fuera del aula y acompañamos a quienes llegan a primer ciclo. Tus ideas nos ayudan a hacerlo mejor.' },
-	{ topic: 'contacto', q: '¿Cómo contacto a la directiva?', a: 'Por mensaje directo en nuestras redes, sobre todo Instagram. No tenemos correo público.' },
+	{
+		topic: 'participar',
+		q: '¿Quién puede participar?',
+		a: 'Las actividades están abiertas a cualquier estudiante de Computación, de primer ciclo a último, sin experiencia previa. La directiva, en cambio, es elegida: aquí lo que sí puedes hacer es aportar ideas.',
+	},
+	{
+		topic: 'costo',
+		q: '¿Tiene algún costo?',
+		a: 'Participar en las actividades de la ASO es gratis. Si alguna actividad necesitara un aporte, se avisa de antemano en Instagram.',
+	},
+	{
+		topic: 'avisos',
+		q: '¿Cómo me entero de las actividades?',
+		a: 'Todo se anuncia primero en nuestro Instagram. También publicamos en TikTok y LinkedIn.',
+	},
+	{
+		topic: 'proponer',
+		q: '¿Puedo proponer un taller o una charla?',
+		a: 'Claro, nos encantan. Envíanos tu idea por mensaje directo y la revisamos con la directiva.',
+	},
+	{
+		topic: 'aso',
+		q: '¿Qué hace la ASO por mí?',
+		a: 'Representamos a los estudiantes, organizamos actividades para aprender fuera del aula y acompañamos a quienes llegan a primer ciclo. Tus ideas nos ayudan a hacerlo mejor.',
+	},
+	{
+		topic: 'contacto',
+		q: '¿Cómo contacto a la directiva?',
+		a: 'Por mensaje directo en nuestras redes, sobre todo Instagram. No tenemos correo público.',
+	},
 ];
 
 // DEMO: playful fields for the "git show" panel, keyed by member name. Invented placeholders, not real answers, and
@@ -294,7 +348,8 @@ const enCopy: LandingCopy = {
 		headline: ['Keep up with', 'what is going on in', 'Computer Science.'],
 		headlineAccent: 2,
 		heroCue: 'Scroll down the branch: this is our history.',
-		description: 'ASO Computación is the student association of the program. Here is our history, activity by activity.',
+		description:
+			'ASO Computación is the student association of the program. Here is our history, activity by activity.',
 		about:
 			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
 	},
@@ -350,10 +405,22 @@ const enCopy: LandingCopy = {
 		lead: 'We make the program better together. Tell us what you would change and help us make the community stronger.',
 		stickers: ['pitch it!', 'ideas from every semester'],
 		reasons: [
-			{ title: 'Pitch a workshop or a talk', text: 'If there is something you want to learn or teach, write to us and we will put it together.' },
-			{ title: 'Tell us what to improve in the program', text: 'What you see from your semester helps the ASO carry everyone’s voice better.' },
-			{ title: 'Help spread the word and take part', text: 'Come to the activities, share the announcements and bring your classmates.' },
-			{ title: 'Share what you know with other semesters', text: 'What you learned a year ago helps someone who is just starting.' },
+			{
+				title: 'Pitch a workshop or a talk',
+				text: 'If there is something you want to learn or teach, write to us and we will put it together.',
+			},
+			{
+				title: 'Tell us what to improve in the program',
+				text: 'What you see from your semester helps the ASO carry everyone’s voice better.',
+			},
+			{
+				title: 'Help spread the word and take part',
+				text: 'Come to the activities, share the announcements and bring your classmates.',
+			},
+			{
+				title: 'Share what you know with other semesters',
+				text: 'What you learned a year ago helps someone who is just starting.',
+			},
 		],
 		newcomer: {
 			title: 'Your first idea',
@@ -364,7 +431,16 @@ const enCopy: LandingCopy = {
 			],
 		},
 		cta: 'Send us your idea',
-		tags: ['#workshops', '#talks', '#hackathons', '#community', '#first-semester', '#every-semester', '#student-voice', '#learn-by-doing'],
+		tags: [
+			'#workshops',
+			'#talks',
+			'#hackathons',
+			'#community',
+			'#first-semester',
+			'#every-semester',
+			'#student-voice',
+			'#learn-by-doing',
+		],
 	},
 	faqCopy: {
 		title: 'Frequently asked questions',

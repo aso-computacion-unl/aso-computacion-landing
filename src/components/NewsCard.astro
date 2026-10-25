@@ -18,30 +18,48 @@ const { item, variant = 'feature', wide = false, as: Heading = 'h3' } = Astro.pr
 const feature = variant === 'feature';
 ---
 
-<article class:list={['news-card', `news-card-${variant}`, { 'news-card-wide': wide && feature, 'has-cover': Boolean(item.cover) }]}>
-	{
-		item.cover && (
-			<div class="news-cover">
-				<Photo
-					photo={item.cover}
-					box={feature ? { width: 960, height: 640 } : { width: 320, height: 240 }}
-					widths={feature ? [480, 960] : [320, 640]}
-					sizes={feature ? (wide ? '(min-width: 1024px) 40rem, 92vw' : '(min-width: 1024px) 36rem, 92vw') : '(min-width: 640px) 10rem, 6.5rem'}
-					fit="cover"
-					alt=""
-					class="news-img"
-				/>
-			</div>
-		)
-	}
+<article
+	class:list={[
+		'news-card',
+		`news-card-${variant}`,
+		{ 'news-card-wide': wide && feature, 'has-cover': Boolean(item.cover) },
+	]}
+>
+	{item.cover && (
+		<div class="news-cover">
+			<Photo
+				photo={item.cover}
+				box={feature ? { width: 960, height: 640 } : { width: 320, height: 240 }}
+				widths={feature ? [480, 960] : [320, 640]}
+				sizes={
+					feature
+						? wide
+							? '(min-width: 1024px) 40rem, 92vw'
+							: '(min-width: 1024px) 36rem, 92vw'
+						: '(min-width: 640px) 10rem, 6.5rem'
+				}
+				fit="cover"
+				alt=""
+				class="news-img"
+			/>
+		</div>
+	)}
 	<div class="news-text">
 		<p class="news-meta">
-			<time class="stamp stamp-past news-stamp" datetime={item.date}>{item.stamp}</time>
-			<span class="news-hash" aria-hidden="true">{shortHash(item.slug)}</span>
+			<time class="stamp stamp-past news-stamp" datetime={item.date}>
+				{item.stamp}
+			</time>
+			<span class="news-hash" aria-hidden="true">
+				{shortHash(item.slug)}
+			</span>
 		</p>
-		<Heading class="news-title"><a href={item.href}>{item.title}</a></Heading>
+		<Heading class="news-title">
+			<a href={item.href}>{item.title}</a>
+		</Heading>
 		<p class="news-summary">{item.summary}</p>
-		<p class="news-more" aria-hidden="true"><span>git show</span> {item.slug}</p>
+		<p class="news-more" aria-hidden="true">
+			<span>git show</span> {item.slug}
+		</p>
 	</div>
 </article>
 

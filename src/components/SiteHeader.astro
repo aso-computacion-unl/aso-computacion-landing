@@ -22,30 +22,29 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 	>
 		{t('skip')}
 	</a>
-	<nav
-		aria-label={t('nav.label')}
-		class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3"
-	>
-		<a href={onHome ? '#top' : homePath} class="hidden shrink-0 items-center gap-3 min-[340px]:flex" aria-label={t('nav.home', { name: site.name })}>
+	<nav aria-label={t('nav.label')} class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3">
+		<a
+			href={onHome ? '#top' : homePath}
+			class="hidden shrink-0 items-center gap-3 min-[340px]:flex"
+			aria-label={t('nav.home', { name: site.name })}
+		>
 			<IsotypeWhite class="theme-dark-only h-6 w-auto sm:h-8" aria-hidden="true" />
 			<IsotypeColor class="theme-light-only h-6 w-auto sm:h-8" aria-hidden="true" />
 			<span class="hidden font-display text-base text-ink md:inline">{site.name}</span>
 		</a>
 		<ul class="nav-scroll flex min-w-0 items-center gap-2 overflow-x-auto font-mono text-xs [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
-			{
-				navLinks.map((link) => (
-					<li class="nav-item flex shrink-0 items-center">
-						<a
-							href={hrefFor(link.href)}
-							aria-current={isCurrent(link.href) ? 'page' : undefined}
-							class="group flex items-center gap-2 py-3 text-mist hover:text-ink aria-[current=page]:text-ink sm:px-1"
-						>
-							<span class="hidden size-2 rounded-full bg-sky group-hover:bg-ink sm:block" aria-hidden="true" />
-							{link.label.toLowerCase()}
-						</a>
-					</li>
-				))
-			}
+			{navLinks.map((link) => (
+				<li class="nav-item flex shrink-0 items-center">
+					<a
+						href={hrefFor(link.href)}
+						aria-current={isCurrent(link.href) ? 'page' : undefined}
+						class="group flex items-center gap-2 py-3 text-mist hover:text-ink aria-[current=page]:text-ink sm:px-1"
+					>
+						<span class="hidden size-2 rounded-full bg-sky group-hover:bg-ink sm:block" aria-hidden="true" />
+						{link.label.toLowerCase()}
+					</a>
+				</li>
+			))}
 		</ul>
 		<div class="flex shrink-0 items-center font-mono text-xs min-[400px]:text-[0.8125rem]">
 			<a
@@ -65,11 +64,30 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 				class="flex h-9 w-7 items-center justify-center text-mist hover:text-ink sm:w-9"
 			>
 				<!-- The icon is the theme the button switches to: sun while dark, moon while light. -->
-				<svg class="theme-dark-only size-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+				<svg
+					class="theme-dark-only size-[1.125rem]"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					aria-hidden="true"
+					focusable="false"
+				>
 					<circle cx="12" cy="12" r="4" />
 					<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
 				</svg>
-				<svg class="theme-light-only size-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+				<svg
+					class="theme-light-only size-[1.125rem]"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+					focusable="false"
+				>
 					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
 				</svg>
 			</button>

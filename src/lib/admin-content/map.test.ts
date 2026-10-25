@@ -1,17 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { siInstagram } from 'simple-icons';
 import type { ImageMetadata } from 'astro';
-import { countWord, faqTopic, slugify, toBoard, toFaqItems, toFreeCommands, toPhoto, toPillars, toSite, toSocials } from './map';
+import {
+	countWord,
+	faqTopic,
+	slugify,
+	toBoard,
+	toFaqItems,
+	toFreeCommands,
+	toPhoto,
+	toPillars,
+	toSite,
+	toSocials,
+} from './map';
 import { platformIcon } from './platform-icons';
 import { image, payload } from './test-fixtures';
 
 const TODAY = '2026-10-22';
-const local = (path: string) => ({ src: `/@fs${path}`, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
+const local = (path: string) =>
+	({ src: `/@fs${path}`, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
 const ctx = { today: TODAY, resolveLocal: (path: string) => (path.includes('missing') ? undefined : local(path)) };
 
 describe('toPhoto', () => {
 	it('keeps remote images remote, with the dimensions the API reported', () => {
-		expect(toPhoto(image({ width: 1600, height: 900 }), ctx)).toEqual({ src: image().url, width: 1600, height: 900, alt: 'Foto' });
+		expect(toPhoto(image({ width: 1600, height: 900 }), ctx)).toEqual({
+			src: image().url,
+			width: 1600,
+			height: 900,
+			alt: 'Foto',
+		});
 	});
 
 	it('resolves bundled images through the resolver', () => {
@@ -44,7 +61,9 @@ describe('faqTopic', () => {
 
 describe('slugify', () => {
 	it('strips accents and punctuation', () => {
-		expect(slugify('Talleres prácticos: impuestos y cómo potenciar tu CV')).toBe('talleres-practicos-impuestos-y-como-potenciar-tu-cv');
+		expect(slugify('Talleres prácticos: impuestos y cómo potenciar tu CV')).toBe(
+			'talleres-practicos-impuestos-y-como-potenciar-tu-cv',
+		);
 	});
 });
 
@@ -60,7 +79,9 @@ describe('toFaqItems', () => {
 
 describe('toFaqItems: commands', () => {
 	it('uses the command as the topic when the FAQ has one', () => {
-		const [item] = toFaqItems([{ question: '¿Cómo me entero de las actividades?', answer: 'Por Instagram.', command: 'actividades' }]);
+		const [item] = toFaqItems([
+			{ question: '¿Cómo me entero de las actividades?', answer: 'Por Instagram.', command: 'actividades' },
+		]);
 		expect(item.topic).toBe('actividades');
 	});
 
@@ -85,13 +106,20 @@ describe('toFaqItems: commands', () => {
 
 describe('toFaqItems: reserved names', () => {
 	it('suffixes a FAQ command the shell reserves for its built-ins', () => {
-		const items = toFaqItems(['help', 'ayuda', 'ls', 'clear'].map((command) => ({ question: `¿${command}?`, answer: 'Sí.', command })));
+		const items = toFaqItems(
+			['help', 'ayuda', 'ls', 'clear'].map((command) => ({ question: `¿${command}?`, answer: 'Sí.', command })),
+		);
 		expect(items.map((item) => item.topic)).toEqual(['help-2', 'ayuda-2', 'ls-2', 'clear-2']);
 	});
 });
 
 describe('toFreeCommands', () => {
-	const free = (command: string) => ({ id: command, command, description: `desc ${command}`, output: `out ${command}` });
+	const free = (command: string) => ({
+		id: command,
+		command,
+		description: `desc ${command}`,
+		output: `out ${command}`,
+	});
 
 	it('maps the commands to what the shell runs, in order', () => {
 		expect(toFreeCommands([free('whoami'), free('horario')], [])).toEqual([
@@ -130,8 +158,25 @@ describe('toPillars', () => {
 
 describe('toSocials', () => {
 	it('maps the platform to its glyph and url to href', () => {
-		const [instagram] = toSocials([{ platform: 'instagram', label: 'Instagram', handle: '@aso', url: 'https://www.instagram.com/aso/', note: 'Primero aquí', blurb: 'Fotos.' }]);
-		expect(instagram).toEqual({ remote: 'instagram', icon: siInstagram.path, label: 'Instagram', handle: '@aso', href: 'https://www.instagram.com/aso/', note: 'Primero aquí', blurb: 'Fotos.' });
+		const [instagram] = toSocials([
+			{
+				platform: 'instagram',
+				label: 'Instagram',
+				handle: '@aso',
+				url: 'https://www.instagram.com/aso/',
+				note: 'Primero aquí',
+				blurb: 'Fotos.',
+			},
+		]);
+		expect(instagram).toEqual({
+			remote: 'instagram',
+			icon: siInstagram.path,
+			label: 'Instagram',
+			handle: '@aso',
+			href: 'https://www.instagram.com/aso/',
+			note: 'Primero aquí',
+			blurb: 'Fotos.',
+		});
 	});
 
 	it('omits null note and blurb', () => {
@@ -146,7 +191,18 @@ describe('toSocials', () => {
 	});
 
 	it('knows every platform the admin offers and falls back to a generic glyph for new ones', () => {
-		const known = ['instagram', 'tiktok', 'linkedin', 'twitch', 'youtube', 'github', 'facebook', 'x', 'discord', 'whatsapp'];
+		const known = [
+			'instagram',
+			'tiktok',
+			'linkedin',
+			'twitch',
+			'youtube',
+			'github',
+			'facebook',
+			'x',
+			'discord',
+			'whatsapp',
+		];
 		const paths = known.map(platformIcon);
 		expect(new Set(paths).size).toBe(known.length);
 		const generic = platformIcon('mastodon');
@@ -189,14 +245,27 @@ describe('toBoard (S4)', () => {
 });
 
 describe('toSite', () => {
-	const base = { name: 'ASO', tagline: 'base tagline', headline: ['a'], headlineAccent: 0, heroCue: 'cue', description: 'base desc', about: 'base about' };
+	const base = {
+		name: 'ASO',
+		tagline: 'base tagline',
+		headline: ['a'],
+		headlineAccent: 0,
+		heroCue: 'cue',
+		description: 'base desc',
+		about: 'base about',
+	};
 
 	it('keeps the landing copy when settings is null', () => {
 		expect(toSite(base, null)).toEqual(base);
 	});
 
 	it('overrides tagline, description and about only', () => {
-		expect(toSite(base, { tagline: 't', description: 'd', about: 'a' })).toEqual({ ...base, tagline: 't', description: 'd', about: 'a' });
+		expect(toSite(base, { tagline: 't', description: 'd', about: 'a' })).toEqual({
+			...base,
+			tagline: 't',
+			description: 'd',
+			about: 'a',
+		});
 	});
 });
 

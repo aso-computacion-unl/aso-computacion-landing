@@ -1,6 +1,6 @@
 name: Reportar un error
 description: Algo del sitio no funciona o se ve mal.
-labels: ["bug"]
+labels: ['bug']
 body:
   - type: textarea
     id: what
@@ -22,7 +22,7 @@ body:
     id: device
     attributes:
       label: Dispositivo y navegador
-      placeholder: "Ej.: Android, Chrome"
+      placeholder: 'Ej.: Android, Chrome'
   - type: textarea
     id: screenshot
     attributes:

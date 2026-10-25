@@ -15,24 +15,20 @@ const count = latestNews.length;
 
 <section id="novedades" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<SectionHead
-			eyebrow="$ git tag --sort=-creatordate"
-			title={t('news.title')}
-			lead={t('news.lead')}
-		>
+		<SectionHead eyebrow="$ git tag --sort=-creatordate" title={t('news.title')} lead={t('news.lead')}>
 			<div slot="aside" class="flex lg:justify-end">
-				<Button href={localizedPath('/novedades', locale)} variant="ghost">{news.length > count ? t('news.seeCount', { count: news.length }) : t('news.seeAll')}</Button>
+				<Button href={localizedPath('/novedades', locale)} variant="ghost">
+					{news.length > count ? t('news.seeCount', { count: news.length }) : t('news.seeAll')}
+				</Button>
 			</div>
 		</SectionHead>
 
 		<ul class="news-grid mt-12 lg:mt-16" data-count={count}>
-			{
-				latestNews.map((item, index) => (
-					<li class="news-item" data-tile>
-						<NewsCard item={item} variant={count === 3 && index > 0 ? 'row' : 'feature'} wide={count === 1} as="h3" />
-					</li>
-				))
-			}
+			{latestNews.map((item, index) => (
+				<li class="news-item" data-tile>
+					<NewsCard item={item} variant={count === 3 && index > 0 ? 'row' : 'feature'} wide={count === 1} as="h3" />
+				</li>
+			))}
 		</ul>
 	</div>
 </section>

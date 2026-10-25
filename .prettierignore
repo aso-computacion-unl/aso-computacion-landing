@@ -3,3 +3,5 @@ dist/
 node_modules/
 pnpm-lock.yaml
 public/
+src/data/fallback.json
+*.md

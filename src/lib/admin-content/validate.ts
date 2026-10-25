@@ -36,7 +36,8 @@ const isObject = (value: unknown): value is Obj => typeof value === 'object' && 
 
 const object = (value: unknown, path: string): Obj => (isObject(value) ? value : fail(path, 'expected an object'));
 
-const array = (value: unknown, path: string): unknown[] => (Array.isArray(value) ? value : fail(path, 'expected an array'));
+const array = (value: unknown, path: string): unknown[] =>
+	Array.isArray(value) ? value : fail(path, 'expected an array');
 
 // Generous (about twice the admin's own limits) but bounded: a buggy or hostile payload cannot bloat the page. A value
 // over its cap makes the whole payload invalid, which means the fallback.
@@ -82,7 +83,8 @@ const nonEmpty = (value: unknown, path: string, max: number): string => {
 const nullable = <T>(value: unknown, path: string, read: (value: unknown, path: string) => T): T | null =>
 	value === null ? null : read(value, path);
 
-const bool = (value: unknown, path: string): boolean => (typeof value === 'boolean' ? value : fail(path, 'expected a boolean'));
+const bool = (value: unknown, path: string): boolean =>
+	typeof value === 'boolean' ? value : fail(path, 'expected a boolean');
 
 // Cloudinary's own ceiling is far above any photo the landing shows; the cap keeps a buggy value (1e21) out of the markup.
 const MAX_DIMENSION = 10_000;
@@ -103,7 +105,8 @@ const calendarDate = (value: unknown, path: string): string => {
 	if (match) {
 		const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
 		const parsed = new Date(Date.UTC(year, month - 1, day));
-		if (parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day) return content;
+		if (parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day)
+			return content;
 	}
 	return fail(path, 'expected a calendar date (YYYY-MM-DD)');
 };
@@ -123,14 +126,21 @@ const commandName = (value: unknown, path: string): string => {
 	const name = typeof value === 'string' ? value : fail(path, 'expected a string');
 	return name.length >= LIMIT.commandMin && name.length <= LIMIT.commandMax && COMMAND_NAME.test(name)
 		? name
-		: fail(path, `expected ${LIMIT.commandMin}-${LIMIT.commandMax} lowercase letters, digits and single hyphens, starting with a letter`);
+		: fail(
+				path,
+				`expected ${LIMIT.commandMin}-${LIMIT.commandMax} lowercase letters, digits and single hyphens, starting with a letter`,
+			);
 };
 
 const datePrecision = (value: unknown, path: string): DatePrecision =>
-	(datePrecisions as readonly unknown[]).includes(value) ? (value as DatePrecision) : fail(path, `expected one of ${datePrecisions.join(', ')}`);
+	(datePrecisions as readonly unknown[]).includes(value)
+		? (value as DatePrecision)
+		: fail(path, `expected one of ${datePrecisions.join(', ')}`);
 
 const eventType = (value: unknown, path: string): EventType =>
-	(eventTypes as readonly unknown[]).includes(value) ? (value as EventType) : fail(path, `expected one of ${eventTypes.join(', ')}`);
+	(eventTypes as readonly unknown[]).includes(value)
+		? (value as EventType)
+		: fail(path, `expected one of ${eventTypes.join(', ')}`);
 
 const short = (value: unknown, path: string) => text(value, path, LIMIT.short);
 const body = (value: unknown, path: string) => text(value, path, LIMIT.text);
@@ -140,7 +150,8 @@ const LOCAL_IMAGE = /^\/src\/assets\/[\w./-]+$/;
 // other host) would otherwise end up in an <img> that never renders. After `/image/upload/` come an optional version
 // and comma-free segments: a comma would be a stored transformation (`c_fill,w_100`), which makes the srcset widths lie
 // because the landing inserts its own. `?` and `#` never belong in a public id.
-const CLOUDINARY_IMAGE = /^https:\/\/res\.cloudinary\.com\/[^/\s]+\/image\/upload\/(?:v\d+\/)?[^/\s,?#]+(?:\/[^/\s,?#]+)*$/;
+const CLOUDINARY_IMAGE =
+	/^https:\/\/res\.cloudinary\.com\/[^/\s]+\/image\/upload\/(?:v\d+\/)?[^/\s,?#]+(?:\/[^/\s,?#]+)*$/;
 // `..` and its encoded forms would climb out of `/image/upload/` (to `/video/upload/` or another account).
 const PATH_ESCAPE = /\.\.|%2e/i;
 
@@ -151,7 +162,12 @@ const readers = (options: ParseOptions) => {
 		const url = text(value, path, LIMIT.url);
 		if (CLOUDINARY_IMAGE.test(url) && !PATH_ESCAPE.test(url)) return url;
 		if (options.allowLocalImages && LOCAL_IMAGE.test(url) && !url.includes('..')) return url;
-		return fail(path, options.allowLocalImages ? 'expected a Cloudinary image URL or a /src/assets/ path' : 'expected a Cloudinary image URL (https://res.cloudinary.com/<cloud>/image/upload/...)');
+		return fail(
+			path,
+			options.allowLocalImages
+				? 'expected a Cloudinary image URL or a /src/assets/ path'
+				: 'expected a Cloudinary image URL (https://res.cloudinary.com/<cloud>/image/upload/...)',
+		);
 	};
 
 	const readImage = (value: unknown, path: string): PublicImage => {
@@ -200,7 +216,8 @@ const readers = (options: ParseOptions) => {
 			description: nullable(raw.description, `${path}.description`, body),
 			date: nullable(raw.date, `${path}.date`, calendarDate),
 			// Added after version 1 shipped: a payload without it is a day-precision one.
-			datePrecision: raw.datePrecision === undefined ? 'day' : datePrecision(raw.datePrecision, `${path}.datePrecision`),
+			datePrecision:
+				raw.datePrecision === undefined ? 'day' : datePrecision(raw.datePrecision, `${path}.datePrecision`),
 			type: nullable(raw.type, `${path}.type`, eventType),
 			commitMessage: nullable(raw.commitMessage, `${path}.commitMessage`, short),
 			hora: nullable(raw.hora, `${path}.hora`, short),
@@ -293,9 +310,13 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 	try {
 		const root = object(raw, 'payload');
 		if (root.version !== PUBLIC_CONTENT_VERSION) {
-			fail('version', `unsupported version ${JSON.stringify(root.version)} (this landing reads version ${PUBLIC_CONTENT_VERSION})`);
+			fail(
+				'version',
+				`unsupported version ${JSON.stringify(root.version)} (this landing reads version ${PUBLIC_CONTENT_VERSION})`,
+			);
 		}
-		const { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem } = readers(options);
+		const { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem } =
+			readers(options);
 		return {
 			ok: true,
 			content: {
