@@ -187,6 +187,13 @@ pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of
   violation fails, and the failure prints the rule and the offending elements.
 - `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download.
 
+Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
+pages three times each on the fallback build, mobile profile, and asserts the median run. Budgets:
+performance ≥ 0.9, accessibility ≥ 0.95, best-practices ≥ 0.95, SEO ≥ 0.95. One budget is lower on purpose:
+SEO of `/novedades/` is 0.65 because with no news that page is `noindex` (Lighthouse's `is-crawlable` fails,
+measured 0.66); once the build has news the page is indexable, so raise it to 0.95. Reports stay in `.lighthouseci/`
+(ignored by git); nothing is uploaded.
+
 First time: `pnpm exec playwright install chromium`. To see what the home page downloads on first load:
 `pnpm build && pnpm preview` and, in another terminal, `pnpm measure:js`.
 
