@@ -14,6 +14,8 @@ const es = {
 	'demo.title': 'Contenido de ejemplo',
 	'demo.detail': 'Dato de ejemplo',
 	soon: 'próximamente',
+	'preview.banner': 'Vista previa — no publicar',
+	'preview.detail': 'Muestra borradores y contenido programado.',
 
 	'hero.activities': 'Ver actividades',
 	'hero.instagram': 'Síguenos en Instagram',
@@ -126,6 +128,8 @@ const en: Record<keyof typeof es, string> = {
 	'demo.title': 'Sample content',
 	'demo.detail': 'Sample detail',
 	soon: 'coming soon',
+	'preview.banner': 'Preview — do not publish',
+	'preview.detail': 'Shows drafts and scheduled content.',
 
 	'hero.activities': 'See activities',
 	'hero.instagram': 'Follow us on Instagram',
