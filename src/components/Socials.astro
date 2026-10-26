@@ -12,33 +12,38 @@ const display = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, 
 
 <section id="redes" class="bg-navy py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<SectionHead
-			eyebrow="$ git remote -v"
-			title={t('socials.title')}
-			lead={t('socials.lead')}
-		/>
+		<SectionHead eyebrow="$ git remote -v" title={t('socials.title')} lead={t('socials.lead')} />
 
 		<ul class="socials mt-12 lg:mt-16">
-			{
-				socials.map((social) => (
-					<li class:list={['social', `social-${social.remote}`]} data-social>
-						<a href={social.href} target="_blank" rel="me noopener" class="social-link">
-							{social.note && <span class="sticker social-sticker" aria-hidden="true">{social.note}</span>}
-							<svg class="social-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-								<path d={social.icon} fill="currentColor" />
-							</svg>
-							{social.blurb && <span class="social-blurb">{social.blurb}</span>}
-							<span class="social-body">
-								<span class="social-name">{social.label}</span>
-								<span class="social-handle">{social.handle}</span>
-								<span class="social-url" aria-hidden="true">{display(social.href)}</span>
+			{socials.map((social) => (
+				<li class:list={['social', `social-${social.remote}`]} data-social>
+					<a href={social.href} target="_blank" rel="me noopener" class="social-link">
+						{social.note && (
+							<span class="sticker social-sticker" aria-hidden="true">
+								{social.note}
 							</span>
-							<span class="social-go" aria-hidden="true">→</span>
-							<span class="sr-only">{social.note ? `${social.note}. ` : ''}{t('newTab')}</span>
-						</a>
-					</li>
-				))
-			}
+						)}
+						<svg class="social-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<path d={social.icon} fill="currentColor" />
+						</svg>
+						{social.blurb && <span class="social-blurb">{social.blurb}</span>}
+						<span class="social-body">
+							<span class="social-name">{social.label}</span>
+							<span class="social-handle">{social.handle}</span>
+							<span class="social-url" aria-hidden="true">
+								{display(social.href)}
+							</span>
+						</span>
+						<span class="social-go" aria-hidden="true">
+							→
+						</span>
+						<span class="sr-only">
+							{social.note ? `${social.note}. ` : ''}
+							{t('newTab')}
+						</span>
+					</a>
+				</li>
+			))}
 		</ul>
 	</div>
 </section>

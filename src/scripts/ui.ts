@@ -1,6 +1,13 @@
 import { toLocale } from '../i18n/locales';
 import { typeLabel, useTranslations } from '../i18n/ui';
-import { helpLines, runFaqCommand, tabFaqCommand, type FaqCommandEntry, type FaqEntry, type FaqLine } from './faq-shell';
+import {
+	helpLines,
+	runFaqCommand,
+	tabFaqCommand,
+	type FaqCommandEntry,
+	type FaqEntry,
+	type FaqLine,
+} from './faq-shell';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
@@ -50,7 +57,9 @@ if (filters && timeline) {
 			item.classList.toggle('is-dim', !match);
 			if (match) shown += 1;
 		});
-		if (status) status.textContent = type === 'all' ? '' : t('filters.status', { type: typeLabel(locale, type), shown, total: typed.length });
+		if (status)
+			status.textContent =
+				type === 'all' ? '' : t('filters.status', { type: typeLabel(locale, type), shown, total: typed.length });
 	});
 }
 
@@ -95,13 +104,17 @@ const faqShell = faqSection?.querySelector<HTMLElement>('[data-faq-shell]');
 const faqOut = faqSection?.querySelector<HTMLElement>('[data-faq-out]');
 const faqForm = faqSection?.querySelector<HTMLFormElement>('[data-faq-form]');
 const faqInput = faqSection?.querySelector<HTMLInputElement>('[data-faq-input]');
-const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-entry]') ?? []).map((entry) => ({
-	topic: entry.dataset.topic ?? '',
-	q: entry.querySelector('[data-faq-q]')?.textContent?.trim() ?? '',
-	a: entry.querySelector('[data-faq-a]')?.textContent?.trim() ?? '',
-}));
+const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-entry]') ?? []).map(
+	(entry) => ({
+		topic: entry.dataset.topic ?? '',
+		q: entry.querySelector('[data-faq-q]')?.textContent?.trim() ?? '',
+		a: entry.querySelector('[data-faq-a]')?.textContent?.trim() ?? '',
+	}),
+);
 // Free commands exist only in the guide list, as rows carrying their description and output.
-const faqCommands: FaqCommandEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-command]') ?? []).map((row) => ({
+const faqCommands: FaqCommandEntry[] = Array.from(
+	faqSection?.querySelectorAll<HTMLElement>('[data-faq-command]') ?? [],
+).map((row) => ({
 	name: row.dataset.faqRun ?? '',
 	description: row.dataset.description ?? '',
 	output: row.dataset.output ?? '',
@@ -154,7 +167,9 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 	};
 
 	const markCurrent = (command: string) => {
-		guideRows.forEach((row) => row.toggleAttribute('aria-current', row.dataset.faqRun === command.trim().toLowerCase()));
+		guideRows.forEach((row) =>
+			row.toggleAttribute('aria-current', row.dataset.faqRun === command.trim().toLowerCase()),
+		);
 	};
 
 	const run = (command: string) => {

@@ -3,11 +3,15 @@ import { HOME_NEWS_COUNT, latestNews, newsPath, toNews } from './news';
 import { newsItem } from './test-fixtures';
 
 const ctx = { today: '2026-10-22', resolveLocal: () => undefined };
-const item = (slug: string, publishedAt: string, overrides = {}) => newsItem({ slug, publishedAt, title: slug, ...overrides });
+const item = (slug: string, publishedAt: string, overrides = {}) =>
+	newsItem({ slug, publishedAt, title: slug, ...overrides });
 
 describe('toNews', () => {
 	it('orders by publishedAt, newest first, whatever order the payload has', () => {
-		const news = toNews([item('b', '2026-03-01'), item('d', '2026-10-20'), item('a', '2025-12-31'), item('c', '2026-05-09')], ctx);
+		const news = toNews(
+			[item('b', '2026-03-01'), item('d', '2026-10-20'), item('a', '2025-12-31'), item('c', '2026-05-09')],
+			ctx,
+		);
 		expect(news.map((entry) => entry.slug)).toEqual(['d', 'c', 'b', 'a']);
 	});
 
@@ -32,7 +36,12 @@ describe('toNews', () => {
 			body: 'Primer párrafo con **negrita**.\n\n- Uno\n- Dos',
 			date: '2026-10-20',
 			stamp: '20 oct 2026',
-			cover: { src: 'https://res.cloudinary.com/demo/image/upload/v1/aso/news.jpg', width: 1200, height: 800, alt: 'Cartel del taller' },
+			cover: {
+				src: 'https://res.cloudinary.com/demo/image/upload/v1/aso/news.jpg',
+				width: 1200,
+				height: 800,
+				alt: 'Cartel del taller',
+			},
 		});
 	});
 
@@ -47,7 +56,11 @@ describe('toNews', () => {
 });
 
 describe('latestNews', () => {
-	const many = (count: number) => toNews(Array.from({ length: count }, (_, index) => item(`n${index}`, `2026-0${index + 1}-10`)), ctx);
+	const many = (count: number) =>
+		toNews(
+			Array.from({ length: count }, (_, index) => item(`n${index}`, `2026-0${index + 1}-10`)),
+			ctx,
+		);
 
 	it('shows the three newest of a longer list', () => {
 		expect(HOME_NEWS_COUNT).toBe(3);

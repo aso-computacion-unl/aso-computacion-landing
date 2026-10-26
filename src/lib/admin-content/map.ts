@@ -68,13 +68,21 @@ const RESERVED_NAMES = ['help', 'ayuda', 'ls', 'clear'];
 // S6: the FAQ's own command is its topic; without one the topic is the question as a slug.
 export const toFaqItems = (faqs: readonly PublicFaq[]): FaqItem[] => {
 	const taken = new Set(RESERVED_NAMES);
-	return faqs.map((faq) => ({ topic: claim(faq.command ?? faqTopic(faq.question), taken), q: faq.question, a: faq.answer }));
+	return faqs.map((faq) => ({
+		topic: claim(faq.command ?? faqTopic(faq.question), taken),
+		q: faq.question,
+		a: faq.answer,
+	}));
 };
 
 // `topics` are the names the FAQ items already use; a free command that collides with one is renamed.
 export const toFreeCommands = (commands: readonly PublicCommand[], topics: Iterable<string>): FaqCommand[] => {
 	const taken = new Set([...RESERVED_NAMES, ...topics]);
-	return commands.map((item) => ({ name: claim(item.command, taken), description: item.description, output: item.output }));
+	return commands.map((item) => ({
+		name: claim(item.command, taken),
+		description: item.description,
+		output: item.output,
+	}));
 };
 
 export const toPillars = (pillars: readonly PublicPillar[], ctx: MapContext): Pillar[] =>
@@ -99,13 +107,20 @@ export const toSocials = (socials: readonly PublicSocial[]): Social[] =>
 
 // S4: a member is built from name, role and photo and nothing else. `extras` are the landing's own demo placeholders,
 // keyed by name; they never come from the payload.
-export const toBoard = (board: readonly PublicBoardMember[], ctx: MapContext, extras: Record<string, BoardFun> = {}): TeamMember[] =>
+export const toBoard = (
+	board: readonly PublicBoardMember[],
+	ctx: MapContext,
+	extras: Record<string, BoardFun> = {},
+): TeamMember[] =>
 	board.map((member) => {
 		const photo = toPhoto(member.photo, ctx);
 		return {
 			name: member.name,
 			role: member.role,
-			photo: { ...photo, alt: photo.alt || (ctx.locale === 'en' ? `Photo of ${member.name}` : `Foto de ${member.name}`) },
+			photo: {
+				...photo,
+				alt: photo.alt || (ctx.locale === 'en' ? `Photo of ${member.name}` : `Foto de ${member.name}`),
+			},
 			...(Object.hasOwn(extras, member.name) ? { fun: extras[member.name] } : {}),
 		};
 	});

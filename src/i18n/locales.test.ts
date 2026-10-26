@@ -26,7 +26,9 @@ describe('localizedPath', () => {
 
 	it('leaves in-page anchors and external links alone', () => {
 		expect(localizedPath('#faq', 'en')).toBe('#faq');
-		expect(localizedPath('https://www.instagram.com/aso_computacion/', 'en')).toBe('https://www.instagram.com/aso_computacion/');
+		expect(localizedPath('https://www.instagram.com/aso_computacion/', 'en')).toBe(
+			'https://www.instagram.com/aso_computacion/',
+		);
 	});
 });
 

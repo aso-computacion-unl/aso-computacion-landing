@@ -7,12 +7,20 @@ const fallback = payload({ events: [], faqs: [], settings: null });
 const api = payload();
 
 const respond = (body: unknown, init: ResponseInit = { status: 200 }) =>
-	vi.fn(async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), init));
+	vi.fn<typeof fetch>(async () => new Response(typeof body === 'string' ? body : JSON.stringify(body), init));
 
 const setup = (overrides: Partial<Parameters<typeof loadPublicContent>[0]> = {}) => {
 	const warn = vi.fn();
 	const fetchMock = respond(api);
-	const run = () => loadPublicContent({ url: URL_OK, fallback, fetch: fetchMock as unknown as typeof fetch, warn, timeoutMs: 200, ...overrides });
+	const run = () =>
+		loadPublicContent({
+			url: URL_OK,
+			fallback,
+			fetch: fetchMock as unknown as typeof fetch,
+			warn,
+			timeoutMs: 200,
+			...overrides,
+		});
 	return { warn, fetchMock, run };
 };
 
@@ -38,7 +46,9 @@ describe('loadPublicContent', () => {
 	});
 
 	it('falls back, without failing, when a news item is invalid', async () => {
-		const { run, warn } = setup({ fetch: respond(payload({ news: [newsItem({ publishedAt: 'ayer' })] })) as unknown as typeof fetch });
+		const { run, warn } = setup({
+			fetch: respond(payload({ news: [newsItem({ publishedAt: 'ayer' })] })) as unknown as typeof fetch,
+		});
 		expect(await run()).toMatchObject({ source: 'fallback', content: fallback });
 		expect(warn).toHaveBeenCalledTimes(1);
 		expect(warn.mock.calls[0][0]).toMatch(/news\[0\]\.publishedAt/);
@@ -65,7 +75,9 @@ describe('loadPublicContent', () => {
 	});
 
 	it('falls back when the network request fails', async () => {
-		const { run, warn } = setup({ fetch: vi.fn(async () => Promise.reject(new TypeError('fetch failed'))) as unknown as typeof fetch });
+		const { run, warn } = setup({
+			fetch: vi.fn(async () => Promise.reject(new TypeError('fetch failed'))) as unknown as typeof fetch,
+		});
 		const result = await run();
 		expect(result.source).toBe('fallback');
 		expect(warn).toHaveBeenCalledTimes(1);
@@ -137,7 +149,9 @@ describe('loadPublicContent', () => {
 	});
 
 	it('accepts local image references in the fallback but not in the API payload', async () => {
-		const local = payload({ board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: '/src/assets/team/a.jpg' } }] });
+		const local = payload({
+			board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: '/src/assets/team/a.jpg' } }],
+		});
 		const viaFallback = await setup({ url: undefined, fallback: local }).run();
 		expect(viaFallback.content.board[0].photo.url).toBe('/src/assets/team/a.jpg');
 		const viaApi = await setup({ fallback: local, fetch: respond(local) as unknown as typeof fetch }).run();
@@ -155,7 +169,11 @@ describe('loadPublicContent', () => {
 		});
 
 		it('falls back when an image is not hosted on Cloudinary', async () => {
-			const bad = payload({ board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: 'https://images.example.com/image/upload/a.jpg' } }] });
+			const bad = payload({
+				board: [
+					{ ...api.board[0], photo: { ...api.board[0].photo, url: 'https://images.example.com/image/upload/a.jpg' } },
+				],
+			});
 			const { run, warn } = setup({ fetch: respond(bad) as unknown as typeof fetch });
 			const result = await run();
 			expect(result.source).toBe('fallback');
@@ -165,7 +183,14 @@ describe('loadPublicContent', () => {
 		});
 
 		it('falls back on a Cloudinary video URL (it answers 200 but is not an image)', async () => {
-			const video = payload({ board: [{ ...api.board[0], photo: { ...api.board[0].photo, url: 'https://res.cloudinary.com/demo/video/upload/dog.mp4' } }] });
+			const video = payload({
+				board: [
+					{
+						...api.board[0],
+						photo: { ...api.board[0].photo, url: 'https://res.cloudinary.com/demo/video/upload/dog.mp4' },
+					},
+				],
+			});
 			const { run, warn } = setup({ fetch: respond(video) as unknown as typeof fetch });
 			expect((await run()).source).toBe('fallback');
 			expect(warn).toHaveBeenCalledTimes(1);

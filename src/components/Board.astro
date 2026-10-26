@@ -38,89 +38,101 @@ const handle = (name: string) =>
 
 <section id="directiva" class="bg-navy py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<SectionHead
-			eyebrow="$ git shortlog"
-			title={t('board.title')}
-			lead={t('board.lead')}
-		>
+		<SectionHead eyebrow="$ git shortlog" title={t('board.title')} lead={t('board.lead')}>
 			<div slot="aside" class="count">
-				<p class="count-num" aria-hidden="true">{team.length}</p>
+				<p class="count-num" aria-hidden="true">
+					{team.length}
+				</p>
 				<div>
 					<p class="count-label">{t('board.count')}</p>
 					<ul class="mt-4 flex flex-wrap gap-2" aria-label={t('board.roles')}>
-						{team.map((member) => <li class="role-chip">{member.role}</li>)}
+						{team.map((member) => (
+							<li class="role-chip">{member.role}</li>
+						))}
 					</ul>
 				</div>
 			</div>
 		</SectionHead>
 
 		<ul class="mt-12 grid grid-cols-2 gap-2.5 md:grid-cols-6 md:gap-4 lg:mt-16 lg:grid-cols-10 lg:gap-5">
-			{
-				team.map((member, index) => (
-					<li class:list={['member', layout[index] ?? extraLayout]} tabindex="0" data-member>
-						<div class="duo portrait">
-							<Photo
-								photo={member.photo}
-								box={{ width: index < 2 ? 960 : 480, height: index < 2 ? 720 : 640 }}
-								widths={isRemote(member.photo) ? [480, 960] : undefined}
-								sizes={isRemote(member.photo) ? (index < 2 ? '(min-width: 1024px) 28rem, 50vw' : '(min-width: 1024px) 14rem, 50vw') : undefined}
-								fit="cover"
-								position="top"
-								loading="lazy"
-								class="object-top"
-							/>
+			{team.map((member, index) => (
+				<li class:list={['member', layout[index] ?? extraLayout]} tabindex="0" data-member>
+					<div class="duo portrait">
+						<Photo
+							photo={member.photo}
+							box={{ width: index < 2 ? 960 : 480, height: index < 2 ? 720 : 640 }}
+							widths={isRemote(member.photo) ? [480, 960] : undefined}
+							sizes={
+								isRemote(member.photo)
+									? index < 2
+										? '(min-width: 1024px) 28rem, 50vw'
+										: '(min-width: 1024px) 14rem, 50vw'
+									: undefined
+							}
+							fit="cover"
+							position="top"
+							loading="lazy"
+							class="object-top"
+						/>
+					</div>
+					<p class="hint" aria-hidden="true">
+						{t('board.hint')}
+					</p>
+					{index < 2 && (
+						<div class="rest-hint" aria-hidden="true">
+							<span>git show @{handle(member.name)}</span>
+							<span>{t('board.more')}</span>
+							{member.fun && (
+								<dl class="rest-fun">
+									<div>
+										<dt>{t('board.language')}</dt>
+										<dd>{member.fun.language}</dd>
+									</div>
+									<div>
+										<dt>commit message</dt>
+										<dd>"{member.fun.motto}"</dd>
+									</div>
+									<div>
+										<span class="demo-tag" style="margin-left:0">
+											demo
+										</span>
+									</div>
+								</dl>
+							)}
 						</div>
-						<p class="hint" aria-hidden="true">{t('board.hint')}</p>
-						{index < 2 && (
-							<div class="rest-hint" aria-hidden="true">
-								<span>git show @{handle(member.name)}</span>
-								<span>{t('board.more')}</span>
-								{member.fun && (
-									<dl class="rest-fun">
-										<div>
-											<dt>{t('board.language')}</dt>
-											<dd>{member.fun.language}</dd>
-										</div>
-										<div>
-											<dt>commit message</dt>
-											<dd>"{member.fun.motto}"</dd>
-										</div>
-										<div>
-											<span class="demo-tag" style="margin-left:0">demo</span>
-										</div>
-									</dl>
-								)}
-							</div>
-						)}
-						<div class="plate" aria-hidden="true">
-							<p>{member.name}</p>
-							<p>{member.role}</p>
+					)}
+					<div class="plate" aria-hidden="true">
+						<p>{member.name}</p>
+						<p>{member.role}</p>
+					</div>
+					<div class="show">
+						<p class="show-cmd" aria-hidden="true">
+							git show @{handle(member.name)}
+						</p>
+						<div class="show-body">
+							<p class="show-role">{member.role}</p>
+							<p class="show-name">{member.name}</p>
+							{member.fun && (
+								<dl class="show-fun">
+									<div>
+										<dt>{t('board.language')}</dt>
+										<dd>{member.fun.language}</dd>
+									</div>
+									<div>
+										<dt>commit message</dt>
+										<dd>"{member.fun.motto}"</dd>
+									</div>
+									<div>
+										<span class="demo-tag" style="margin-left:0" title={t('demo.detail')}>
+											demo
+										</span>
+									</div>
+								</dl>
+							)}
 						</div>
-						<div class="show">
-							<p class="show-cmd" aria-hidden="true">git show @{handle(member.name)}</p>
-							<div class="show-body">
-								<p class="show-role">{member.role}</p>
-								<p class="show-name">{member.name}</p>
-								{member.fun && (
-									<dl class="show-fun">
-										<div>
-											<dt>{t('board.language')}</dt>
-											<dd>{member.fun.language}</dd>
-										</div>
-										<div>
-											<dt>commit message</dt>
-											<dd>"{member.fun.motto}"</dd>
-										</div>
-										<div>
-											<span class="demo-tag" style="margin-left:0" title={t('demo.detail')}>demo</span>
-										</div>
-									</dl>
-								)}
-							</div>
-						</div>
-					</li>
-				))
-			}
+					</div>
+				</li>
+			))}
 		</ul>
 	</div>
 </section>

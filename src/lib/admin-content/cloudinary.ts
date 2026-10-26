@@ -23,7 +23,10 @@ export interface RemoteImageAttrs {
 
 // `widths` are the candidates the layout wants. They are capped at the original width, because c_limit never upscales
 // and a "960w" descriptor on a 600 px file would lie. `src` (browsers without srcset) is the widest candidate.
-export const remoteImageAttrs = (photo: { src: string; width: number; height: number }, widths: readonly number[]): RemoteImageAttrs => {
+export const remoteImageAttrs = (
+	photo: { src: string; width: number; height: number },
+	widths: readonly number[],
+): RemoteImageAttrs => {
 	const candidates = [...new Set(widths.map((width) => Math.min(width, photo.width)))].sort((a, b) => a - b);
 	return {
 		src: deliveryUrl(photo.src, candidates[candidates.length - 1]),

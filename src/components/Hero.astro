@@ -14,7 +14,10 @@ const instagram = socials.find((social) => social.remote === 'instagram');
 // planned lane, then HEAD on the solid lane. The full list lives in the activity graph below.
 const head = timeline.find((entry) => entry.kind === 'head');
 const headIndex = head ? timeline.indexOf(head) : timeline.length;
-const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'upcoming').slice(-2);
+const planned = timeline
+	.slice(0, headIndex)
+	.filter((entry) => entry.kind === 'upcoming')
+	.slice(-2);
 ---
 
 <section
@@ -34,46 +37,48 @@ const planned = timeline.slice(0, headIndex).filter((entry) => entry.kind === 'u
 			</div>
 		</div>
 
-		<div
-			class="hero-main relative z-10 px-5 pb-16 pt-[10rem] sm:px-[4vw] sm:pt-[12.5rem] lg:flex lg:flex-col lg:justify-end lg:pb-20 lg:pt-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10"
-		>
+		<div class="hero-main relative z-10 px-5 pb-16 pt-[10rem] sm:px-[4vw] sm:pt-[12.5rem] lg:flex lg:flex-col lg:justify-end lg:pb-20 lg:pt-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10">
 			<h1 class="hero-title">
 				<span class="sr-only">{site.name}: </span>
-				{
-					site.headline.map((line, index) => (
-						<span class:list={['hero-line', { 'text-sky': index === site.headlineAccent }]} data-hero-line>
-							{line}
-						</span>
-					))
-				}
+				{site.headline.map((line, index) => (
+					<span class:list={['hero-line', { 'text-sky': index === site.headlineAccent }]} data-hero-line>
+						{line}
+					</span>
+				))}
 			</h1>
-			<p class="hero-lede mt-7" data-hero-fade>{site.description}</p>
+			<p class="hero-lede mt-7" data-hero-fade>
+				{site.description}
+			</p>
 			<div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-5" data-hero-fade>
-				<Button href="#actividades" size="xl">{t('hero.activities')}</Button>
-				{
-					instagram && (
-						<Button href={instagram.href} variant="ghost" size="xl" external>
-							{t('hero.instagram')}
-						</Button>
-					)
-				}
+				<Button href="#actividades" size="xl">
+					{t('hero.activities')}
+				</Button>
+				{instagram && (
+					<Button href={instagram.href} variant="ghost" size="xl" external>
+						{t('hero.instagram')}
+					</Button>
+				)}
 			</div>
 		</div>
 	</div>
 
-	<div data-hero-slab class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16" aria-hidden="true">
+	<div
+		data-hero-slab
+		class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16"
+		aria-hidden="true"
+	>
 		<p class="tag tag-plan self-start">{t('soon')}</p>
 		<div class="graph log plan mt-5">
 			<span class="rail rail-main" data-rail></span>
 			<ol>
-				{planned.map((entry) => <Commit entry={entry} compact />)}
+				{planned.map((entry) => (
+					<Commit entry={entry} compact />
+				))}
 			</ol>
 		</div>
 		<div class="graph log flex-1">
 			<span class="rail rail-main" data-rail></span>
-			<ol>
-				{head && <Commit entry={head} compact />}
-			</ol>
+			<ol>{head && <Commit entry={head} compact />}</ol>
 		</div>
 	</div>
 </section>

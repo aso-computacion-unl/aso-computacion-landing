@@ -15,7 +15,12 @@ export const newsItem = (overrides: Partial<PublicNewsItem> = {}): PublicNewsIte
 	summary: 'Abrimos inscripciones para el taller de Git.',
 	body: 'Primer párrafo con **negrita**.\n\n- Uno\n- Dos',
 	publishedAt: '2026-10-20',
-	cover: { url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/news.jpg', width: 1200, height: 800, alt: 'Cartel del taller' },
+	cover: {
+		url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/news.jpg',
+		width: 1200,
+		height: 800,
+		alt: 'Cartel del taller',
+	},
 	...overrides,
 });
 
@@ -43,7 +48,16 @@ export const payload = (overrides: Partial<PublicContent> = {}): PublicContent =
 	],
 	faqs: [{ question: '¿Quién puede participar?', answer: 'Cualquier estudiante.', command: null }],
 	pillars: [{ word: 'VOZ', title: 'Representamos', text: 'Texto.', image: image() }],
-	socials: [{ platform: 'instagram', label: 'Instagram', handle: '@aso', url: 'https://www.instagram.com/aso/', note: null, blurb: null }],
+	socials: [
+		{
+			platform: 'instagram',
+			label: 'Instagram',
+			handle: '@aso',
+			url: 'https://www.instagram.com/aso/',
+			note: null,
+			blurb: null,
+		},
+	],
 	board: [{ name: 'Ana Pérez', role: 'Presidenta', photo: image({ alt: 'Foto de Ana Pérez' }) }],
 	settings: { tagline: 'Tagline', description: 'Descripción', about: 'Acerca de' },
 	news: [],

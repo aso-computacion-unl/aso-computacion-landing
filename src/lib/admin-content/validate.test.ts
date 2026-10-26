@@ -73,18 +73,34 @@ describe('parsePublicContent', () => {
 
 		it('rejects any other value, null included', () => {
 			for (const datePrecision of ['year', 'Month', 'DAY', '', null, 1, true]) {
-				expect(reason(payload({ events: [{ ...event, datePrecision: datePrecision as never }] })), String(datePrecision)).toContain('datePrecision');
+				expect(
+					reason(payload({ events: [{ ...event, datePrecision: datePrecision as never }] })),
+					String(datePrecision),
+				).toContain('datePrecision');
 			}
 		});
 
 		it('keeps a month-precision event without a date valid (the chip is simply omitted)', () => {
-			expect(ok(payload({ events: [{ ...event, date: null, datePrecision: 'month' }] })).events[0]).toMatchObject({ date: null, datePrecision: 'month' });
+			expect(ok(payload({ events: [{ ...event, date: null, datePrecision: 'month' }] })).events[0]).toMatchObject({
+				date: null,
+				datePrecision: 'month',
+			});
 		});
 	});
 
 	it('accepts null optional event fields', () => {
 		const event = payload().events[0];
-		const nulls = { description: null, date: null, type: null, commitMessage: null, hora: null, lugar: null, para: null, linkUrl: null, linkLabel: null };
+		const nulls = {
+			description: null,
+			date: null,
+			type: null,
+			commitMessage: null,
+			hora: null,
+			lugar: null,
+			para: null,
+			linkUrl: null,
+			linkLabel: null,
+		};
 		expect(ok(payload({ events: [{ ...event, ...nulls, photos: [] }] })).events[0]).toMatchObject(nulls);
 	});
 
@@ -97,16 +113,28 @@ describe('parsePublicContent', () => {
 		for (const url of ['javascript:alert(1)', 'http://www.instagram.com/aso/']) {
 			expect(reason(payload({ socials: [{ ...social, url }] }))).toContain('url');
 		}
-		expect(ok(payload({ events: [{ ...event, linkUrl: 'https://example.com/ok' }] })).events[0].linkUrl).toBe('https://example.com/ok');
+		expect(ok(payload({ events: [{ ...event, linkUrl: 'https://example.com/ok' }] })).events[0].linkUrl).toBe(
+			'https://example.com/ok',
+		);
 	});
 
 	it('requires a Cloudinary image URL and positive integer dimensions', () => {
 		const event = payload().events[0];
-		expect(reason(payload({ events: [{ ...event, photos: [image({ url: 'http://res.cloudinary.com/demo/image/upload/v1/a.jpg' })] }] }))).toContain('url');
-		expect(reason(payload({ events: [{ ...event, photos: [image({ url: '/src/assets/team/a.jpg' })] }] }))).toContain('url');
+		expect(
+			reason(
+				payload({
+					events: [{ ...event, photos: [image({ url: 'http://res.cloudinary.com/demo/image/upload/v1/a.jpg' })] }],
+				}),
+			),
+		).toContain('url');
+		expect(reason(payload({ events: [{ ...event, photos: [image({ url: '/src/assets/team/a.jpg' })] }] }))).toContain(
+			'url',
+		);
 		expect(reason(payload({ events: [{ ...event, photos: [image({ width: 0 })] }] }))).toContain('width');
 		expect(reason(payload({ events: [{ ...event, photos: [image({ height: 10.5 })] }] }))).toContain('height');
-		expect(reason(payload({ board: [{ name: 'A', role: 'B', photo: image({ alt: undefined as never }) }] }))).toContain('alt');
+		expect(reason(payload({ board: [{ name: 'A', role: 'B', photo: image({ alt: undefined as never }) }] }))).toContain(
+			'alt',
+		);
 	});
 
 	it('rejects an image that is not an image upload on res.cloudinary.com, wherever it appears', () => {
@@ -177,7 +205,8 @@ describe('parsePublicContent', () => {
 
 	it('caps image width and height at 10000 positive integers', () => {
 		const event = payload().events[0];
-		const photoWith = (overrides: Parameters<typeof image>[0]) => payload({ events: [{ ...event, photos: [image(overrides)] }] });
+		const photoWith = (overrides: Parameters<typeof image>[0]) =>
+			payload({ events: [{ ...event, photos: [image(overrides)] }] });
 		for (const value of [1e21, 10001, Infinity, NaN, 1.5, 0, -5]) {
 			expect(reason(photoWith({ width: value })), `width ${value}`).toContain('width');
 			expect(reason(photoWith({ height: value })), `height ${value}`).toContain('height');
@@ -200,14 +229,24 @@ describe('parsePublicContent', () => {
 			expect(reason(payload({ board: [{ name: long(1_000), role: 'r', photo: image() }] }))).toContain('name');
 			expect(reason(payload({ socials: [{ ...payload().socials[0], handle: long(1_000) }] }))).toContain('handle');
 			expect(reason(payload({ settings: { tagline: 't', description: 'd', about: long(10_000) } }))).toContain('about');
-			expect(reason(payload({ events: [{ ...event, linkUrl: `https://example.com/${long(5_000)}` }] }))).toContain('linkUrl');
+			expect(reason(payload({ events: [{ ...event, linkUrl: `https://example.com/${long(5_000)}` }] }))).toContain(
+				'linkUrl',
+			);
 		});
 
 		it('still accepts the admin maximums', () => {
 			const content = ok(
 				payload({
 					faqs: [{ question: long(200), answer: long(1000) }],
-					events: [{ ...event, title: long(120), description: long(600), highlights: Array(8).fill(long(80)), photos: Array(12).fill(image({ alt: long(200) })) }],
+					events: [
+						{
+							...event,
+							title: long(120),
+							description: long(600),
+							highlights: Array(8).fill(long(80)),
+							photos: Array(12).fill(image({ alt: long(200) })),
+						},
+					],
 					settings: { tagline: long(120), description: long(300), about: long(600) },
 				}),
 			);
@@ -243,7 +282,15 @@ describe('parsePublicContent', () => {
 
 	describe('S4: board privacy', () => {
 		it('drops every key of a board member except name, role and photo', () => {
-			const member = { ...payload().board[0], phone: '0999999999', email: 'a@b.c', age: 22, instagram: '@ana', ciclo: 5, isPublished: true };
+			const member = {
+				...payload().board[0],
+				phone: '0999999999',
+				email: 'a@b.c',
+				age: 22,
+				instagram: '@ana',
+				ciclo: 5,
+				isPublished: true,
+			};
 			const content = ok({ ...payload(), board: [member] });
 			expect(Object.keys(content.board[0]).sort()).toEqual(['name', 'photo', 'role']);
 			expect(JSON.stringify(content.board)).not.toMatch(/0999999999|a@b\.c|@ana/);
@@ -307,7 +354,10 @@ describe('parsePublicContent: news', () => {
 	});
 
 	it('enforces the contract caps on text', () => {
-		expect(ok(payload({ news: [newsItem({ title: 'x'.repeat(120), summary: 'x'.repeat(280), body: 'x'.repeat(10_000) })] })).news).toHaveLength(1);
+		expect(
+			ok(payload({ news: [newsItem({ title: 'x'.repeat(120), summary: 'x'.repeat(280), body: 'x'.repeat(10_000) })] }))
+				.news,
+		).toHaveLength(1);
 		expect(reason(payload({ news: [newsItem({ title: 'x'.repeat(121) })] }))).toContain('title');
 		expect(reason(payload({ news: [newsItem({ summary: 'x'.repeat(281) })] }))).toContain('summary');
 		expect(reason(payload({ news: [newsItem({ body: 'x'.repeat(10_001) })] }))).toContain('body');
@@ -325,7 +375,10 @@ describe('parsePublicContent: news', () => {
 
 	it('requires publishedAt to be a real calendar date', () => {
 		for (const publishedAt of ['20/10/2026', '2026-02-31', '2026-10-20T10:00:00Z', '', null, 20261020]) {
-			expect(reason(payload({ news: [newsItem({ publishedAt: publishedAt as never })] })), String(publishedAt)).toContain('publishedAt');
+			expect(
+				reason(payload({ news: [newsItem({ publishedAt: publishedAt as never })] })),
+				String(publishedAt),
+			).toContain('publishedAt');
 		}
 	});
 
@@ -340,7 +393,8 @@ describe('parsePublicContent: news', () => {
 			'/src/assets/team/ana.jpg',
 			'javascript:alert(1)',
 		];
-		for (const url of bad) expect(reason(payload({ news: [newsItem({ cover: { ...cover, url } })] })), url).toContain('cover.url');
+		for (const url of bad)
+			expect(reason(payload({ news: [newsItem({ cover: { ...cover, url } })] })), url).toContain('cover.url');
 	});
 
 	it('accepts bundled covers only on the fallback path', () => {
@@ -349,8 +403,19 @@ describe('parsePublicContent: news', () => {
 	});
 
 	it('bounds the cover dimensions and requires its alt text', () => {
-		for (const bad of [{ width: 0 }, { width: 10_001 }, { height: 1.5 }, { height: '800' }, { alt: '' }, { alt: 'x'.repeat(201) }, { alt: undefined }]) {
-			expect(reason(payload({ news: [newsItem({ cover: { ...cover, ...bad } as never })] })), JSON.stringify(bad)).toContain('cover');
+		for (const bad of [
+			{ width: 0 },
+			{ width: 10_001 },
+			{ height: 1.5 },
+			{ height: '800' },
+			{ alt: '' },
+			{ alt: 'x'.repeat(201) },
+			{ alt: undefined },
+		]) {
+			expect(
+				reason(payload({ news: [newsItem({ cover: { ...cover, ...bad } as never })] })),
+				JSON.stringify(bad),
+			).toContain('cover');
 		}
 	});
 
@@ -363,7 +428,13 @@ describe('parsePublicContent: news', () => {
 describe('parsePublicContent: FAQ commands and free commands', () => {
 	const faq = (command: unknown) => ({ question: '¿Q?', answer: 'A', command }) as never;
 	const free = (overrides: Record<string, unknown> = {}) =>
-		({ id: 'c1', command: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.', ...overrides }) as never;
+		({
+			id: 'c1',
+			command: 'whoami',
+			description: 'Quiénes somos',
+			output: 'Somos la ASO.\nTe esperamos.',
+			...overrides,
+		}) as never;
 
 	it('reads a payload from an older admin, without either field, as having no commands', () => {
 		const old = JSON.parse(JSON.stringify(payload()));
@@ -382,11 +453,27 @@ describe('parsePublicContent: FAQ commands and free commands', () => {
 	it('keeps the free commands in order, multi-line output included', () => {
 		const content = ok(payload({ commands: [free(), free({ id: 'c2', command: 'horario' })] }));
 		expect(content.commands.map((item) => item.command)).toEqual(['whoami', 'horario']);
-		expect(content.commands[0]).toEqual({ id: 'c1', command: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.' });
+		expect(content.commands[0]).toEqual({
+			id: 'c1',
+			command: 'whoami',
+			description: 'Quiénes somos',
+			output: 'Somos la ASO.\nTe esperamos.',
+		});
 	});
 
 	it('rejects a command name that breaks the format, in a FAQ and in a free command', () => {
-		for (const bad of ['', 'a', 'Mayus', '1abc', 'con espacio', 'doble--guion', '-inicio', 'fin-', 'ñandú', 'a'.repeat(29)]) {
+		for (const bad of [
+			'',
+			'a',
+			'Mayus',
+			'1abc',
+			'con espacio',
+			'doble--guion',
+			'-inicio',
+			'fin-',
+			'ñandú',
+			'a'.repeat(29),
+		]) {
 			expect(reason(payload({ faqs: [faq(bad)] }))).toContain('faqs[0].command');
 			expect(reason(payload({ commands: [free({ command: bad })] }))).toContain('commands[0].command');
 		}
@@ -396,7 +483,9 @@ describe('parsePublicContent: FAQ commands and free commands', () => {
 	it('rejects a description over 80 characters and an output over 600', () => {
 		expect(reason(payload({ commands: [free({ description: 'x'.repeat(81) })] }))).toContain('commands[0].description');
 		expect(reason(payload({ commands: [free({ output: 'x'.repeat(601) })] }))).toContain('commands[0].output');
-		expect(ok(payload({ commands: [free({ description: 'x'.repeat(80), output: 'x'.repeat(600) })] })).commands).toHaveLength(1);
+		expect(
+			ok(payload({ commands: [free({ description: 'x'.repeat(80), output: 'x'.repeat(600) })] })).commands,
+		).toHaveLength(1);
 	});
 
 	it('rejects a free command without output or description', () => {

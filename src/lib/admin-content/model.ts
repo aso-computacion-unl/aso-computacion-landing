@@ -3,9 +3,7 @@ import type { ImageMetadata } from 'astro';
 
 // A bundled image (Astro optimizes it from its metadata) or a remote Cloudinary one, which carries the width and
 // height the admin reported (see cloudinary.ts and components/Photo.astro).
-export type Photo =
-	| { src: ImageMetadata; alt: string }
-	| { src: string; width: number; height: number; alt: string };
+export type Photo = { src: ImageMetadata; alt: string } | { src: string; width: number; height: number; alt: string };
 
 export const activityTypes = ['taller', 'charla', 'evento', 'comunidad'] as const;
 export type ActivityType = (typeof activityTypes)[number];

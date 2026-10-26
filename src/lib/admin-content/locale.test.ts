@@ -5,14 +5,23 @@ import { formatStamp } from './timeline';
 import { image, newsItem, payload } from './test-fixtures';
 
 const NOW = new Date('2026-10-22T15:00:00Z');
-const resolveLocal = (path: string) => ({ src: path, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
+const resolveLocal = (path: string) =>
+	({ src: path, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
 
 const baseline: Baseline = {
 	site: { name: 'ASO', tagline: 't', headline: ['a'], headlineAccent: 0, heroCue: 'cue', description: 'd', about: 'a' },
 	navLinks: [],
 	anchors: {
 		next: { id: 'next', kind: 'next', stamp: 'Up next', title: 'next' },
-		head: { id: 'head', kind: 'head', stamp: 'HEAD', title: 'Board', description: 'old', href: '#directiva', hrefLabel: 'Meet' },
+		head: {
+			id: 'head',
+			kind: 'head',
+			stamp: 'HEAD',
+			title: 'Board',
+			description: 'old',
+			href: '#directiva',
+			hrefLabel: 'Meet',
+		},
 		initial: { id: 'init', kind: 'initial', stamp: '2020', title: 'Born' },
 	},
 	demo: { events: [], pillars: [], faqItems: [], boardFun: {}, collage: [] },
@@ -22,7 +31,13 @@ const board = (count: number) =>
 	Array.from({ length: count }, (_, i) => ({ name: `Member ${i}`, role: 'Vocal', photo: image({ alt: '' }) }));
 
 const compose = (locale: 'es' | 'en' | undefined, members = 1) =>
-	composeSiteContent({ loaded: { source: 'api', content: payload({ board: board(members), news: [newsItem()] }) }, baseline, now: NOW, resolveLocal, locale });
+	composeSiteContent({
+		loaded: { source: 'api', content: payload({ board: board(members), news: [newsItem()] }) },
+		baseline,
+		now: NOW,
+		resolveLocal,
+		locale,
+	});
 
 describe('formatStamp per locale', () => {
 	it('keeps the Spanish chip format by default', () => {
@@ -46,7 +61,8 @@ describe('composeSiteContent per locale', () => {
 	});
 
 	it('writes the board size sentence in the requested locale', () => {
-		const head = (locale: 'es' | 'en', members: number) => compose(locale, members).timeline.find((entry) => entry.kind === 'head')?.description;
+		const head = (locale: 'es' | 'en', members: number) =>
+			compose(locale, members).timeline.find((entry) => entry.kind === 'head')?.description;
 		expect(head('en', 1)).toBe('One person represents the students of the program today.');
 		expect(head('en', 7)).toBe('Seven members represent the students of the program today.');
 		expect(head('es', 7)).toBe('Siete integrantes representan hoy a los estudiantes de la carrera.');

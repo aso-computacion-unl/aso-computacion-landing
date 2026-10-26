@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import "@fontsource/audiowide";
-@import "@fontsource-variable/mona-sans/wdth.css";
-@import "@fontsource-variable/geist-mono";
-@import "lenis/dist/lenis.css";
+@import 'tailwindcss';
+@import '@fontsource/audiowide';
+@import '@fontsource-variable/mona-sans/wdth.css';
+@import '@fontsource-variable/geist-mono';
+@import 'lenis/dist/lenis.css';
 
 /*
  * Official ASO Computación brand tokens.
@@ -30,13 +30,13 @@
 	--color-shade: #000;
 
 	/* Display: titles and headers only. Body: long-form text. Mono: dates, branch names, short hashes. */
-	--font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
-	--font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
-	--font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+	--font-display: 'Audiowide', ui-sans-serif, system-ui, sans-serif;
+	--font-sans: 'Mona Sans Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 /* Light theme: pale surfaces, navy ink, a deeper sky so it still reads as text (4.5:1 on white), white on sky. */
-:root[data-theme="light"] {
+:root[data-theme='light'] {
 	--color-navy: #f4f7fb;
 	--color-navy-deep: #e4ebf4;
 	--color-navy-lift: #ffffff;
@@ -49,8 +49,8 @@
 }
 
 /* Pieces drawn for one theme only (the white and the colour isotype). */
-:root[data-theme="light"] .theme-dark-only,
-:root:not([data-theme="light"]) .theme-light-only {
+:root[data-theme='light'] .theme-dark-only,
+:root:not([data-theme='light']) .theme-light-only {
 	display: none;
 }
 
@@ -380,7 +380,7 @@
 	}
 
 	.duo::after {
-		content: "";
+		content: '';
 		position: absolute;
 		inset: 0;
 		background: var(--color-brand);
@@ -811,7 +811,7 @@
 	}
 
 	.chip::before {
-		content: "#";
+		content: '#';
 		color: var(--color-sky);
 	}
 
@@ -824,15 +824,15 @@
 		box-shadow: inset 0 0 0 2px var(--color-sky);
 	}
 
-	.chip[aria-pressed="true"] {
+	.chip[aria-pressed='true'] {
 		background: var(--color-sky);
 		box-shadow: none;
 		color: var(--color-on-sky);
 		font-weight: 700;
 	}
 
-	.chip[aria-pressed="true"]::before,
-	.chip[aria-pressed="true"] .chip-count {
+	.chip[aria-pressed='true']::before,
+	.chip[aria-pressed='true'] .chip-count {
 		color: var(--color-on-sky);
 	}
 
@@ -910,7 +910,7 @@
 
 	/* The main rail stops at the last node: the initial commit has nothing before it. */
 	.commit.is-last::after {
-		content: "";
+		content: '';
 		position: absolute;
 		z-index: 1;
 		left: 0;
@@ -1063,7 +1063,7 @@
 	}
 
 	.node-root::after {
-		content: "";
+		content: '';
 		position: absolute;
 		inset: 0;
 		margin: auto;
@@ -1200,7 +1200,7 @@
 	}
 
 	.rotor-word::after {
-		content: ".";
+		content: '.';
 		color: var(--color-ink);
 	}
 
@@ -1452,13 +1452,11 @@
 		height: 8.5rem;
 	}
 
-
 	@media (min-width: 48rem) {
 		.c-wide {
 			width: 17rem;
 			height: 12rem;
 		}
-
 	}
 
 	/* Stickers: flat, rotated, used sparingly. The wrapper rotates; the face is what pops in. */
@@ -1768,7 +1766,7 @@
 
 	.faq-plus::before,
 	.faq-plus::after {
-		content: "";
+		content: '';
 		position: absolute;
 		inset: 0;
 		margin: auto;
@@ -2009,7 +2007,7 @@
 	}
 
 	.term-line.is-question::before {
-		content: "# ";
+		content: '# ';
 		color: var(--color-sky);
 	}
 

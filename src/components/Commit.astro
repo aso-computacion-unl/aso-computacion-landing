@@ -50,82 +50,73 @@ const isNext = !compact && entry === nextEvent;
 		class:list={['node', nodeClass[entry.kind]]}
 		data-node
 		data-root-node={entry.kind === 'initial' ? '' : undefined}
-		aria-hidden="true"></span>
+		aria-hidden="true"
+	></span>
 	<span class="link" data-link aria-hidden="true"></span>
 	<div class:list={['card', 'card-row']} data-card={compact ? undefined : ''}>
-		{isNext && <span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">{t('commit.new')}</span>}
+		{isNext && (
+			<span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">
+				{t('commit.new')}
+			</span>
+		)}
 		<div class="card-main">
-			{
-				entry.stamp && (
-					<p class="leading-none">
-						<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
-						{entry.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
-					</p>
-				)
-			}
+			{entry.stamp && (
+				<p class="leading-none">
+					<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
+					{entry.demo && (
+						<span class="demo-tag" title={t('demo.title')}>
+							demo
+						</span>
+					)}
+				</p>
+			)}
 			<h3 class="mt-3 font-display text-lg leading-snug text-ink md:text-xl xl:text-2xl">{entry.title}</h3>
 			{entry.msg && <p class="msg">{entry.msg}</p>}
 			{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
-			{
-				!compact && entry.href && (
-					<a
-						href={entry.href}
-						class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink"
-						target={external ? '_blank' : undefined}
-						rel={external ? 'me noopener' : undefined}
-					>
-						{entry.hrefLabel}
-						{external && <span class="sr-only"> {t('newTab')}</span>}
-					</a>
-				)
-			}
-			{
-				(hash || deco) && (
-					<p class="ref" aria-hidden="true">
-						{hash}
-						{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
-					</p>
-				)
-			}
+			{!compact && entry.href && (
+				<a
+					href={entry.href}
+					class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink"
+					target={external ? '_blank' : undefined}
+					rel={external ? 'me noopener' : undefined}
+				>
+					{entry.hrefLabel}
+					{external && <span class="sr-only"> {t('newTab')}</span>}
+				</a>
+			)}
+			{(hash || deco) && (
+				<p class="ref" aria-hidden="true">
+					{hash}
+					{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
+				</p>
+			)}
 		</div>
-		{
-			!compact && metaEntries.length > 0 && (
-				<dl class="card-meta">
-					{metaEntries.map(([label, value]) => (
-						<div>
-							<dt>{metaLabel(locale, label)}</dt>
-							<dd>{value}</dd>
-						</div>
-					))}
-				</dl>
-			)
-		}
-		{
-			showPhoto && entry.image && (
-				<div class="duo photo">
-					<Photo
-						photo={entry.image}
-						box={{ width: 720, height: 360 }}
-						widths={[480, 720, 960]}
-						sizes="(min-width: 1024px) 28rem, 90vw"
-						loading="lazy"
-					/>
-				</div>
-			)
-		}
-		{
-			showThumb && entry.image && (
-				<div class="duo thumb">
-					<Photo
-						photo={entry.image}
-						box={{ width: 224, height: 224 }}
-						widths={[112, 224]}
-						sizes="7rem"
-						loading="lazy"
-					/>
-				</div>
-			)
-		}
+		{!compact && metaEntries.length > 0 && (
+			<dl class="card-meta">
+				{metaEntries.map(([label, value]) => (
+					<div>
+						<dt>{metaLabel(locale, label)}</dt>
+						<dd>{value}</dd>
+					</div>
+				))}
+			</dl>
+		)}
+		{showPhoto && entry.image && (
+			<div class="duo photo">
+				<Photo
+					photo={entry.image}
+					box={{ width: 720, height: 360 }}
+					widths={[480, 720, 960]}
+					sizes="(min-width: 1024px) 28rem, 90vw"
+					loading="lazy"
+				/>
+			</div>
+		)}
+		{showThumb && entry.image && (
+			<div class="duo thumb">
+				<Photo photo={entry.image} box={{ width: 224, height: 224 }} widths={[112, 224]} sizes="7rem" loading="lazy" />
+			</div>
+		)}
 	</div>
 	<slot />
 </li>

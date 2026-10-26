@@ -4,23 +4,24 @@
 import type { Locale } from './locales';
 
 const es = {
-	'skip': 'Saltar al contenido',
+	skip: 'Saltar al contenido',
 	'nav.label': 'Principal',
 	'nav.home': '{name}, inicio',
 	'lang.switchText': 'EN',
 	'lang.switchLabel': 'English version',
 	'theme.toggle': 'Modo oscuro',
-	'newTab': '(se abre en otra pestaña)',
+	newTab: '(se abre en otra pestaña)',
 	'demo.title': 'Contenido de ejemplo',
 	'demo.detail': 'Dato de ejemplo',
-	'soon': 'próximamente',
+	soon: 'próximamente',
 
 	'hero.activities': 'Ver actividades',
 	'hero.instagram': 'Síguenos en Instagram',
 
 	'activities.title': 'Actividades',
 	'activities.aside': 'Próxima actividad y filtros',
-	'activities.intro': 'Arriba, lo que viene (línea punteada: todavía no ocurre). Abajo, lo que ya hicimos, hasta el primer día.',
+	'activities.intro':
+		'Arriba, lo que viene (línea punteada: todavía no ocurre). Abajo, lo que ya hicimos, hasta el primer día.',
 	'activities.next': 'Próxima actividad',
 	'activities.date': 'fecha',
 	'activities.branch': 'Actividades de {title}',
@@ -53,7 +54,8 @@ const es = {
 	'news.lead': 'Lo último que anunciamos: avisos, resultados y noticias para quienes estudian Computación.',
 	'news.seeAll': 'Ver todas las novedades',
 	'news.seeCount': 'Ver las {count} novedades',
-	'news.pageDescription': 'Avisos, resultados y noticias de {name}, la asociación de estudiantes de Computación de la UNL.',
+	'news.pageDescription':
+		'Avisos, resultados y noticias de {name}, la asociación de estudiantes de Computación de la UNL.',
 	'news.pageLead': 'Todo lo que hemos anunciado, de lo más nuevo a lo más antiguo.',
 	'news.empty': 'Todavía no publicamos novedades. Mientras tanto, todo se anuncia en nuestras redes.',
 	'news.seeSocials': 'Ver redes',
@@ -63,7 +65,8 @@ const es = {
 	'news.backAll': '← Todas las novedades',
 
 	'board.title': 'Directiva',
-	'board.lead': 'Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas.',
+	'board.lead':
+		'Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas.',
 	'board.count': 'personas que te representan',
 	'board.roles': 'Cargos',
 	'board.hint': '¿quién es?',
@@ -90,23 +93,24 @@ const es = {
 } as const;
 
 const en: Record<keyof typeof es, string> = {
-	'skip': 'Skip to content',
+	skip: 'Skip to content',
 	'nav.label': 'Main',
 	'nav.home': '{name}, home',
 	'lang.switchText': 'ES',
 	'lang.switchLabel': 'Versión en español',
 	'theme.toggle': 'Dark mode',
-	'newTab': '(opens in a new tab)',
+	newTab: '(opens in a new tab)',
 	'demo.title': 'Sample content',
 	'demo.detail': 'Sample detail',
-	'soon': 'coming soon',
+	soon: 'coming soon',
 
 	'hero.activities': 'See activities',
 	'hero.instagram': 'Follow us on Instagram',
 
 	'activities.title': 'Activities',
 	'activities.aside': 'Next activity and filters',
-	'activities.intro': 'Above, what is coming (dotted line: it has not happened yet). Below, what we have already done, back to day one.',
+	'activities.intro':
+		'Above, what is coming (dotted line: it has not happened yet). Below, what we have already done, back to day one.',
 	'activities.next': 'Next activity',
 	'activities.date': 'date',
 	'activities.branch': 'Activities of {title}',
@@ -182,7 +186,10 @@ export type Translate = (key: UiKey, vars?: Record<string, string | number>) => 
 
 export function useTranslations(locale: Locale): Translate {
 	const dictionary = dictionaries[locale];
-	return (key, vars) => dictionary[key].replace(/\{(\w+)\}/g, (whole, name: string) => (name in (vars ?? {}) ? String(vars?.[name]) : whole));
+	return (key, vars) =>
+		dictionary[key].replace(/\{(\w+)\}/g, (whole, name: string) =>
+			name in (vars ?? {}) ? String(vars?.[name]) : whole,
+		);
 }
 
 // Label of an activity type. The slug (`taller`) stays the filter value and the CSS hook; only the text changes.

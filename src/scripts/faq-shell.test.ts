@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { completeFaqCommand, helpLines, runFaqCommand, tabFaqCommand, type FaqCommandEntry, type FaqEntry } from './faq-shell';
+import {
+	completeFaqCommand,
+	helpLines,
+	runFaqCommand,
+	tabFaqCommand,
+	type FaqCommandEntry,
+	type FaqEntry,
+} from './faq-shell';
 
 const items: FaqEntry[] = [
 	{ topic: 'participar', q: '¿Quién puede participar?', a: 'Cualquier estudiante.' },
@@ -98,7 +105,10 @@ describe('tabFaqCommand', () => {
 	it('extends an ambiguous prefix to what every match shares before listing them', () => {
 		expect(tabFaqCommand('git h', items)).toEqual({ value: 'git help ', options: [] });
 		expect(tabFaqCommand('co', items)).toEqual({ value: 'co', options: ['costo', 'contacto'] });
-		expect(tabFaqCommand('git help co', items)).toEqual({ value: 'git help co', options: ['git help costo', 'git help contacto'] });
+		expect(tabFaqCommand('git help co', items)).toEqual({
+			value: 'git help co',
+			options: ['git help costo', 'git help contacto'],
+		});
 	});
 
 	it('keeps what was typed when the matches share nothing more', () => {
@@ -114,7 +124,10 @@ describe('FAQ terminal in English', () => {
 	const items = [{ topic: 'costo', q: 'Does it cost anything?', a: 'No.' }];
 
 	it('introduces the help list in English', () => {
-		expect(helpLines(items, 'en')[0]).toEqual({ tone: 'out', text: 'Available topics. Type one or tap it in the list:' });
+		expect(helpLines(items, 'en')[0]).toEqual({
+			tone: 'out',
+			text: 'Available topics. Type one or tap it in the list:',
+		});
 	});
 
 	it('explains unknown commands and topics in English', () => {
