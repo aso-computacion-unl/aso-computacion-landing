@@ -1,17 +1,20 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { impactStat, payload, sponsor, testimonial } from '../src/lib/admin-content/test-fixtures';
+import { impactStat, newsItem, payload, sponsor, testimonial } from '../src/lib/admin-content/test-fixtures';
 import {
 	PIXEL,
+	TOKEN,
 	buildSite,
+	exists,
+	readBuilt,
 	serveDirectory,
 	startMockAdmin,
 	type MockAdmin,
 	type StaticSite,
 } from './support/admin-site';
 
-// Real builds of the landing against a mock admin (e2e/support/admin-site.ts). One file, serial: the builds share
-// Astro's cache, so they must not overlap. Social-proof sections (S9) here; the preview mode (S6) below.
+// Real builds of the landing against a mock admin (e2e/support/admin-site.ts): the social-proof sections (S9) and the
+// preview mode (S6). One file, serial: the builds share Astro's cache, so they must not overlap.
 test.describe.configure({ mode: 'serial' });
 
 const socialProof = () =>
@@ -20,6 +23,8 @@ const socialProof = () =>
 		testimonials: [testimonial(), testimonial({ name: 'Ana Mora', role: 'Egresada', photo: null })],
 		sponsors: [sponsor(), sponsor({ name: 'Sin enlace', url: null })],
 	});
+const draft = newsItem({ slug: 'borrador-sin-publicar', title: 'Borrador sin publicar' });
+const previewDocument = () => ({ ...socialProof(), news: [draft], schemaVersion: 1, preview: true });
 
 // A page from a build, with the images answered locally.
 const open = async (page: Page, url: string) => {
@@ -139,5 +144,161 @@ test.describe('social proof from the admin', () => {
 				expect(style, selector).toEqual({ opacity: '1', transform: 'none' });
 			}
 		});
+	});
+});
+
+test.describe('preview build', () => {
+	let admin: MockAdmin;
+	let site: StaticSite;
+	let outDir: string;
+	let normalAdmin: MockAdmin;
+	let normalSite: StaticSite;
+	let normalOutDir: string;
+
+	test.beforeAll(async () => {
+		test.setTimeout(240_000);
+		admin = await startMockAdmin({ content: socialProof(), preview: previewDocument() });
+		const built = await buildSite('preview', {
+			PREVIEW_BUILD: '1',
+			PREVIEW_TOKEN: TOKEN,
+			ADMIN_PREVIEW_URL: `${admin.url}/api/public/preview`,
+			// The content endpoint is also configured: a preview build must read the preview one only.
+			ADMIN_CONTENT_URL: `${admin.url}/api/public/content`,
+			PUBLIC_CF_BEACON_TOKEN: 'beacon-token',
+		});
+		expect(built.exitCode, built.output).toBe(0);
+		outDir = built.outDir;
+		site = await serveDirectory(outDir);
+
+		// A normal build that still has the token and the preview URL around: it must ignore them.
+		normalAdmin = await startMockAdmin({ content: socialProof(), preview: previewDocument() });
+		const normal = await buildSite('normal-with-token', {
+			PREVIEW_TOKEN: TOKEN,
+			ADMIN_PREVIEW_URL: `${normalAdmin.url}/api/public/preview`,
+			ADMIN_CONTENT_URL: `${normalAdmin.url}/api/public/content`,
+			PUBLIC_CF_BEACON_TOKEN: 'beacon-token',
+		});
+		expect(normal.exitCode, normal.output).toBe(0);
+		normalOutDir = normal.outDir;
+		normalSite = await serveDirectory(normalOutDir);
+	});
+
+	test.afterAll(async () => {
+		await Promise.all([site?.close(), admin?.close(), normalSite?.close(), normalAdmin?.close()]);
+	});
+
+	test('fetches the preview with the token header and never the public content', async () => {
+		expect(admin.previewTokens).toEqual([TOKEN]);
+		expect(admin.contentRequests).toBe(0);
+	});
+
+	test('shows the banner on every page, in Spanish and in English', async ({ page }) => {
+		for (const [path, text] of [
+			['/', 'Vista previa — no publicar'],
+			['/novedades/', 'Vista previa — no publicar'],
+			['/en/', 'Preview — do not publish'],
+		]) {
+			await open(page, `${site.url}${path}`);
+			const banner = page.locator('[data-preview-banner]');
+			await expect(banner).toBeVisible();
+			await expect(banner).toContainText(text);
+		}
+	});
+
+	test('is never indexed: noindex meta, robots.txt, X-Robots-Tag header file and no sitemap', async ({ page }) => {
+		await open(page, `${site.url}/`);
+		await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
+		expect(await readBuilt(outDir, 'robots.txt')).toBe('User-agent: *\nDisallow: /\n');
+		expect(await readBuilt(outDir, '_headers')).toMatch(/\/\*\n {2}X-Robots-Tag: noindex, nofollow/);
+		expect(await exists(outDir, 'sitemap-index.xml')).toBe(false);
+	});
+
+	test('shows the draft the preview carries, and no analytics beacon', async ({ page }) => {
+		await open(page, `${site.url}/novedades/`);
+		await expect(page.getByText('Borrador sin publicar').first()).toBeVisible();
+		expect(await readBuilt(outDir, 'index.html')).not.toContain('cloudflareinsights');
+	});
+
+	test('keeps the token out of every file of the build', async () => {
+		for (const file of ['index.html', 'novedades/index.html', 'en/index.html', 'robots.txt', '_headers']) {
+			expect(await readBuilt(outDir, file), file).not.toContain(TOKEN);
+		}
+	});
+
+	test('has no serious or critical axe violations with the banner', async ({ browser }) => {
+		const context = await browser.newContext({ reducedMotion: 'reduce' });
+		const page = await context.newPage();
+		await open(page, `${site.url}/`);
+		await expect(page.locator('[data-preview-banner]')).toBeVisible();
+		expect(await blockingViolations(page)).toEqual([]);
+		await context.close();
+	});
+
+	test('a normal build ignores the token: no banner, indexable, the sitemap and the beacon stay, the preview is never asked', async ({
+		page,
+	}) => {
+		expect(normalAdmin.previewTokens).toEqual([]);
+		expect(normalAdmin.contentRequests).toBeGreaterThan(0);
+		await open(page, `${normalSite.url}/`);
+		await expect(page.locator('[data-preview-banner]')).toHaveCount(0);
+		await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+		await open(page, `${normalSite.url}/novedades/`);
+		await expect(page.getByText('Borrador sin publicar')).toHaveCount(0);
+		expect(await readBuilt(normalOutDir, 'robots.txt')).toContain('Allow: /');
+		expect(await readBuilt(normalOutDir, '_headers')).not.toContain('X-Robots-Tag');
+		expect(await exists(normalOutDir, 'sitemap-index.xml')).toBe(true);
+		expect(await readBuilt(normalOutDir, 'index.html')).toContain('cloudflareinsights');
+	});
+});
+
+test.describe('preview build that must stop', () => {
+	test.beforeEach(() => test.setTimeout(180_000));
+	const stops = async (
+		name: string,
+		documents: Parameters<typeof startMockAdmin>[0],
+		env: (url: string) => Record<string, string>,
+	) => {
+		const admin = await startMockAdmin(documents);
+		try {
+			const built = await buildSite(name, { PREVIEW_BUILD: '1', ...env(admin.url) });
+			return { built, admin };
+		} finally {
+			await admin.close();
+		}
+	};
+	const withToken = (token: string) => (url: string) => ({
+		PREVIEW_TOKEN: token,
+		ADMIN_PREVIEW_URL: `${url}/api/public/preview`,
+	});
+
+	test('fails the build on a 401 and says why, without printing the token', async () => {
+		const { built, admin } = await stops(
+			'preview-401',
+			{ content: socialProof(), preview: previewDocument() },
+			withToken('wrong-token'),
+		);
+		expect(built.exitCode).not.toBe(0);
+		expect(built.output).toMatch(/HTTP 401/);
+		expect(built.output).toMatch(/invalid or expired/);
+		expect(built.output).not.toContain('wrong-token');
+		expect(admin.previewTokens).toEqual(['wrong-token']);
+	});
+
+	test('fails the build when the response is not marked preview: true', async () => {
+		const { preview: _preview, ...unmarked } = previewDocument();
+		const { built } = await stops('preview-unmarked', { content: socialProof(), preview: unmarked }, withToken(TOKEN));
+		expect(built.exitCode).not.toBe(0);
+		expect(built.output).toMatch(/preview: true/);
+		expect(built.output).not.toContain(TOKEN);
+	});
+
+	test('fails the build when PREVIEW_TOKEN is missing, instead of building normal content', async () => {
+		const { built, admin } = await stops('preview-no-token', { content: socialProof() }, (url) => ({
+			ADMIN_PREVIEW_URL: `${url}/api/public/preview`,
+			ADMIN_CONTENT_URL: `${url}/api/public/content`,
+		}));
+		expect(built.exitCode).not.toBe(0);
+		expect(built.output).toMatch(/PREVIEW_TOKEN is not set/);
+		expect(admin.contentRequests).toBe(0);
 	});
 });
