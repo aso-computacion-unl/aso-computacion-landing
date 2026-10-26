@@ -1,0 +1,55 @@
+---
+// The end of a news post: up to three other posts, newest first. Renders nothing when there are none.
+import { relatedNews } from '../lib/admin-content/news';
+import type { NewsItem } from '../lib/admin-content/model';
+import { useTranslations } from '../i18n/ui';
+import { toLocale } from '../i18n/locales';
+import { getContent } from '../data/content';
+import NewsCard from './NewsCard.astro';
+
+interface Props {
+	// The post being read.
+	slug: NewsItem['slug'];
+}
+
+const locale = toLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const related = relatedNews(getContent(locale).news, Astro.props.slug);
+---
+
+{related.length > 0 && (
+	<section class="related" aria-labelledby="related-title">
+		<h2 id="related-title" class="related-title">
+			{t('news.related')}
+		</h2>
+		<ul class="related-list">
+			{related.map((item) => (
+				<li class="min-w-0">
+					<NewsCard item={item} variant="row" as="h3" />
+				</li>
+			))}
+		</ul>
+	</section>
+)}
+
+<style>
+	.related {
+		margin-top: 3.5rem;
+		border-top: 1px solid color-mix(in srgb, var(--color-sky) 30%, transparent);
+		padding-top: 2rem;
+	}
+
+	.related-title {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.25rem;
+		color: var(--color-sky);
+	}
+
+	.related-list {
+		display: grid;
+		gap: 1rem;
+		margin-top: 1.25rem;
+		list-style: none;
+	}
+</style>

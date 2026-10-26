@@ -51,7 +51,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 				href={alternatePath(Astro.url.pathname, other)}
 				hreflang={other}
 				lang={other}
-				aria-label={t('lang.switchLabel')}
+				aria-label={`${t('lang.switchText')}, ${t('lang.switchLabel')}`}
 				class="flex min-h-9 min-w-7 items-center justify-center px-1 text-mist hover:text-ink sm:min-w-9 sm:px-1.5"
 			>
 				{t('lang.switchText')}
