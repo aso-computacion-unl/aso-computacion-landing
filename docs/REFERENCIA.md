@@ -156,6 +156,7 @@ changes nothing, and a preview build just reads another endpoint, `GET /api/publ
 | `PREVIEW_BUILD` | `1` (or `true`) turns the preview mode on. Without it every other variable here is ignored, even `PREVIEW_TOKEN`. |
 | `PREVIEW_TOKEN` | The code from the admin's `/admin/vista-previa` (valid 1 hour, 24 hours or 7 days). Secret: a build secret, never in the page or the URL. |
 | `ADMIN_PREVIEW_URL` | Full URL of the admin's `GET /api/public/preview`. Must be https (http only for `localhost`/`127.0.0.1`), because the token travels with it. |
+| `PUBLIC_PAGES_PROJECT` | Name of the public Cloudflare Pages project. Required for a preview build on Cloudflare Pages (`CF_PAGES=1`): the build fails if it runs on that project, or if this is unset. Not needed locally. |
 
 The build sends the token in the `X-Preview-Token` header only, uncached and without following redirects, from the
 server side of the build. It **stops** (exit code 1, no site produced) when the token is missing, the admin answers

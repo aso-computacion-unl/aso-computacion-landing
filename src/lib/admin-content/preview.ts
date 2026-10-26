@@ -10,6 +10,11 @@ export interface PreviewEnv {
 	PREVIEW_BUILD?: string;
 	PREVIEW_TOKEN?: string;
 	ADMIN_PREVIEW_URL?: string;
+	// Name of the public Cloudflare Pages project; required for a preview build on Cloudflare (see assertPreviewAllowed).
+	PUBLIC_PAGES_PROJECT?: string;
+	// Set by Cloudflare Pages builds: `1`, and the URL of this deployment (`https://<hash-or-branch>.<project>.pages.dev`).
+	CF_PAGES?: string;
+	CF_PAGES_URL?: string;
 }
 
 export interface PreviewConfig {
@@ -28,11 +33,45 @@ const truthy = (value: string | undefined) => ['1', 'true'].includes(value?.trim
 // project must not turn the public site into a draft viewer.
 export const isPreviewBuild = (env: PreviewEnv) => truthy(env.PREVIEW_BUILD);
 
+// Cloudflare documents no project-name build variable, but `CF_PAGES_URL` is always `<hash-or-branch>.<project>.pages.dev`
+// and a project name cannot contain a dot, so the label before `pages.dev` is the project.
+const pagesProject = (deploymentUrl: string | undefined) => {
+	try {
+		const labels = new URL(deploymentUrl?.trim() ?? '').hostname.toLowerCase().split('.');
+		return labels.length >= 4 && labels.slice(-2).join('.') === 'pages.dev' ? labels[labels.length - 3] : undefined;
+	} catch {
+		return undefined;
+	}
+};
+
+// A preview build shows drafts, so it must never run on the public Cloudflare Pages project, even if PREVIEW_BUILD=1 is
+// set there by mistake. On Cloudflare it needs PUBLIC_PAGES_PROJECT (the public project's name) and refuses to run when
+// this build is that project; it fails closed when the name or the current project is unknown. Outside Cloudflare
+// (a local build) and for normal builds it does nothing.
+export function assertPreviewAllowed(env: PreviewEnv): void {
+	if (!isPreviewBuild(env) || !truthy(env.CF_PAGES)) return;
+	const publicProject = env.PUBLIC_PAGES_PROJECT?.trim().toLowerCase();
+	if (!publicProject)
+		throw new PreviewBuildError(
+			'PREVIEW_BUILD is on in a Cloudflare Pages build but PUBLIC_PAGES_PROJECT (the name of the public project) is not set: refusing to build, since it cannot tell whether this is the public project.',
+		);
+	const project = pagesProject(env.CF_PAGES_URL);
+	if (!project)
+		throw new PreviewBuildError(
+			'PREVIEW_BUILD is on in a Cloudflare Pages build but CF_PAGES_URL does not name a *.pages.dev project: refusing to build, since it cannot tell whether this is the public project.',
+		);
+	if (project === publicProject)
+		throw new PreviewBuildError(
+			`PREVIEW_BUILD is on but this is the public Cloudflare Pages project (${project}): refusing to build drafts into the public site. Remove PREVIEW_BUILD here and use a separate preview project.`,
+		);
+}
+
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
 // Reads the preview settings, or `undefined` for a normal build. Throws PreviewBuildError for a half-configured preview.
 export function readPreviewConfig(env: PreviewEnv): PreviewConfig | undefined {
 	if (!isPreviewBuild(env)) return undefined;
+	assertPreviewAllowed(env);
 	const token = env.PREVIEW_TOKEN?.trim();
 	if (!token)
 		throw new PreviewBuildError('PREVIEW_BUILD is on but PREVIEW_TOKEN is not set (mint one at /admin/vista-previa).');

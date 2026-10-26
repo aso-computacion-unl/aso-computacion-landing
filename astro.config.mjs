@@ -7,11 +7,13 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-import { isPreviewBuild } from './src/lib/admin-content/preview.ts';
+import { assertPreviewAllowed, isPreviewBuild } from './src/lib/admin-content/preview.ts';
 
 // A preview build (PREVIEW_BUILD=1, see docs/DEPLOY.md) shows drafts: no sitemap, and every response asks crawlers to
 // stay away, whatever its type (the pages also carry their own noindex meta).
 const preview = isPreviewBuild(process.env);
+// Fail before anything is built if this is the public Cloudflare Pages project (docs/DEPLOY.md#preview-builds).
+assertPreviewAllowed(process.env);
 
 /** @type {import('astro').AstroIntegration} */
 const previewHeaders = {

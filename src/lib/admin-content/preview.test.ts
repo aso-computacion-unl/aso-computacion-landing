@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PreviewBuildError, isPreviewBuild, loadPreviewContent, readPreviewConfig } from './preview';
+import {
+	PreviewBuildError,
+	assertPreviewAllowed,
+	isPreviewBuild,
+	loadPreviewContent,
+	readPreviewConfig,
+} from './preview';
 import { newsItem, payload } from './test-fixtures';
 
 const TOKEN = 'header.payload.s3cret-signature';
@@ -24,6 +30,74 @@ const failure = async (promise: Promise<unknown>) => {
 	expect(error).toBeInstanceOf(PreviewBuildError);
 	return (error as PreviewBuildError).message;
 };
+
+describe('assertPreviewAllowed (the public project never builds a preview)', () => {
+	const on = { PREVIEW_BUILD: '1', PREVIEW_TOKEN: TOKEN, ADMIN_PREVIEW_URL: URL_ };
+	const onCloudflare = (project: string) => ({
+		CF_PAGES: '1',
+		CF_PAGES_URL: `https://3f2a9c1b.${project}.pages.dev`,
+	});
+
+	it('refuses a preview build on the public Cloudflare Pages project', () => {
+		const env = { ...on, ...onCloudflare('aso-computacion-landing'), PUBLIC_PAGES_PROJECT: 'aso-computacion-landing' };
+		expect(() => assertPreviewAllowed(env)).toThrow(PreviewBuildError);
+		expect(() => assertPreviewAllowed(env)).toThrow(/public Cloudflare Pages project/);
+		// Case and padding do not turn the public project into another one, and the guard runs before anything else.
+		const sloppy = { ...env, PUBLIC_PAGES_PROJECT: ' ASO-Computacion-Landing ' };
+		expect(() => assertPreviewAllowed(sloppy)).toThrow(/public Cloudflare Pages project/);
+		expect(() => readPreviewConfig(sloppy)).toThrow(/public Cloudflare Pages project/);
+		// A branch alias of the public project is still the public project.
+		const alias = { ...env, CF_PAGES_URL: 'https://feat-x.aso-computacion-landing.pages.dev' };
+		expect(() => assertPreviewAllowed(alias)).toThrow(/public Cloudflare Pages project/);
+	});
+
+	it('fails closed on Cloudflare when PUBLIC_PAGES_PROJECT is not set', () => {
+		const env = { ...on, ...onCloudflare('aso-computacion-preview') };
+		for (const unset of [undefined, '', '  ']) {
+			const withName = { ...env, PUBLIC_PAGES_PROJECT: unset };
+			expect(() => assertPreviewAllowed(withName)).toThrow(/PUBLIC_PAGES_PROJECT/);
+			expect(() => readPreviewConfig(withName)).toThrow(/PUBLIC_PAGES_PROJECT/);
+		}
+		// Same when Cloudflare does not say which project this is: it cannot be told apart from the public one.
+		const named = { ...on, CF_PAGES: '1', PUBLIC_PAGES_PROJECT: 'aso-computacion-landing' };
+		for (const url of [undefined, '', 'not a url', 'https://example.com']) {
+			expect(() => assertPreviewAllowed({ ...named, CF_PAGES_URL: url })).toThrow(/CF_PAGES_URL/);
+		}
+	});
+
+	it('allows a preview build on a separate Cloudflare Pages project', () => {
+		const env = { ...on, ...onCloudflare('aso-computacion-preview'), PUBLIC_PAGES_PROJECT: 'aso-computacion-landing' };
+		expect(() => assertPreviewAllowed(env)).not.toThrow();
+		expect(readPreviewConfig(env)).toEqual({ url: URL_, token: TOKEN });
+		// A project whose name merely starts with the public one is another project.
+		const prefixed = { ...env, ...onCloudflare('aso-computacion-landing-preview') };
+		expect(() => assertPreviewAllowed(prefixed)).not.toThrow();
+	});
+
+	it('allows a preview build outside Cloudflare Pages, with or without the name', () => {
+		expect(() => assertPreviewAllowed(on)).not.toThrow();
+		expect(() => assertPreviewAllowed({ ...on, PUBLIC_PAGES_PROJECT: 'aso-computacion-landing' })).not.toThrow();
+		expect(() =>
+			assertPreviewAllowed({ ...on, CF_PAGES: '0', CF_PAGES_URL: 'https://x.aso-computacion-landing.pages.dev' }),
+		).not.toThrow();
+		expect(readPreviewConfig(on)).toEqual({ url: URL_, token: TOKEN });
+	});
+
+	it('leaves a normal build alone, even on the public project or with no name', () => {
+		const publicProject = {
+			...onCloudflare('aso-computacion-landing'),
+			PUBLIC_PAGES_PROJECT: 'aso-computacion-landing',
+		};
+		for (const env of [
+			publicProject,
+			onCloudflare('aso-computacion-landing'),
+			{ PREVIEW_BUILD: '0', ...publicProject },
+		]) {
+			expect(() => assertPreviewAllowed(env)).not.toThrow();
+			expect(readPreviewConfig(env)).toBeUndefined();
+		}
+	});
+});
 
 describe('isPreviewBuild / readPreviewConfig', () => {
 	const on = { PREVIEW_BUILD: '1', PREVIEW_TOKEN: TOKEN, ADMIN_PREVIEW_URL: URL_ };

@@ -128,12 +128,25 @@ An editor can look at drafts and scheduled content on the real design before pub
 - **A separate Cloudflare Pages project (for sharing a link):** create a second project from this repo, named
   for what it is (for example `aso-computacion-preview`), and **put it behind Cloudflare Access** (Zero Trust →
   Access → Applications, restricted to the editors' emails) before sharing the URL. Set `PREVIEW_BUILD=1`,
-  `PREVIEW_TOKEN` (as an encrypted variable) and `ADMIN_PREVIEW_URL` there, never in the public project. Its
+  `PREVIEW_TOKEN` (as an encrypted variable), `ADMIN_PREVIEW_URL` and `PUBLIC_PAGES_PROJECT` (the **public**
+  project's name, for example `aso-computacion-landing`) there, never `PREVIEW_BUILD` in the public project. Its
   builds are always preview builds; the page carries the banner and `noindex`, but Access is what keeps people out.
   Retry the deployment to refresh the content. Do **not** point the admin's `CLOUDFLARE_DEPLOY_HOOK_URL` at it,
   and do not point the public project's custom domain at it.
 - **Never** set `PREVIEW_BUILD` or `PREVIEW_TOKEN` in the public project. `PREVIEW_TOKEN` alone does nothing (the
   switch is `PREVIEW_BUILD`), but a leftover `PREVIEW_BUILD=1` would build the public site from drafts.
+
+**Guard.** The build enforces that rule instead of trusting it. With `PREVIEW_BUILD` on, a Cloudflare Pages build
+(`CF_PAGES=1`) **fails** before building anything when:
+
+- `PUBLIC_PAGES_PROJECT` is unset or blank (it fails closed: without the name it cannot tell the projects apart), or
+- the project it runs on is the one named by `PUBLIC_PAGES_PROJECT`, or
+- `CF_PAGES_URL` does not name a `*.pages.dev` project, so the current project is unknown.
+
+Cloudflare has no project-name build variable, so the current project is read from `CF_PAGES_URL`
+(`https://<deployment-or-branch>.<project>.pages.dev`; a project name has no dots, so it is the label before
+`pages.dev`). Local builds (no `CF_PAGES`) and normal builds are never affected. Because the guard compares names, set
+`PUBLIC_PAGES_PROJECT` to the public project's exact name, and keep a preview project's name different from it.
 
 The token expires (1 hour, 24 hours or 7 days, chosen when it is minted) and cannot be revoked early: the admin
 rotates `PREVIEW_TOKEN_SECRET` to invalidate every token. When it expires the next preview build **fails** with
