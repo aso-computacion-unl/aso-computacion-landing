@@ -1,0 +1,13 @@
+# Cloudflare Pages response headers: https://developers.cloudflare.com/pages/configuration/headers/
+# The CSP is limited on purpose to what the layout can honour: it has inline scripts (theme, motion), so no
+# script-src/style-src until those are moved out.
+
+# Hashed build output never changes under the same name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; object-src 'none'

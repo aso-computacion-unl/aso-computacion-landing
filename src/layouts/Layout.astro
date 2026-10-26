@@ -1,23 +1,69 @@
 ---
 import '../styles/global.css';
+import { getContent } from '../data/content';
+import { contactEmail } from '../data/site';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
+import { cloudflareBeacon } from '../lib/analytics';
+import { buildNewsArticle, buildOrganization, serializeJsonLd } from '../lib/seo/jsonld';
+import { buildSocialMeta } from '../lib/seo/meta';
+import { newsFeedPath } from '../lib/seo/rss';
 
 interface Props {
 	title: string;
 	description: string;
-	// Share image (absolute or site-relative URL), for pages that have their own picture.
+	// Share image (absolute or site-relative URL), for pages that have their own picture. Without one, the brand's
+	// default 1200x630 image is used.
 	image?: string;
 	type?: 'website' | 'article';
 	// For pages that exist only as an empty state.
 	noindex?: boolean;
+	// A news post: adds its NewsArticle structured data (the description and image are the page's own).
+	article?: { headline: string; datePublished: string };
+	// A page that exists once, outside the language routes (the 404): no canonical, no hreflang alternates.
+	standalone?: boolean;
 }
 
-const { title, description, image, type = 'website', noindex = false } = Astro.props;
+const { title, description, image, type = 'website', noindex = false, article, standalone = false } = Astro.props;
 
 const locale = toLocale(Astro.currentLocale);
-const ogLocale = { es: 'es_EC', en: 'en_US' } as const;
-// The same page in every language. Absolute when the site URL is configured, which is what hreflang asks for.
-const alternateHref = (path: string) => (Astro.site ? new URL(path, Astro.site).href : path);
+// `site` is set in astro.config.mjs; every absolute URL of the page is built from it.
+const site = Astro.site ?? new URL(Astro.url.origin);
+const beacon = cloudflareBeacon(import.meta.env.PUBLIC_CF_BEACON_TOKEN);
+const content = getContent(locale);
+const meta = buildSocialMeta({
+	site,
+	pathname: Astro.url.pathname,
+	locale,
+	title,
+	description,
+	siteName: content.site.name,
+	image,
+	type,
+});
+const organization = {
+	site,
+	name: content.site.name,
+	logoPath: '/icon-512.png',
+	email: contactEmail,
+	sameAs: content.socials.map((social) => social.href),
+};
+const structuredData = [
+	buildOrganization(organization),
+	...(article
+		? [
+				buildNewsArticle({
+					organization,
+					...article,
+					description,
+					image: meta.image,
+					inLanguage: htmlLang[locale],
+					url: meta.canonical,
+				}),
+			]
+		: []),
+];
+// The same page in every language, absolute as hreflang asks for.
+const alternateHref = (path: string) => new URL(path, site).href;
 const alternates = locales.map((code) => ({ code, href: alternateHref(alternatePath(Astro.url.pathname, code)) }));
 ---
 
@@ -29,17 +75,41 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 		<meta name="description" content={description} />
 		<meta name="theme-color" content="#053066" />
 		{noindex && <meta name="robots" content="noindex" />}
-		<meta property="og:type" content={type} />
-		<meta property="og:locale" content={ogLocale[locale]} />
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
-		{image && <meta property="og:image" content={image} />}
-		{image && <meta name="twitter:card" content="summary_large_image" />}
-		{alternates.map((alternate) => (
-			<link rel="alternate" hreflang={alternate.code} href={alternate.href} />
+		{!standalone && <link rel="canonical" href={meta.canonical} />}
+		<meta property="og:type" content={meta.type} />
+		{!standalone && <meta property="og:url" content={meta.url} />}
+		<meta property="og:site_name" content={meta.siteName} />
+		<meta property="og:locale" content={meta.locale} />
+		{meta.alternateLocales.map((code) => (
+			<meta property="og:locale:alternate" content={code} />
 		))}
-		<link rel="alternate" hreflang="x-default" href={alternateHref(alternatePath(Astro.url.pathname, defaultLocale))} />
+		<meta property="og:title" content={meta.title} />
+		<meta property="og:description" content={meta.description} />
+		<meta property="og:image" content={meta.image} />
+		{meta.imageSize && <meta property="og:image:width" content={String(meta.imageSize.width)} />}
+		{meta.imageSize && <meta property="og:image:height" content={String(meta.imageSize.height)} />}
+		<meta name="twitter:card" content={meta.twitterCard} />
+		<meta name="twitter:title" content={meta.title} />
+		<meta name="twitter:description" content={meta.description} />
+		<meta name="twitter:image" content={meta.image} />
+		{!standalone &&
+			alternates.map((alternate) => <link rel="alternate" hreflang={alternate.code} href={alternate.href} />)}
+		{!standalone && (
+			<link
+				rel="alternate"
+				hreflang="x-default"
+				href={alternateHref(alternatePath(Astro.url.pathname, defaultLocale))}
+			/>
+		)}
+		<link rel="alternate" type="application/rss+xml" title={`${meta.siteName} · RSS`} href={newsFeedPath(locale)} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+		{structuredData.map((data) => (
+			<script type="application/ld+json" set:html={serializeJsonLd(data)} />
+		))}
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<script is:inline>
@@ -84,5 +154,6 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 			initThemeToggle();
 			import '../scripts/motion';
 		</script>
+		{beacon && <script is:inline defer src={beacon.src} data-cf-beacon={beacon.config} />}
 	</body>
 </html>

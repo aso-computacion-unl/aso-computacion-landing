@@ -32,6 +32,7 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 	description={item.summary}
 	image={shareImage}
 	type="article"
+	article={{ headline: item.title, datePublished: item.date }}
 >
 	<SiteHeader />
 	<main id="contenido" class="bg-navy py-12 sm:py-20 lg:py-24">

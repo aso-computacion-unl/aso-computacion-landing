@@ -38,7 +38,12 @@ triggers one through a deploy hook, plus a daily rebuild as a safety net).
 ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 ```
 
-On Cloudflare Pages, set it under Settings → Environment variables. It is read once when the
+| `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered. Not secret: it ends up in the page. |
+
+Alternative to the variable: enable Web Analytics in the Cloudflare Pages project (Settings → Web Analytics), which
+injects the beacon by itself. In that case leave `PUBLIC_CF_BEACON_TOKEN` unset, or visits are counted twice.
+
+On Cloudflare Pages, set them under Settings → Environment variables. They are read once when the
 build (or `pnpm dev`) starts, so restart the dev server to fetch again.
 
 See [DEPLOY.md](DEPLOY.md) for the Cloudflare Pages setup, the deploy hook, the daily
@@ -188,6 +193,44 @@ To add a UI word: add the key to `es` and to `en` in `src/i18n/ui.ts`, then `t('
 `<html lang>`. To add a language: extend `locales` in `src/i18n/locales.ts` and `astro.config.mjs`, add its
 dictionary and `copy` entry, and a route folder next to `src/pages/en/` (thin files that render the views).
 
+## SEO and sharing
+
+Every page gets, from `src/lib/seo/meta.ts` (printed by `Layout.astro`): a `<link rel="canonical">`, Open Graph
+(`og:url`, `og:site_name`, `og:locale` + alternate, `og:image`) and Twitter Card (`summary_large_image`) tags.
+All URLs are built from `site` in `astro.config.mjs`, the only place that names the host: moving to a custom
+domain is a one-line change there. A page without its own share image (news posts use their cover) gets the
+default one, `public/og-default.png` (1200×630).
+
+Structured data (JSON-LD, `src/lib/seo/jsonld.ts`): every page carries the `Organization` (name, URL, logo,
+`sameAs` from the socials in the admin, contact email) and each news post adds a `NewsArticle` (headline, summary,
+date, cover, language, the organization as publisher). Content can never close the `<script>` tag: `<` is
+escaped by `serializeJsonLd`. The contact email is `contactEmail` in `src/data/site.ts`, used by the footer and
+the structured data: change it there only.
+
+Crawlers, readers and hosting:
+
+| What | Where |
+|------|-------|
+| `/sitemap-index.xml`, `/sitemap-0.xml` (every page with its `es-EC` / `en-US` alternates) | `@astrojs/sitemap` in `astro.config.mjs` |
+| `/robots.txt` (allows everything, points at the sitemap) | `src/pages/robots.txt.ts`, from `site` |
+| `/novedades/rss.xml` and `/en/novedades/rss.xml`, announced with `<link rel="alternate" type="application/rss+xml">` | `src/pages/**/rss.xml.ts` via `src/views/newsFeed.ts` (`@astrojs/rss`) |
+| `/404.html` (Spanish first, English below, `noindex`; Cloudflare Pages serves it for every unknown URL) | `src/pages/404.astro` |
+| Response headers: immutable cache for `/_astro/*`; `nosniff`, `Referrer-Policy`, `Permissions-Policy`, and a CSP limited to `frame-ancestors 'none'; base-uri 'self'; object-src 'none'` | `public/_headers` |
+| `/site.webmanifest`, `apple-touch-icon.png`, `favicon-32.png`, `icon-192.png`, `icon-512.png` | `public/`, linked from `Layout.astro`; the PNGs come from `pnpm assets:brand` |
+
+The CSP has no `script-src`/`style-src` on purpose: the layout has inline scripts (theme, motion) and a stricter policy
+would break the site until they are moved out. The manifest's `theme_color` matches the `theme-color` meta in the layout.
+
+With no news, `/novedades` is `noindex` but the sitemap still lists it (the integration cannot see page content);
+the feed is valid and empty. `pnpm build && pnpm verify:dist` checks that these files exist and carry their key
+lines.
+
+The raster brand files under `public/` are generated from the vectors in `src/assets/brand/`:
+
+```sh
+pnpm assets:brand   # scripts/generate-brand-assets.mjs (sharp); commit the PNGs it writes
+```
+
 ## Structure
 
 ```text
@@ -198,9 +241,10 @@ src/
 │   └── site.ts           # landing-owned copy and demo placeholders
 ├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
 ├── i18n/                 # locales, localized paths, UI dictionary (es/en)
-├── layouts/Layout.astro  # HTML shell, theme script, hreflang
+├── lib/seo/              # canonical URL, social meta, JSON-LD, robots.txt, RSS items (+ tests)
+├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
 ├── views/                # the pages' bodies, shared by both languages
-├── pages/                # thin routes: / and /novedades (es), /en/... (en)
+├── pages/                # thin routes: / and /novedades (es), /en/... (en); 404, robots.txt, RSS
 └── styles/global.css     # Tailwind entry point
 ```
 
