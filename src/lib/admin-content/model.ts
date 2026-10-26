@@ -121,3 +121,23 @@ export interface SiteCopy {
 	description: string;
 	about: string;
 }
+
+// S9: a headline number. `value` is free text, shown big as written.
+export interface ImpactStat {
+	value: string;
+	label: string;
+}
+
+export interface Testimonial {
+	quote: string;
+	name: string;
+	role: string;
+	photo?: Photo;
+}
+
+export interface Sponsor {
+	name: string;
+	logo: Photo;
+	// Absolute https URL; without it the logo is not a link.
+	href?: string;
+}

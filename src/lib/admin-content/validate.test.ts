@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { image, newsItem, payload } from './test-fixtures';
+import { image, impactStat, newsItem, payload, sponsor, testimonial } from './test-fixtures';
 import { parsePublicContent } from './validate';
 
 const ok = (raw: unknown, options?: Parameters<typeof parsePublicContent>[1]) => {
@@ -496,5 +496,111 @@ describe('parsePublicContent: FAQ commands and free commands', () => {
 	it('drops keys of a free command that are not part of the contract', () => {
 		const content = ok(payload({ commands: [free({ isPublished: true, position: 3 })] }));
 		expect(Object.keys(content.commands[0]).sort()).toEqual(['command', 'description', 'id', 'output']);
+	});
+});
+
+describe('parsePublicContent: social proof (impact, testimonials, sponsors)', () => {
+	const keys = ['impact', 'testimonials', 'sponsors'] as const;
+
+	it('reads a payload from an admin that does not send them yet as three empty lists', () => {
+		const old: Record<string, unknown> = JSON.parse(JSON.stringify(payload()));
+		for (const key of keys) delete old[key];
+		const content = ok(old);
+		for (const key of keys) expect(content[key], key).toEqual([]);
+	});
+
+	it('keeps all three lists in admin order', () => {
+		const raw = payload({
+			impact: [impactStat(), impactStat({ value: '3 años', label: 'de trayectoria' })],
+			testimonials: [testimonial(), testimonial({ name: 'Ana', photo: null })],
+			sponsors: [sponsor(), sponsor({ name: 'Sin enlace', url: null })],
+		});
+		const content = ok(JSON.parse(JSON.stringify(raw)));
+		expect(content).toEqual(raw);
+		expect(content.impact.map((stat) => stat.value)).toEqual(['120+', '3 años']);
+	});
+
+	it('rejects a list that is not an array, including null', () => {
+		for (const key of keys) {
+			expect(reason({ ...payload(), [key]: {} }), key).toContain(key);
+			expect(reason({ ...payload(), [key]: null }), key).toContain(key);
+		}
+	});
+
+	it('rejects empty or oversized text and names the failing field', () => {
+		expect(reason(payload({ impact: [impactStat({ value: ' ' })] }))).toContain('impact[0].value');
+		expect(reason(payload({ impact: [impactStat({ value: 'x'.repeat(41) })] }))).toContain('impact[0].value');
+		expect(reason(payload({ impact: [impactStat({ label: 5 as never })] }))).toContain('impact[0].label');
+		expect(reason(payload({ testimonials: [testimonial({ quote: '' })] }))).toContain('testimonials[0].quote');
+		expect(reason(payload({ testimonials: [testimonial({ quote: 'x'.repeat(601) })] }))).toContain('quote');
+		expect(reason(payload({ testimonials: [testimonial({ role: '' })] }))).toContain('testimonials[0].role');
+		expect(reason(payload({ sponsors: [sponsor({ name: '' })] }))).toContain('sponsors[0].name');
+		expect(
+			ok(
+				payload({
+					impact: [impactStat({ value: 'x'.repeat(40) })],
+					testimonials: [testimonial({ quote: 'x'.repeat(600) })],
+				}),
+			).impact,
+		).toHaveLength(1);
+	});
+
+	it('requires alt text on a testimonial photo and on every logo, and a logo itself', () => {
+		const photo = testimonial().photo!;
+		expect(reason(payload({ testimonials: [testimonial({ photo: { ...photo, alt: '' } })] }))).toContain(
+			'testimonials[0].photo.alt',
+		);
+		const logo = sponsor().logo;
+		expect(reason(payload({ sponsors: [sponsor({ logo: { ...logo, alt: ' ' } })] }))).toContain('sponsors[0].logo.alt');
+		expect(reason(payload({ sponsors: [{ ...sponsor(), logo: undefined } as never] }))).toContain('sponsors[0].logo');
+		expect(reason(payload({ sponsors: [{ ...sponsor(), logo: null } as never] }))).toContain('sponsors[0].logo');
+	});
+
+	it('accepts only https sponsor links, or null for no link', () => {
+		for (const url of ['http://ejemplo.test', 'javascript:alert(1)', '//ejemplo.test', 'ejemplo.test', '']) {
+			expect(reason(payload({ sponsors: [sponsor({ url })] })), url).toContain('sponsors[0].url');
+		}
+		expect(ok(payload({ sponsors: [sponsor({ url: null })] })).sponsors[0].url).toBeNull();
+	});
+
+	it('only takes Cloudinary images from the network, but bundled ones from the fallback snapshot', () => {
+		const logo = { ...sponsor().logo, url: 'https://evil.test/logo.png' };
+		expect(reason(payload({ sponsors: [sponsor({ logo })] }))).toContain('sponsors[0].logo.url');
+		const local = { ...sponsor().logo, url: '/src/assets/sponsors/a.png' };
+		expect(reason(payload({ sponsors: [sponsor({ logo: local })] }))).toContain('sponsors[0].logo.url');
+		expect(ok(payload({ sponsors: [sponsor({ logo: local })] }), { allowLocalImages: true }).sponsors).toHaveLength(1);
+	});
+
+	it('bounds each list', () => {
+		const many = <T>(item: T) => Array.from({ length: 51 }, () => item);
+		expect(reason(payload({ impact: many(impactStat()) }))).toContain('impact');
+		expect(reason(payload({ testimonials: many(testimonial()) }))).toContain('testimonials');
+		expect(reason(payload({ sponsors: many(sponsor()) }))).toContain('sponsors');
+	});
+
+	it('drops every key the contract does not document (privacy: nothing else about a person gets through)', () => {
+		const content = ok(
+			payload({
+				impact: [{ ...impactStat(), id: 1, isPublished: true } as never],
+				testimonials: [
+					{
+						...testimonial(),
+						email: 'a@b.c',
+						phone: '099',
+						photo: { ...testimonial().photo!, publicId: 'secret' },
+					} as never,
+				],
+				sponsors: [{ ...sponsor(), contact: 'a@b.c', logo: { ...sponsor().logo, publicId: 'secret' } } as never],
+			}),
+		);
+		expect(Object.keys(content.impact[0]).sort()).toEqual(['label', 'value']);
+		expect(Object.keys(content.testimonials[0]).sort()).toEqual(['name', 'photo', 'quote', 'role']);
+		expect(Object.keys(content.testimonials[0].photo!).sort()).toEqual(['alt', 'height', 'url', 'width']);
+		expect(Object.keys(content.sponsors[0]).sort()).toEqual(['logo', 'name', 'url']);
+		expect(Object.keys(content.sponsors[0].logo).sort()).toEqual(['alt', 'height', 'url', 'width']);
+	});
+
+	it('names the entry that broke, so one bad item is easy to find', () => {
+		expect(reason(payload({ sponsors: [sponsor(), sponsor({ name: '' })] }))).toContain('sponsors[1].name');
 	});
 });

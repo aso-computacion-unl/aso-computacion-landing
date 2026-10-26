@@ -8,13 +8,16 @@ import {
 	toBoard,
 	toFaqItems,
 	toFreeCommands,
+	toImpact,
 	toPhoto,
 	toPillars,
 	toSite,
 	toSocials,
+	toSponsors,
+	toTestimonials,
 } from './map';
 import { platformIcon } from './platform-icons';
-import { image, payload } from './test-fixtures';
+import { image, impactStat, payload, sponsor, testimonial } from './test-fixtures';
 
 const TODAY = '2026-10-22';
 const local = (path: string) =>
@@ -274,5 +277,32 @@ describe('countWord', () => {
 		expect(countWord(7)).toBe('siete');
 		expect(countWord(12)).toBe('doce');
 		expect(countWord(25)).toBe('25');
+	});
+});
+
+describe('social proof mapping', () => {
+	it('toImpact keeps value and label as written', () => {
+		expect(toImpact([impactStat({ value: '3 años', label: 'de trayectoria' })])).toEqual([
+			{ value: '3 años', label: 'de trayectoria' },
+		]);
+		expect(toImpact([])).toEqual([]);
+	});
+
+	it('toTestimonials adds the photo only when there is one', () => {
+		const [withPhoto, without] = toTestimonials([testimonial(), testimonial({ name: 'Ana', photo: null })], ctx);
+		expect(withPhoto.photo).toEqual({
+			src: testimonial().photo!.url,
+			width: 600,
+			height: 600,
+			alt: 'Retrato de Luis Torres',
+		});
+		expect(Object.keys(without).sort()).toEqual(['name', 'quote', 'role']);
+	});
+
+	it('toSponsors links the logo only when the sponsor has a URL', () => {
+		const [linked, plain] = toSponsors([sponsor(), sponsor({ name: 'Sin enlace', url: null })], ctx);
+		expect(linked.href).toBe('https://ejemplo.test/');
+		expect(linked.logo).toMatchObject({ width: 400, height: 200, alt: 'Logo de Ejemplo S.A.' });
+		expect('href' in plain).toBe(false);
 	});
 });

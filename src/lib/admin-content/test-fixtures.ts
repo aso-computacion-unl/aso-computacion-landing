@@ -1,5 +1,12 @@
 // Test-only builders for the admin's public payload (shape: GET /api/public/content, version 1).
-import type { PublicContent, PublicImage, PublicNewsItem } from './types';
+import type {
+	PublicContent,
+	PublicImage,
+	PublicImpactStat,
+	PublicNewsItem,
+	PublicSponsor,
+	PublicTestimonial,
+} from './types';
 
 export const image = (overrides: Partial<PublicImage> = {}): PublicImage => ({
 	url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/photo.jpg',
@@ -21,6 +28,37 @@ export const newsItem = (overrides: Partial<PublicNewsItem> = {}): PublicNewsIte
 		height: 800,
 		alt: 'Cartel del taller',
 	},
+	...overrides,
+});
+
+export const impactStat = (overrides: Partial<PublicImpactStat> = {}): PublicImpactStat => ({
+	value: '120+',
+	label: 'estudiantes en nuestras actividades',
+	...overrides,
+});
+
+export const testimonial = (overrides: Partial<PublicTestimonial> = {}): PublicTestimonial => ({
+	quote: 'Aprendí Git en un taller y ya lo uso en todos mis proyectos.',
+	name: 'Luis Torres',
+	role: 'Estudiante de segundo ciclo',
+	photo: {
+		url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/testimonials/luis.jpg',
+		width: 600,
+		height: 600,
+		alt: 'Retrato de Luis Torres',
+	},
+	...overrides,
+});
+
+export const sponsor = (overrides: Partial<PublicSponsor> = {}): PublicSponsor => ({
+	name: 'Ejemplo S.A.',
+	logo: {
+		url: 'https://res.cloudinary.com/demo/image/upload/v1/aso/sponsors/ejemplo.png',
+		width: 400,
+		height: 200,
+		alt: 'Logo de Ejemplo S.A.',
+	},
+	url: 'https://ejemplo.test/',
 	...overrides,
 });
 
@@ -62,5 +100,8 @@ export const payload = (overrides: Partial<PublicContent> = {}): PublicContent =
 	settings: { tagline: 'Tagline', description: 'Descripción', about: 'Acerca de' },
 	news: [],
 	commands: [],
+	impact: [],
+	testimonials: [],
+	sponsors: [],
 	...overrides,
 });

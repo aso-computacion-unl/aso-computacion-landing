@@ -2,16 +2,31 @@
 // I/O: the bundled-image lookup is passed in, so every rule here is unit-testable. Events live in timeline.ts.
 import type { ImageMetadata } from 'astro';
 import type { Locale } from '../../i18n/locales';
-import type { BoardFun, FaqCommand, FaqItem, Photo, Pillar, SiteCopy, Social, TeamMember } from './model';
+import type {
+	BoardFun,
+	FaqCommand,
+	FaqItem,
+	ImpactStat,
+	Photo,
+	Pillar,
+	SiteCopy,
+	Social,
+	Sponsor,
+	TeamMember,
+	Testimonial,
+} from './model';
 import { platformIcon } from './platform-icons';
 import type {
 	PublicBoardMember,
 	PublicCommand,
 	PublicFaq,
 	PublicImage,
+	PublicImpactStat,
 	PublicPillar,
 	PublicSiteSettings,
 	PublicSocial,
+	PublicSponsor,
+	PublicTestimonial,
 } from './types';
 
 export interface MapContext {
@@ -128,6 +143,25 @@ export const toBoard = (
 // `settings: null` means the admin never saved them: keep the landing's own copy.
 export const toSite = (base: SiteCopy, settings: PublicSiteSettings | null): SiteCopy =>
 	settings ? { ...base, tagline: settings.tagline, description: settings.description, about: settings.about } : base;
+
+// S9: social proof. Built key by key like the board: only what the section shows.
+export const toImpact = (impact: readonly PublicImpactStat[]): ImpactStat[] =>
+	impact.map((stat) => ({ value: stat.value, label: stat.label }));
+
+export const toTestimonials = (testimonials: readonly PublicTestimonial[], ctx: MapContext): Testimonial[] =>
+	testimonials.map((item) => ({
+		quote: item.quote,
+		name: item.name,
+		role: item.role,
+		...(item.photo ? { photo: toPhoto(item.photo, ctx) } : {}),
+	}));
+
+export const toSponsors = (sponsors: readonly PublicSponsor[], ctx: MapContext): Sponsor[] =>
+	sponsors.map((sponsor) => ({
+		name: sponsor.name,
+		logo: toPhoto(sponsor.logo, ctx),
+		...(sponsor.url ? { href: sponsor.url } : {}),
+	}));
 
 const COUNT_WORDS: Record<Locale, string[]> = {
 	es: ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce'],

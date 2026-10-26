@@ -10,11 +10,14 @@ import {
 	type PublicEvent,
 	type PublicFaq,
 	type PublicImage,
+	type PublicImpactStat,
 	type PublicNewsCover,
 	type PublicNewsItem,
 	type PublicPillar,
 	type PublicSiteSettings,
 	type PublicSocial,
+	type PublicSponsor,
+	type PublicTestimonial,
 } from './types';
 
 export type ParseResult = { ok: true; content: PublicContent } | { ok: false; reason: string };
@@ -60,6 +63,13 @@ const LIMIT = {
 	commandDescription: 80,
 	commandOutput: 600,
 	commandId: 100,
+	// Social proof follows the admin's contract (S9) with the usual headroom.
+	impactValue: 40,
+	impactLabel: 120,
+	quote: 600,
+	name: 120,
+	role: 160,
+	proofAlt: 200,
 } as const;
 
 const COUNT = {
@@ -202,6 +212,44 @@ const readers = (options: ParseOptions) => {
 		};
 	};
 
+	const readImpactStat = (value: unknown, path: string): PublicImpactStat => {
+		const raw = object(value, path);
+		return {
+			value: nonEmpty(raw.value, `${path}.value`, LIMIT.impactValue),
+			label: nonEmpty(raw.label, `${path}.label`, LIMIT.impactLabel),
+		};
+	};
+
+	// The same rule as a news cover: an image that always carries alt text.
+	const readAltImage = (value: unknown, path: string): PublicNewsCover => {
+		const raw = object(value, path);
+		return {
+			url: imageUrl(raw.url, `${path}.url`),
+			width: dimension(raw.width, `${path}.width`),
+			height: dimension(raw.height, `${path}.height`),
+			alt: nonEmpty(raw.alt, `${path}.alt`, LIMIT.proofAlt),
+		};
+	};
+
+	const readTestimonial = (value: unknown, path: string): PublicTestimonial => {
+		const raw = object(value, path);
+		return {
+			quote: nonEmpty(raw.quote, `${path}.quote`, LIMIT.quote),
+			name: nonEmpty(raw.name, `${path}.name`, LIMIT.name),
+			role: nonEmpty(raw.role, `${path}.role`, LIMIT.role),
+			photo: nullable(raw.photo, `${path}.photo`, readAltImage),
+		};
+	};
+
+	const readSponsor = (value: unknown, path: string): PublicSponsor => {
+		const raw = object(value, path);
+		return {
+			name: nonEmpty(raw.name, `${path}.name`, LIMIT.name),
+			logo: readAltImage(raw.logo, `${path}.logo`),
+			url: nullable(raw.url, `${path}.url`, httpsUrl),
+		};
+	};
+
 	const list = <T>(value: unknown, path: string, max: number, read: (item: unknown, path: string) => T): T[] => {
 		const items = array(value, path);
 		if (items.length > max) fail(path, `expected at most ${max} entries`);
@@ -291,7 +339,20 @@ const readers = (options: ParseOptions) => {
 		};
 	};
 
-	return { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem };
+	return {
+		list,
+		readEvent,
+		readFaq,
+		readCommand,
+		readPillar,
+		readSocial,
+		readMember,
+		readSettings,
+		readNewsItem,
+		readImpactStat,
+		readTestimonial,
+		readSponsor,
+	};
 };
 
 // Two items with one slug would be two pages at one URL.
@@ -315,8 +376,23 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 				`unsupported version ${JSON.stringify(root.version)} (this landing reads version ${PUBLIC_CONTENT_VERSION})`,
 			);
 		}
-		const { list, readEvent, readFaq, readCommand, readPillar, readSocial, readMember, readSettings, readNewsItem } =
-			readers(options);
+		const {
+			list,
+			readEvent,
+			readFaq,
+			readCommand,
+			readPillar,
+			readSocial,
+			readMember,
+			readSettings,
+			readNewsItem,
+			readImpactStat,
+			readTestimonial,
+			readSponsor,
+		} = readers(options);
+		// Added after version 1 shipped (S9): an admin that does not send a list yet has none of it.
+		const optional = <T>(key: string, read: (item: unknown, path: string) => T): T[] =>
+			root[key] === undefined ? [] : list(root[key], key, COUNT.others, read);
 		return {
 			ok: true,
 			content: {
@@ -332,6 +408,9 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 				news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
 				// Added after version 1 shipped: an admin that does not send it yet has no free commands.
 				commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
+				impact: optional('impact', readImpactStat),
+				testimonials: optional('testimonials', readTestimonial),
+				sponsors: optional('sponsors', readSponsor),
 			},
 		};
 	} catch (error) {
