@@ -67,6 +67,8 @@ pnpm build    # genera ./dist
 
 Sin la variable `ADMIN_CONTENT_URL`, el sitio usa la copia del contenido incluida en el repositorio, así que funciona sin configurar nada. En producción (la rama `main` en Cloudflare Pages) un build que caería a esa copia falla a propósito y el sitio anterior sigue publicado; ver [docs/DEPLOY.md](docs/DEPLOY.md).
 
+Para ver borradores y contenido programado antes de publicarlos hay un build de vista previa (`PREVIEW_BUILD=1` con `PREVIEW_TOKEN` y `ADMIN_PREVIEW_URL`). Muestra la barra «Vista previa — no publicar», no se indexa y se detiene si el código venció; solo se usa en local o en un proyecto aparte protegido. Ver [docs/DEPLOY.md](docs/DEPLOY.md#preview-builds).
+
 ## Cómo colaborar
 
 Este es un proyecto de la comunidad y cualquier persona puede aportar con una propuesta de cambio (Pull Request) hacia `main`. Para errores o ideas, abre un issue.
