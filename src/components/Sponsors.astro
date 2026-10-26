@@ -1,0 +1,48 @@
+---
+import type { Sponsor } from '../lib/admin-content/model';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import Photo from './Photo.astro';
+import SectionHead from './SectionHead.astro';
+
+interface Props {
+	sponsors: Sponsor[];
+}
+
+const { sponsors } = Astro.props;
+const t = useTranslations(toLocale(Astro.currentLocale));
+---
+
+{sponsors.length > 0 && (
+	<section id="aliados" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
+		<div class="wrap">
+			<SectionHead eyebrow="$ git remote add allies" title={t('sponsors.title')} lead={t('sponsors.lead')} />
+
+			<ul class="allies mt-12 lg:mt-16" aria-label={t('sponsors.list')}>
+				{sponsors.map((sponsor) => {
+					const logo = (
+						<Photo
+							photo={sponsor.logo}
+							box={{ width: 200, height: 64 }}
+							widths={[200, 400]}
+							sizes="12rem"
+							class="ally-logo"
+						/>
+					);
+					return (
+						<li class="ally">
+							{sponsor.href ? (
+								<a href={sponsor.href} target="_blank" rel="noopener noreferrer" class="ally-tile">
+									{logo}
+									<span class="sr-only">{t('newTab')}</span>
+								</a>
+							) : (
+								<div class="ally-tile">{logo}</div>
+							)}
+						</li>
+					);
+				})}
+			</ul>
+		</div>
+	</section>
+)}

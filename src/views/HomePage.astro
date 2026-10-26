@@ -4,10 +4,13 @@ import About from '../components/About.astro';
 import ActivityGraph from '../components/ActivityGraph.astro';
 import Board from '../components/Board.astro';
 import Hero from '../components/Hero.astro';
+import Impact from '../components/Impact.astro';
 import Join from '../components/Join.astro';
 import News from '../components/News.astro';
 import Faq from '../components/Faq.astro';
 import Socials from '../components/Socials.astro';
+import Sponsors from '../components/Sponsors.astro';
+import Testimonials from '../components/Testimonials.astro';
 import Ribbon from '../components/Ribbon.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -15,7 +18,9 @@ import Layout from '../layouts/Layout.astro';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 
-const { faq, latestNews, site, socials, team } = getContent(toLocale(Astro.currentLocale));
+const { faq, impact, latestNews, site, socials, sponsors, team, testimonials } = getContent(
+	toLocale(Astro.currentLocale),
+);
 ---
 
 <Layout title={`${site.name} · ${site.tagline}`} description={site.description}>
@@ -27,9 +32,12 @@ const { faq, latestNews, site, socials, team } = getContent(toLocale(Astro.curre
 		{latestNews.length > 0 && <News />}
 		<About />
 		{team.length > 0 && <Board />}
+		<Impact stats={impact} />
+		<Testimonials testimonials={testimonials} />
 		<Join />
 		{(faq.items.length > 0 || faq.commands.length > 0) && <Faq />}
 		{socials.length > 0 && <Socials />}
+		<Sponsors sponsors={sponsors} />
 	</main>
 	<SiteFooter />
 </Layout>

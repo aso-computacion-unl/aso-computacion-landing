@@ -58,6 +58,9 @@ function build(locale: Locale) {
 		collagePhotos: resolved.collage,
 		news: resolved.news,
 		latestNews: resolved.latestNews,
+		impact: resolved.impact,
+		testimonials: resolved.testimonials,
+		sponsors: resolved.sponsors,
 	};
 }
 
