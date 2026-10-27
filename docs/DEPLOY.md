@@ -29,6 +29,7 @@ previews should read the admin too):
 | `PRODUCTION_BRANCH` | Optional. The branch whose builds are production builds (default `main`). Set it only if production deploys from another branch. |
 | `ALLOW_CONTENT_FALLBACK` | Emergency only. `1` lets a production build ship the fallback/demo content with a warning instead of failing. Leave unset. |
 | `PUBLIC_CF_BEACON_TOKEN` | Optional. Token of the site in Cloudflare Web Analytics (Analytics & Logs → Web Analytics → the site's snippet). The build then adds the cookie-free beacon; unset, it adds nothing. |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Optional until an event uses the open registration form. The **public** site key of the Cloudflare Turnstile widget (see [Event registration](#event-registration)). Unset, those events show no form and the build prints a warning. |
 
 Instead of the variable you can switch on Web Analytics in the Pages project settings, which injects the beacon
 automatically. Do one or the other: with both, visits are counted twice.
@@ -160,6 +161,22 @@ The landing computes no publish window. The admin hides a scheduled (not yet ope
 cron and the daily rebuild above are what trigger that build; on the Vercel Hobby plan the admin cron runs once a
 day, so a scheduled item can show up to about a day late unless a rebuild is triggered by hand.
 
+## Event registration
+
+Each event chooses in the admin how people sign up (none, with a UNL Google account, or an open form). What the landing needs:
+
+- **UNL account**: nothing. The card links to the admin's page (`/foro/eventos/<slug>`), where the student signs in.
+- **Open form**: a Cloudflare Turnstile widget.
+  1. Cloudflare dashboard → **Turnstile → Add widget**. Hostnames: the landing's (`aso-computacion-landing.pages.dev`, or the custom domain once there is one) and `localhost` for development. Mode: *Managed*.
+  2. Put the **site key** in this project as `PUBLIC_TURNSTILE_SITE_KEY` (public, it ends up in the page) and the **secret key** in the admin as `TURNSTILE_SECRET_KEY`.
+  3. In the admin, `PUBLIC_CORS_ORIGINS` must list the landing's origin (the form's `POST` is a cross-origin request), and `AUTH_URL` must be set (the public API builds the endpoint and calendar URLs from it; they are `null` otherwise and the card shows nothing).
+  4. Rebuild: the key is baked into the page at build time.
+- Without `PUBLIC_TURNSTILE_SITE_KEY` an open-form event shows **no form** (it would only fail) and the build prints `[registration] PUBLIC_TURNSTILE_SITE_KEY is not set: the open registration form of <slugs> is not shown`. The Event structured data does not offer that registration either. UNL-account events are unaffected.
+- Cloudflare's published test keys work for a local run: site key `1x00000000000000000000AA` (always passes) with the secret `1x0000000000000000000000000000000AA` in the admin. Outside production the admin skips the check when its secret is unset.
+- `public/_headers` sets no `script-src`/`frame-src`, so Turnstile (`https://challenges.cloudflare.com`) loads without changes. If a CSP with those directives is ever added, it must allow that origin for both.
+- The page is static, so a registration that closed after the build (the deadline passed, the event day ended) is closed by the card itself in the browser, and the admin refuses a late one anyway (`closed`). The seats left are not known to the page: the admin answers `full` when there are none.
+- Registrations are personal data kept by the admin (deleted 90 days after the event, see its docs). The landing stores nothing and sets no cookie: the form is one `POST` with `credentials: 'omit'`.
+
 ## Refreshing `fallback.json`
 
 `src/data/fallback.json` is a hand-maintained snapshot with the same shape as the admin API. Update
@@ -187,5 +204,6 @@ Instagram.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
 - [ ] Daily rebuild run once by hand (Actions → Daily rebuild) and a build appears in Cloudflare.
+- [ ] Optional, registration: `PUBLIC_TURNSTILE_SITE_KEY` set, the landing's origin in the admin's `PUBLIC_CORS_ORIGINS`, and an event with the open form accepts a test registration (which an admin can then delete).
 - [ ] Optional, preview: the preview project (if any) is behind Cloudflare Access, and a build with an expired token fails with `HTTP 401` instead of publishing.
 - [ ] Break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the `[content-gate] WARNING`. On the production branch the same break fails the build and the previous deployment stays live.
