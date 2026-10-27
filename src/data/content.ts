@@ -34,6 +34,9 @@ const loaded = preview
 // is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
 export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
+// A registration link the payload put on another origin was left out (validate.ts): say which, once per build.
+for (const warning of loaded.warnings ?? []) console.warn(`[registration] ${warning}`);
+
 const memo = new Map<Locale, ReturnType<typeof build>>();
 
 function build(locale: Locale) {

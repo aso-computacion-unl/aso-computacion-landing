@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { loadPublicContent } from './load';
-import { newsItem, payload } from './test-fixtures';
+import { newsItem, openRegistration, payload } from './test-fixtures';
 
 const URL_OK = 'https://admin.example.test/api/public/content';
 const fallback = payload({ events: [], faqs: [], settings: null });
@@ -205,5 +205,41 @@ describe('loadPublicContent', () => {
 				expect(warn).toHaveBeenCalledTimes(1);
 			}
 		});
+	});
+});
+
+describe('loadPublicContent: registration links must be on the origin of ADMIN_CONTENT_URL', () => {
+	const withRegistration = (endpoint: string) => {
+		const [event] = payload().events;
+		return payload({ events: [{ ...event, registration: openRegistration({ endpoint }) }] });
+	};
+
+	it('keeps a registration on the admin origin and reports nothing', async () => {
+		const result = await setup({
+			fetch: respond(
+				withRegistration('https://admin.example.test/api/public/events/taller-de-git/registrations'),
+			) as never,
+		}).run();
+		expect(result).toMatchObject({ source: 'api', warnings: [] });
+		expect(result.content.events[0].registration?.mode).toBe('open');
+	});
+
+	it('leaves out a registration pointing at another origin, with a warning, and still uses the API', async () => {
+		const result = await setup({
+			fetch: respond(
+				withRegistration('https://evil.example.test/api/public/events/taller-de-git/registrations'),
+			) as never,
+		}).run();
+		expect(result.source).toBe('api');
+		expect(result.content.events[0].registration).toBeNull();
+		expect(result).toMatchObject({ warnings: [expect.stringContaining('taller-de-git')] });
+	});
+
+	it('takes the origin from the URL it was given, port included', async () => {
+		const result = await setup({
+			url: 'http://127.0.0.1:4010/api/public/content',
+			fetch: respond(withRegistration('http://127.0.0.1:4010/api/public/events/taller-de-git/registrations')) as never,
+		}).run();
+		expect(result.content.events[0].registration?.mode).toBe('open');
 	});
 });

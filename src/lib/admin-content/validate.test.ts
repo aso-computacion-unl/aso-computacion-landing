@@ -617,11 +617,14 @@ describe('parsePublicContent: social proof (impact, testimonials, sponsors)', ()
 
 describe('parsePublicContent: event registration, calendar and structured data (S8, additive)', () => {
 	const event = payload().events[0];
+	// The origin the fixtures' admin URLs live on: it is what ADMIN_CONTENT_URL's origin is in a real build.
+	const ADMIN = 'https://admin.example.test';
+	const okAdmin = (raw: unknown, adminOrigin: string | undefined = ADMIN) => ok(raw, { adminOrigin });
 	const withFields = (fields: Record<string, unknown>) => payload({ events: [{ ...event, ...fields } as never] });
 
 	it('reads an event from an older admin, without the three keys, as having none of them', () => {
 		const { registration: _r, calendarUrl: _c, structuredData: _s, ...legacy } = event;
-		expect(ok(payload({ events: [legacy as never] })).events[0]).toMatchObject({
+		expect(okAdmin(payload({ events: [legacy as never] })).events[0]).toMatchObject({
 			registration: null,
 			calendarUrl: null,
 			structuredData: null,
@@ -631,13 +634,13 @@ describe('parsePublicContent: event registration, calendar and structured data (
 	it('accepts the open and the UNL registration exactly as the admin sends them', () => {
 		const open = openRegistration();
 		const unl = unlRegistration({ capacity: 25, deadline: '2026-11-11T04:59:59.000Z' });
-		expect(ok(withFields({ registration: open })).events[0].registration).toEqual(open);
-		expect(ok(withFields({ registration: unl })).events[0].registration).toEqual(unl);
+		expect(okAdmin(withFields({ registration: open })).events[0].registration).toEqual(open);
+		expect(okAdmin(withFields({ registration: unl })).events[0].registration).toEqual(unl);
 	});
 
 	it('accepts the calendar link and the structured data', () => {
 		const data = structuredData({ registrationUrl: 'https://admin.example.test/foro/eventos/taller-de-git' });
-		const parsed = ok(
+		const parsed = okAdmin(
 			withFields({
 				calendarUrl: 'https://admin.example.test/api/public/events/taller-de-git/calendar.ics',
 				structuredData: data,
@@ -646,13 +649,15 @@ describe('parsePublicContent: event registration, calendar and structured data (
 		expect(parsed.calendarUrl).toBe('https://admin.example.test/api/public/events/taller-de-git/calendar.ics');
 		expect(parsed.structuredData).toEqual(data);
 		expect(
-			ok(withFields({ structuredData: structuredData({ startDate: '2026-11-12', endDate: null, location: null }) }))
-				.events[0].structuredData,
+			okAdmin(
+				withFields({ structuredData: structuredData({ startDate: '2026-11-12', endDate: null, location: null }) }),
+			).events[0].structuredData,
 		).toMatchObject({ startDate: '2026-11-12' });
 	});
 
 	it('keeps only the documented keys of a registration', () => {
-		const parsed = ok(withFields({ registration: { ...openRegistration(), seatsLeft: 3, secret: 'x' } })).events[0];
+		const parsed = okAdmin(withFields({ registration: { ...openRegistration(), seatsLeft: 3, secret: 'x' } }))
+			.events[0];
 		expect(Object.keys(parsed.registration ?? {}).sort()).toEqual(['capacity', 'deadline', 'endpoint', 'mode', 'url']);
 	});
 
@@ -699,11 +704,13 @@ describe('parsePublicContent: event registration, calendar and structured data (
 		}
 		const local = 'http://localhost:3000/api/public/events/taller-de-git/registrations';
 		expect(
-			ok(withFields({ registration: openRegistration({ endpoint: local }) })).events[0].registration?.endpoint,
+			okAdmin(withFields({ registration: openRegistration({ endpoint: local }) }), 'http://localhost:3000').events[0]
+				.registration?.endpoint,
 		).toBe(local);
-		expect(ok(withFields({ calendarUrl: 'http://127.0.0.1:3000/x.ics' })).events[0].calendarUrl).toBe(
-			'http://127.0.0.1:3000/x.ics',
-		);
+		expect(
+			okAdmin(withFields({ calendarUrl: 'http://127.0.0.1:3000/x.ics' }), 'http://127.0.0.1:3000').events[0]
+				.calendarUrl,
+		).toBe('http://127.0.0.1:3000/x.ics');
 	});
 
 	it('rejects malformed structured data', () => {
@@ -727,5 +734,84 @@ describe('parsePublicContent: event registration, calendar and structured data (
 		for (const registration of ['open', 1, [], true]) {
 			expect(reason(withFields({ registration })), String(registration)).toContain('registration');
 		}
+	});
+
+	describe('the links must live on the admin origin (defence in depth)', () => {
+		const parsed = (fields: Record<string, unknown>, adminOrigin: string | null = ADMIN) => {
+			const result = parsePublicContent(withFields(fields), { adminOrigin: adminOrigin ?? undefined });
+			if (!result.ok) throw new Error(`expected a valid payload, got: ${result.reason}`);
+			return result;
+		};
+		const foreign = [
+			'https://evil.example.test/api/public/events/taller-de-git/registrations',
+			'https://admin.example.test.evil.test/api/public/events/taller-de-git/registrations',
+			'https://admin.example.test:8443/api/public/events/taller-de-git/registrations',
+			'http://localhost:3000/api/public/events/taller-de-git/registrations',
+			'https://admin.example.test@evil.test/api/public/events/taller-de-git/registrations',
+			'https://sub.admin.example.test/api/public/events/taller-de-git/registrations',
+		];
+
+		it('keeps a registration, calendar link and schema URL on the same origin, and says nothing', () => {
+			const result = parsed({
+				registration: openRegistration(),
+				calendarUrl: `${ADMIN}/api/public/events/taller-de-git/calendar.ics`,
+				structuredData: structuredData({ registrationUrl: `${ADMIN}/foro/eventos/taller-de-git` }),
+			});
+			expect(result.content.events[0].registration).toEqual(openRegistration());
+			expect(result.warnings).toEqual([]);
+		});
+
+		it('leaves out the registration of an event whose endpoint is on another origin, and warns with the slug', () => {
+			for (const endpoint of foreign) {
+				const result = parsed({ registration: openRegistration({ endpoint }) });
+				expect(result.content.events[0].registration, endpoint).toBeNull();
+				expect(result.warnings, endpoint).toHaveLength(1);
+				expect(result.warnings[0]).toContain('taller-de-git');
+				expect(result.warnings[0]).toContain('registration');
+			}
+		});
+
+		it('does the same for the UNL page url', () => {
+			const url = 'https://evil.example.test/foro/eventos/taller-de-git';
+			const result = parsed({ registration: unlRegistration({ url }) });
+			expect(result.content.events[0].registration).toBeNull();
+			expect(result.warnings).toHaveLength(1);
+		});
+
+		it('fails only that event: the payload stays valid and the other events keep theirs', () => {
+			const other = { ...event, slug: 'otro-taller', registration: openRegistration() };
+			const bad = { ...event, registration: openRegistration({ endpoint: foreign[0] }) };
+			const result = parsePublicContent(payload({ events: [bad, other] as never }), { adminOrigin: ADMIN });
+			if (!result.ok) throw new Error(result.reason);
+			expect(result.content.events.map((e) => e.registration?.mode ?? null)).toEqual([null, 'open']);
+			expect(result.content.events[0].title).toBe(event.title);
+		});
+
+		it('leaves out a calendar link and a schema registration URL on another origin', () => {
+			const result = parsed({
+				calendarUrl: 'https://evil.example.test/x.ics',
+				structuredData: structuredData({ registrationUrl: 'https://evil.example.test/foro/eventos/x' }),
+			});
+			expect(result.content.events[0].calendarUrl).toBeNull();
+			expect(result.content.events[0].structuredData?.registrationUrl).toBeNull();
+			expect(result.content.events[0].structuredData?.startDate).toBe(structuredData().startDate);
+			expect(result.warnings).toHaveLength(2);
+		});
+
+		it('fails closed when the admin origin is not known: nothing links to a host nobody vouched for', () => {
+			const result = parsed(
+				{ registration: openRegistration(), calendarUrl: `${ADMIN}/x.ics`, structuredData: structuredData() },
+				null,
+			);
+			expect(result.content.events[0].registration).toBeNull();
+			expect(result.content.events[0].calendarUrl).toBeNull();
+			expect(result.content.events[0].structuredData).toMatchObject({ startDate: structuredData().startDate });
+			expect(result.warnings.length).toBeGreaterThan(0);
+		});
+
+		it('has no warnings for events without any of it', () => {
+			expect(parsePublicContent(payload(), { adminOrigin: ADMIN })).toMatchObject({ ok: true, warnings: [] });
+			expect(parsePublicContent(payload())).toMatchObject({ ok: true, warnings: [] });
+		});
 	});
 });

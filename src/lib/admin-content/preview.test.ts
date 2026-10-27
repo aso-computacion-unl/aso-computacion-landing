@@ -6,7 +6,7 @@ import {
 	loadPreviewContent,
 	readPreviewConfig,
 } from './preview';
-import { newsItem, payload } from './test-fixtures';
+import { newsItem, openRegistration, payload } from './test-fixtures';
 
 const TOKEN = 'header.payload.s3cret-signature';
 const URL_ = 'https://admin.example.test/api/public/preview?x=1';
@@ -228,5 +228,28 @@ describe('loadPreviewContent', () => {
 
 	it('never falls back: the failure surfaces as a rejection, not as other content', async () => {
 		await expect(load(async () => json({ error: 'x' }, 401))).rejects.toBeInstanceOf(PreviewBuildError);
+	});
+});
+
+describe('loadPreviewContent: registration links must be on the origin of ADMIN_PREVIEW_URL', () => {
+	const withRegistration = (endpoint: string) => {
+		const [event] = payload().events;
+		return preview({ events: [{ ...event, registration: openRegistration({ endpoint }) }] });
+	};
+
+	it('keeps a registration on the preview admin origin', async () => {
+		const loaded = await load(async () =>
+			json(withRegistration('https://admin.example.test/api/public/events/taller-de-git/registrations')),
+		);
+		expect(loaded).toMatchObject({ source: 'preview', warnings: [] });
+		expect(loaded.content.events[0].registration?.mode).toBe('open');
+	});
+
+	it('leaves out one that points elsewhere and warns, without failing the preview', async () => {
+		const loaded = await load(async () =>
+			json(withRegistration('https://evil.example.test/api/public/events/taller-de-git/registrations')),
+		);
+		expect(loaded.content.events[0].registration).toBeNull();
+		expect(loaded.warnings).toEqual([expect.stringContaining('taller-de-git')]);
 	});
 });

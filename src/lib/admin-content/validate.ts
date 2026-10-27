@@ -24,11 +24,16 @@ import {
 	type RegistrationMode,
 } from './types';
 
-export type ParseResult = { ok: true; content: PublicContent } | { ok: false; reason: string };
+// `warnings` are things the payload asked for that the landing refused without rejecting the payload (see `adminOrigin`).
+export type ParseResult = { ok: true; content: PublicContent; warnings: string[] } | { ok: false; reason: string };
 
 export interface ParseOptions {
 	// The committed fallback.json may point at images bundled with the landing (`/src/assets/...`). A network payload may not.
 	allowLocalImages?: boolean;
+	// Origin (`https://host[:port]`) of the admin the payload came from. The registration links, the calendar link and
+	// the schema registration URL of an event are only kept when they live on it, so a compromised or misconfigured
+	// admin cannot send people (and their data) to another host. Unset, they are all left out: it fails closed.
+	adminOrigin?: string;
 }
 
 class Invalid extends Error {}
@@ -211,7 +216,7 @@ const PATH_ESCAPE = /\.\.|%2e/i;
 
 // Every reader below copies key by key instead of spreading: whatever the payload carries beyond the documented
 // keys is dropped here, which is what keeps S4 true even if the admin ever leaks a field.
-const readers = (options: ParseOptions) => {
+const readers = (options: ParseOptions, warnings: string[]) => {
 	const imageUrl = (value: unknown, path: string): string => {
 		const url = text(value, path, LIMIT.url);
 		if (CLOUDINARY_IMAGE.test(url) && !PATH_ESCAPE.test(url)) return url;
@@ -300,8 +305,46 @@ const readers = (options: ParseOptions) => {
 		return items.map((item, index) => read(item, `${path}[${index}]`));
 	};
 
+	// The origin of an absolute URL, or undefined when it does not parse. Userinfo and look-alike hosts change it.
+	const originOf = (url: string): string | undefined => {
+		try {
+			return new URL(url).origin;
+		} catch {
+			return undefined;
+		}
+	};
+
+	const onAdminOrigin = (url: string | null): boolean =>
+		url === null || (options.adminOrigin !== undefined && originOf(url) === options.adminOrigin);
+
 	const readEvent = (value: unknown, path: string): PublicEvent => {
 		const raw = object(value, path);
+		const event = readEventFields(raw, path);
+		const slug = event.slug;
+		const refuse = (what: string) =>
+			warnings.push(
+				`${path} (${slug}): ${what} is not on the admin origin${options.adminOrigin ? ` (${options.adminOrigin})` : ' (unknown)'} and was left out.`,
+			);
+		const { registration, structuredData } = event;
+		if (
+			registration &&
+			!(options.adminOrigin && onAdminOrigin(registration.url) && onAdminOrigin(registration.endpoint))
+		) {
+			refuse('the registration link');
+			event.registration = null;
+		}
+		if (event.calendarUrl !== null && !onAdminOrigin(event.calendarUrl)) {
+			refuse('the calendar link');
+			event.calendarUrl = null;
+		}
+		if (structuredData?.registrationUrl && !onAdminOrigin(structuredData.registrationUrl)) {
+			refuse('the schema registration URL');
+			structuredData.registrationUrl = null;
+		}
+		return event;
+	};
+
+	const readEventFields = (raw: Obj, path: string): PublicEvent => {
 		return {
 			slug: nonEmpty(raw.slug, `${path}.slug`, LIMIT.short),
 			title: nonEmpty(raw.title, `${path}.title`, LIMIT.title),
@@ -440,6 +483,7 @@ const uniqueSlugs = (items: PublicNewsItem[]): PublicNewsItem[] => {
 // Validates an untrusted payload against the version 1 shape and returns a clean copy with only the documented keys.
 // Never throws: a rejected payload comes back as `{ ok: false, reason }` so the caller can fall back.
 export function parsePublicContent(raw: unknown, options: ParseOptions = {}): ParseResult {
+	const warnings: string[] = [];
 	try {
 		const root = object(raw, 'payload');
 		if (root.version !== PUBLIC_CONTENT_VERSION) {
@@ -461,30 +505,28 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 			readImpactStat,
 			readTestimonial,
 			readSponsor,
-		} = readers(options);
+		} = readers(options, warnings);
 		// Added after version 1 shipped (S9): an admin that does not send a list yet has none of it.
 		const optional = <T>(key: string, read: (item: unknown, path: string) => T): T[] =>
 			root[key] === undefined ? [] : list(root[key], key, COUNT.others, read);
-		return {
-			ok: true,
-			content: {
-				version: PUBLIC_CONTENT_VERSION,
-				generatedAt: text(root.generatedAt, 'generatedAt', LIMIT.generatedAt),
-				events: list(root.events, 'events', COUNT.events, readEvent),
-				faqs: list(root.faqs, 'faqs', COUNT.others, readFaq),
-				pillars: list(root.pillars, 'pillars', COUNT.others, readPillar),
-				socials: list(root.socials, 'socials', COUNT.others, readSocial),
-				board: list(root.board, 'board', COUNT.others, readMember),
-				settings: nullable(root.settings, 'settings', readSettings),
-				// Added after version 1 shipped: an admin that does not send it yet has no news.
-				news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
-				// Added after version 1 shipped: an admin that does not send it yet has no free commands.
-				commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
-				impact: optional('impact', readImpactStat),
-				testimonials: optional('testimonials', readTestimonial),
-				sponsors: optional('sponsors', readSponsor),
-			},
+		const content: PublicContent = {
+			version: PUBLIC_CONTENT_VERSION,
+			generatedAt: text(root.generatedAt, 'generatedAt', LIMIT.generatedAt),
+			events: list(root.events, 'events', COUNT.events, readEvent),
+			faqs: list(root.faqs, 'faqs', COUNT.others, readFaq),
+			pillars: list(root.pillars, 'pillars', COUNT.others, readPillar),
+			socials: list(root.socials, 'socials', COUNT.others, readSocial),
+			board: list(root.board, 'board', COUNT.others, readMember),
+			settings: nullable(root.settings, 'settings', readSettings),
+			// Added after version 1 shipped: an admin that does not send it yet has no news.
+			news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
+			// Added after version 1 shipped: an admin that does not send it yet has no free commands.
+			commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
+			impact: optional('impact', readImpactStat),
+			testimonials: optional('testimonials', readTestimonial),
+			sponsors: optional('sponsors', readSponsor),
 		};
+		return { ok: true, content, warnings };
 	} catch (error) {
 		if (error instanceof Invalid) return { ok: false, reason: error.message };
 		throw error;
