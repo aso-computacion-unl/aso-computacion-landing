@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ImageMetadata } from 'astro';
 import { eventKind, formatStamp, sortEvents, toTimelineEntry, todayInEcuador } from './timeline';
-import { image, payload } from './test-fixtures';
+import { image, openRegistration, payload, structuredData, unlRegistration } from './test-fixtures';
 import type { PublicEvent } from './types';
 
 const TODAY = '2026-10-22';
@@ -189,5 +189,72 @@ describe('toTimelineEntry', () => {
 			height: 800,
 		});
 		expect(entry.gallery).toHaveLength(2);
+	});
+});
+
+describe('toTimelineEntry: registration, calendar and structured data (S8)', () => {
+	const CAL = 'https://admin.example.test/api/public/events/taller-de-git/calendar.ics';
+
+	it('gives an upcoming event its registration, calendar link and schema values', () => {
+		const entry = toTimelineEntry(
+			event({ registration: openRegistration(), calendarUrl: CAL, structuredData: structuredData() }),
+			ctx,
+		);
+		expect(entry.registration).toEqual({
+			mode: 'open',
+			capacity: 40,
+			deadline: '2026-11-12T15:00:00.000Z',
+			href: 'https://admin.example.test/api/public/events/taller-de-git/registrations',
+		});
+		expect(entry.calendarHref).toBe(CAL);
+		expect(entry.schema).toEqual({
+			startDate: '2026-11-12T15:00:00-05:00',
+			endDate: '2026-11-12T17:00:00-05:00',
+			location: 'Laboratorio',
+		});
+	});
+
+	it('maps the UNL mode to the admin page and leaves the optional values out', () => {
+		const entry = toTimelineEntry(event({ registration: unlRegistration() }), ctx);
+		expect(entry.registration).toEqual({ mode: 'unl', href: 'https://admin.example.test/foro/eventos/taller-de-git' });
+	});
+
+	it('adds nothing for an event from an older admin or one with no registration', () => {
+		const entry = toTimelineEntry(event(), ctx);
+		expect(entry).not.toHaveProperty('registration');
+		expect(entry).not.toHaveProperty('calendarHref');
+		expect(entry).not.toHaveProperty('schema');
+	});
+
+	it('drops a registration that has nowhere to go (the admin has no public origin yet)', () => {
+		expect(toTimelineEntry(event({ registration: unlRegistration({ url: null }) }), ctx)).not.toHaveProperty(
+			'registration',
+		);
+		expect(toTimelineEntry(event({ registration: openRegistration({ endpoint: null }) }), ctx)).not.toHaveProperty(
+			'registration',
+		);
+	});
+
+	it('offers none of it once the event is over', () => {
+		const entry = toTimelineEntry(
+			event({
+				date: '2026-10-21',
+				registration: openRegistration(),
+				calendarUrl: CAL,
+				structuredData: structuredData({ startDate: '2026-10-21' }),
+			}),
+			ctx,
+		);
+		expect(entry.kind).toBe('commit');
+		for (const key of ['registration', 'calendarHref', 'schema']) expect(entry).not.toHaveProperty(key);
+	});
+
+	it('keeps the registration of a month-only event (the deadline still applies) but has no calendar or schema', () => {
+		const entry = toTimelineEntry(
+			event({ date: '2026-12-01', datePrecision: 'month', registration: unlRegistration() }),
+			ctx,
+		);
+		expect(entry.registration?.mode).toBe('unl');
+		expect(entry).not.toHaveProperty('calendarHref');
 	});
 });

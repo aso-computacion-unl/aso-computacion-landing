@@ -2,12 +2,15 @@ import {
 	PUBLIC_CONTENT_VERSION,
 	datePrecisions,
 	eventTypes,
+	registrationModes,
 	type DatePrecision,
 	type EventType,
 	type PublicBoardMember,
 	type PublicCommand,
 	type PublicContent,
 	type PublicEvent,
+	type PublicEventRegistration,
+	type PublicEventStructuredData,
 	type PublicFaq,
 	type PublicImage,
 	type PublicImpactStat,
@@ -18,6 +21,7 @@ import {
 	type PublicSocial,
 	type PublicSponsor,
 	type PublicTestimonial,
+	type RegistrationMode,
 } from './types';
 
 export type ParseResult = { ok: true; content: PublicContent } | { ok: false; reason: string };
@@ -70,6 +74,8 @@ const LIMIT = {
 	name: 120,
 	role: 160,
 	proofAlt: 200,
+	// Registration follows the admin's contract (S8): seats go up to 5000, with the usual headroom.
+	capacity: 100_000,
 } as const;
 
 const COUNT = {
@@ -107,6 +113,17 @@ const dimension = (value: unknown, path: string): number =>
 const httpsUrl = (value: unknown, path: string): string => {
 	const url = text(value, path, LIMIT.url);
 	return /^https:\/\/\S+$/i.test(url) ? url : fail(path, 'expected an https URL');
+};
+
+// URLs the admin builds from its own public origin (registration page and endpoint, calendar file). https always; plain
+// http only for a local admin, which is how development and the e2e mock reach it.
+const LOCAL_HTTP = /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:[/?#]\S*)?$/i;
+
+const adminUrl = (value: unknown, path: string): string => {
+	const url = text(value, path, LIMIT.url);
+	return /^https:\/\/[^\s/]\S*$/i.test(url) || LOCAL_HTTP.test(url)
+		? url
+		: fail(path, 'expected an https URL (http only for localhost)');
 };
 
 const calendarDate = (value: unknown, path: string): string => {
@@ -151,6 +168,33 @@ const eventType = (value: unknown, path: string): EventType =>
 	(eventTypes as readonly unknown[]).includes(value)
 		? (value as EventType)
 		: fail(path, `expected one of ${eventTypes.join(', ')}`);
+
+const registrationMode = (value: unknown, path: string): RegistrationMode =>
+	(registrationModes as readonly unknown[]).includes(value)
+		? (value as RegistrationMode)
+		: fail(path, `expected one of ${registrationModes.join(', ')}`);
+
+const capacity = (value: unknown, path: string): number =>
+	typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= LIMIT.capacity
+		? value
+		: fail(path, `expected a positive integer of at most ${LIMIT.capacity}`);
+
+// An instant as the admin writes it (`toISOString()`): UTC with a Z.
+const instant = (value: unknown, path: string): string => {
+	const content = text(value, path, LIMIT.generatedAt);
+	return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(content) && !Number.isNaN(Date.parse(content))
+		? content
+		: fail(path, 'expected an ISO instant in UTC (YYYY-MM-DDTHH:mm:ss.sssZ)');
+};
+
+// A schema.org date: a calendar day, or that day with an Ecuador time (the admin always writes -05:00).
+const eventDateTime = (value: unknown, path: string): string => {
+	const content = text(value, path, LIMIT.short);
+	const match = /^(\d{4}-\d{2}-\d{2})(?:T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)-05:00)?$/.exec(content);
+	if (!match) return fail(path, 'expected YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss-05:00');
+	calendarDate(match[1], path);
+	return content;
+};
 
 const short = (value: unknown, path: string) => text(value, path, LIMIT.short);
 const body = (value: unknown, path: string) => text(value, path, LIMIT.text);
@@ -276,8 +320,36 @@ const readers = (options: ParseOptions) => {
 			linkLabel: nullable(raw.linkLabel, `${path}.linkLabel`, short),
 			highlights: list(raw.highlights, `${path}.highlights`, COUNT.highlights, short),
 			photos: list(raw.photos, `${path}.photos`, COUNT.photos, readImage),
+			registration: optionalField(raw.registration, `${path}.registration`, readRegistration),
+			calendarUrl: optionalField(raw.calendarUrl, `${path}.calendarUrl`, adminUrl),
+			structuredData: optionalField(raw.structuredData, `${path}.structuredData`, readStructuredData),
 		};
 	};
+
+	const readRegistration = (value: unknown, path: string): PublicEventRegistration => {
+		const raw = object(value, path);
+		return {
+			mode: registrationMode(raw.mode, `${path}.mode`),
+			capacity: nullable(raw.capacity, `${path}.capacity`, capacity),
+			deadline: nullable(raw.deadline, `${path}.deadline`, instant),
+			url: nullable(raw.url, `${path}.url`, adminUrl),
+			endpoint: nullable(raw.endpoint, `${path}.endpoint`, adminUrl),
+		};
+	};
+
+	const readStructuredData = (value: unknown, path: string): PublicEventStructuredData => {
+		const raw = object(value, path);
+		return {
+			startDate: eventDateTime(raw.startDate, `${path}.startDate`),
+			endDate: nullable(raw.endDate, `${path}.endDate`, eventDateTime),
+			location: nullable(raw.location, `${path}.location`, short),
+			registrationUrl: nullable(raw.registrationUrl, `${path}.registrationUrl`, adminUrl),
+		};
+	};
+
+	// Added after version 1 shipped (S8): an admin that does not send the key has nothing to say about it.
+	const optionalField = <T>(value: unknown, path: string, read: (value: unknown, path: string) => T): T | null =>
+		value === undefined ? null : nullable(value, path, read);
 
 	const readFaq = (value: unknown, path: string): PublicFaq => {
 		const raw = object(value, path);

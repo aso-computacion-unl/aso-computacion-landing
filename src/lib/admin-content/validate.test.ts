@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { image, impactStat, newsItem, payload, sponsor, testimonial } from './test-fixtures';
+import {
+	image,
+	impactStat,
+	newsItem,
+	openRegistration,
+	payload,
+	sponsor,
+	structuredData,
+	testimonial,
+	unlRegistration,
+} from './test-fixtures';
 import { parsePublicContent } from './validate';
 
 const ok = (raw: unknown, options?: Parameters<typeof parsePublicContent>[1]) => {
@@ -602,5 +612,120 @@ describe('parsePublicContent: social proof (impact, testimonials, sponsors)', ()
 
 	it('names the entry that broke, so one bad item is easy to find', () => {
 		expect(reason(payload({ sponsors: [sponsor(), sponsor({ name: '' })] }))).toContain('sponsors[1].name');
+	});
+});
+
+describe('parsePublicContent: event registration, calendar and structured data (S8, additive)', () => {
+	const event = payload().events[0];
+	const withFields = (fields: Record<string, unknown>) => payload({ events: [{ ...event, ...fields } as never] });
+
+	it('reads an event from an older admin, without the three keys, as having none of them', () => {
+		const { registration: _r, calendarUrl: _c, structuredData: _s, ...legacy } = event;
+		expect(ok(payload({ events: [legacy as never] })).events[0]).toMatchObject({
+			registration: null,
+			calendarUrl: null,
+			structuredData: null,
+		});
+	});
+
+	it('accepts the open and the UNL registration exactly as the admin sends them', () => {
+		const open = openRegistration();
+		const unl = unlRegistration({ capacity: 25, deadline: '2026-11-11T04:59:59.000Z' });
+		expect(ok(withFields({ registration: open })).events[0].registration).toEqual(open);
+		expect(ok(withFields({ registration: unl })).events[0].registration).toEqual(unl);
+	});
+
+	it('accepts the calendar link and the structured data', () => {
+		const data = structuredData({ registrationUrl: 'https://admin.example.test/foro/eventos/taller-de-git' });
+		const parsed = ok(
+			withFields({
+				calendarUrl: 'https://admin.example.test/api/public/events/taller-de-git/calendar.ics',
+				structuredData: data,
+			}),
+		).events[0];
+		expect(parsed.calendarUrl).toBe('https://admin.example.test/api/public/events/taller-de-git/calendar.ics');
+		expect(parsed.structuredData).toEqual(data);
+		expect(
+			ok(withFields({ structuredData: structuredData({ startDate: '2026-11-12', endDate: null, location: null }) }))
+				.events[0].structuredData,
+		).toMatchObject({ startDate: '2026-11-12' });
+	});
+
+	it('keeps only the documented keys of a registration', () => {
+		const parsed = ok(withFields({ registration: { ...openRegistration(), seatsLeft: 3, secret: 'x' } })).events[0];
+		expect(Object.keys(parsed.registration ?? {}).sort()).toEqual(['capacity', 'deadline', 'endpoint', 'mode', 'url']);
+	});
+
+	it('rejects an unknown mode or a mode that is not a string', () => {
+		for (const mode of ['none', 'both', 'OPEN', '', null, 1]) {
+			expect(reason(withFields({ registration: { ...openRegistration(), mode } })), String(mode)).toContain(
+				'registration.mode',
+			);
+		}
+	});
+
+	it('rejects a capacity that is not a positive whole number', () => {
+		for (const capacity of [0, -1, 1.5, '40', NaN, 1e9]) {
+			expect(
+				reason(withFields({ registration: openRegistration({ capacity: capacity as never }) })),
+				String(capacity),
+			).toContain('capacity');
+		}
+	});
+
+	it('rejects a deadline that is not an ISO instant', () => {
+		for (const deadline of ['2026-11-12', 'mañana', '2026-13-45T00:00:00Z', 12, '']) {
+			expect(
+				reason(withFields({ registration: openRegistration({ deadline: deadline as never }) })),
+				String(deadline),
+			).toContain('deadline');
+		}
+	});
+
+	it('only follows https URLs, with plain http allowed for a local admin (development)', () => {
+		const bad = [
+			'http://admin.example.test/x',
+			'javascript:alert(1)',
+			'//admin.example.test/x',
+			'admin.example.test',
+			'https://',
+		];
+		for (const url of bad) {
+			expect(reason(withFields({ registration: unlRegistration({ url }) })), url).toContain('registration.url');
+			expect(reason(withFields({ registration: openRegistration({ endpoint: url }) })), url).toContain(
+				'registration.endpoint',
+			);
+			expect(reason(withFields({ calendarUrl: url })), url).toContain('calendarUrl');
+		}
+		const local = 'http://localhost:3000/api/public/events/taller-de-git/registrations';
+		expect(
+			ok(withFields({ registration: openRegistration({ endpoint: local }) })).events[0].registration?.endpoint,
+		).toBe(local);
+		expect(ok(withFields({ calendarUrl: 'http://127.0.0.1:3000/x.ics' })).events[0].calendarUrl).toBe(
+			'http://127.0.0.1:3000/x.ics',
+		);
+	});
+
+	it('rejects malformed structured data', () => {
+		const rejected = [
+			{ startDate: '12/11/2026' },
+			{ startDate: '2026-02-31' },
+			{ startDate: '2026-11-12T15:00:00Z' },
+			{ endDate: 'tarde' },
+			{ location: 7 },
+			{ registrationUrl: 'http://evil.example.test/' },
+		];
+		for (const override of rejected) {
+			expect(
+				reason(withFields({ structuredData: structuredData(override as never) })),
+				JSON.stringify(override),
+			).toContain('structuredData');
+		}
+	});
+
+	it('rejects a registration that is not an object', () => {
+		for (const registration of ['open', 1, [], true]) {
+			expect(reason(withFields({ registration })), String(registration)).toContain('registration');
+		}
 	});
 });

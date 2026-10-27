@@ -1,6 +1,8 @@
 // Test-only builders for the admin's public payload (shape: GET /api/public/content, version 1).
 import type {
 	PublicContent,
+	PublicEventRegistration,
+	PublicEventStructuredData,
 	PublicImage,
 	PublicImpactStat,
 	PublicNewsItem,
@@ -62,6 +64,33 @@ export const sponsor = (overrides: Partial<PublicSponsor> = {}): PublicSponsor =
 	...overrides,
 });
 
+// The admin's S8 fields for one event. `open` is the form the landing hosts; `unl` is a page on the admin.
+export const openRegistration = (overrides: Partial<PublicEventRegistration> = {}): PublicEventRegistration => ({
+	mode: 'open',
+	capacity: 40,
+	deadline: '2026-11-12T15:00:00.000Z',
+	url: null,
+	endpoint: 'https://admin.example.test/api/public/events/taller-de-git/registrations',
+	...overrides,
+});
+
+export const unlRegistration = (overrides: Partial<PublicEventRegistration> = {}): PublicEventRegistration => ({
+	mode: 'unl',
+	capacity: null,
+	deadline: null,
+	url: 'https://admin.example.test/foro/eventos/taller-de-git',
+	endpoint: null,
+	...overrides,
+});
+
+export const structuredData = (overrides: Partial<PublicEventStructuredData> = {}): PublicEventStructuredData => ({
+	startDate: '2026-11-12T15:00:00-05:00',
+	endDate: '2026-11-12T17:00:00-05:00',
+	location: 'Laboratorio',
+	registrationUrl: null,
+	...overrides,
+});
+
 export const payload = (overrides: Partial<PublicContent> = {}): PublicContent => ({
 	version: 1,
 	generatedAt: '2026-10-22T12:00:00.000Z',
@@ -82,6 +111,9 @@ export const payload = (overrides: Partial<PublicContent> = {}): PublicContent =
 			linkLabel: 'Inscribirme',
 			highlights: [],
 			photos: [image()],
+			registration: null,
+			calendarUrl: null,
+			structuredData: null,
 		},
 	],
 	faqs: [{ question: '¿Quién puede participar?', answer: 'Cualquier estudiante.', command: null }],
