@@ -197,6 +197,10 @@ function setupForm(block: HTMLElement, form: HTMLFormElement) {
 		if (widgetId) window.turnstile?.reset(widgetId);
 		showOutcome(outcome);
 	});
+
+	// Only now is it safe to submit: the handler above is attached. Until then (or if this script never loads) the button
+	// is disabled, which also blocks submitting with Enter from a field.
+	submit.disabled = false;
 }
 
 document.querySelectorAll<HTMLElement>('[data-reg]').forEach((block) => {

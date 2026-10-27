@@ -10,6 +10,7 @@ import {
 import type { PublicEvent } from '../src/lib/admin-content/types';
 import {
 	PIXEL,
+	readBuilt,
 	buildSite,
 	fakeTurnstile,
 	serveDirectory,
@@ -102,6 +103,24 @@ const legacyContent = (admin: string) => {
 	};
 };
 
+// The same events, but their registration, UNL page and calendar links point at a host that is not the admin.
+const EVIL = 'https://evil.example.test';
+const foreignContent = (admin: string) => {
+	const content = registrationContent(admin);
+	return {
+		...content,
+		events: content.events.map((item) => ({
+			...item,
+			registration: item.registration && {
+				...item.registration,
+				url: item.registration.url && `${EVIL}/foro/eventos/${item.slug}`,
+				endpoint: item.registration.endpoint && `${EVIL}/api/public/events/${item.slug}/registrations`,
+			},
+			calendarUrl: item.calendarUrl && `${EVIL}/api/public/events/${item.slug}/calendar.ics`,
+		})),
+	};
+};
+
 const FIELDS = { name: 'Ana Mora', email: 'ana@unl.edu.ec', career: 'Computación', semester: '5' };
 
 const open = async (page: Page, url: string, behavior: TurnstileBehavior = 'solves') => {
@@ -144,6 +163,11 @@ test.describe('registration from the admin', () => {
 	let mainOutput = '';
 	let legacyAdmin: MockAdmin;
 	let legacySite: StaticSite;
+	let foreignAdmin: MockAdmin;
+	let foreignSite: StaticSite;
+	let foreignOutput = '';
+	let foreignDir = '';
+	let mainDir = '';
 
 	test.beforeAll(async () => {
 		test.setTimeout(420_000);
@@ -154,6 +178,7 @@ test.describe('registration from the admin', () => {
 		});
 		expect(built.exitCode, built.output).toBe(0);
 		mainOutput = built.output;
+		mainDir = built.outDir;
 		site = await serveDirectory(built.outDir);
 
 		// No Turnstile site key: the open form cannot work, so it is not shown, and the build says so.
@@ -170,6 +195,17 @@ test.describe('registration from the admin', () => {
 		});
 		expect(legacy.exitCode, legacy.output).toBe(0);
 		legacySite = await serveDirectory(legacy.outDir);
+
+		// Links on another origin than ADMIN_CONTENT_URL's: left out, and the build says so.
+		foreignAdmin = await startMockAdmin({ content: foreignContent });
+		const foreign = await buildSite('registration-foreign', {
+			ADMIN_CONTENT_URL: `${foreignAdmin.url}/api/public/content`,
+			PUBLIC_TURNSTILE_SITE_KEY: SITE_KEY,
+		});
+		expect(foreign.exitCode, foreign.output).toBe(0);
+		foreignOutput = foreign.output;
+		foreignDir = foreign.outDir;
+		foreignSite = await serveDirectory(foreign.outDir);
 	});
 
 	test.afterAll(async () => {
@@ -180,6 +216,8 @@ test.describe('registration from the admin', () => {
 			noKeyAdmin?.close(),
 			legacySite?.close(),
 			legacyAdmin?.close(),
+			foreignSite?.close(),
+			foreignAdmin?.close(),
 		]);
 	});
 
@@ -633,6 +671,91 @@ test.describe('registration from the admin', () => {
 			expect(events).toHaveLength(4);
 			expect(events.find((data) => data.name === 'Taller abierto')).not.toHaveProperty('offers');
 			expect(events.find((data) => data.name === 'Charla con cuenta UNL')).toHaveProperty('offers');
+		});
+	});
+
+	test.describe('the form can never leak what was typed', () => {
+		const chunk = /\/_astro\/registration\.[\w-]+\.js/;
+
+		test('the server-rendered form is method=post with a disabled submit and no native submit', async () => {
+			const html = await readBuilt(mainDir, 'index.html');
+			const forms = html.match(/<form\b[^>]*data-reg-form[^>]*>/g) ?? [];
+			expect(forms).toHaveLength(1);
+			expect(forms[0]).toMatch(/\bmethod="post"/i);
+			expect(forms[0]).not.toMatch(/\baction=/i);
+			expect(forms[0]).toMatch(/\bonsubmit="return false"/);
+			expect(html.match(/<button\b[^>]*data-reg-submit[^>]*>/)?.[0]).toMatch(/\bdisabled\b/);
+		});
+
+		test('the submit button is enabled once the script has attached its handler', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			const form = await openForm(page);
+			await expect(form.getByRole('button', { name: 'Enviar inscripción' })).toBeEnabled();
+		});
+
+		test('with the script blocked, Enter and a forced submit put nothing in the URL and send no request', async ({
+			page,
+		}) => {
+			const chunkRequests: string[] = [];
+			await page.route(chunk, (route) => {
+				chunkRequests.push(route.request().url());
+				return route.abort();
+			});
+			const sent: string[] = [];
+			await open(page, `${site.url}/`);
+			page.on('request', (request) => {
+				if (request.method() !== 'GET' || /ana|unl\.edu|Computaci/.test(request.url())) sent.push(request.url());
+			});
+			const before = page.url();
+			const form = await openForm(page);
+			await fillForm(form);
+			const send = form.getByRole('button', { name: 'Enviar inscripción' });
+			// The handler never attached, so nothing enabled the button.
+			await expect(send).toBeDisabled();
+			expect(chunkRequests.length).toBeGreaterThan(0);
+
+			// Enter in a field is implicit submission: a disabled default button blocks it.
+			await form.getByLabel('Carrera').press('Enter');
+			// Even a script (or an extension) asking the form to submit does not navigate.
+			await form.evaluate((node) => (node as HTMLFormElement).requestSubmit());
+			await page.waitForTimeout(500);
+
+			expect(page.url()).toBe(before);
+			expect(page.url()).not.toContain('?');
+			expect(sent).toEqual([]);
+			expect(admin.registrationRequests).toEqual([]);
+			await expect(form.getByLabel('Nombre completo')).toHaveValue('Ana Mora');
+		});
+
+		test('with the Turnstile script blocked the form still cannot submit natively either', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			await page.route('https://challenges.cloudflare.com/**', (route) => route.abort());
+			const before = page.url();
+			const form = await openForm(page);
+			await fillForm(form);
+			await form.getByLabel('Carrera').press('Enter');
+			expect(page.url()).toBe(before);
+			expect(admin.registrationRequests).toEqual([]);
+		});
+	});
+
+	test.describe('links on another origin than the admin', () => {
+		test('the build says which events lost their links and shows no registration or calendar for them', async ({
+			page,
+		}) => {
+			expect(foreignOutput).toContain('[registration]');
+			expect(foreignOutput).toContain('taller-abierto');
+			expect(foreignOutput).toContain('charla-unl');
+			expect(foreignOutput).toContain('not on the admin origin');
+			expect(mainOutput).not.toContain('not on the admin origin');
+			await open(page, `${foreignSite.url}/`);
+			await expect(page.locator('[data-reg-details], [data-reg-form], .reg-cta, .reg-calendar')).toHaveCount(0);
+		});
+
+		test('nothing of the foreign host reaches the page, the Event data included', async () => {
+			for (const file of ['index.html', 'en/index.html']) {
+				expect(await readBuilt(foreignDir, file), file).not.toContain('evil.example.test');
+			}
 		});
 	});
 
