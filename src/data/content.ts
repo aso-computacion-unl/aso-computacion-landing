@@ -8,6 +8,7 @@ import { composeSiteContent } from '../lib/admin-content/compose';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
+import { openFormWithoutSiteKey } from '../lib/registration/rules';
 import fallback from './fallback.json';
 import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
 
@@ -28,6 +29,10 @@ const preview = readPreviewConfig(process.env);
 const loaded = preview
 	? await loadPreviewContent(preview)
 	: await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
+
+// Public Cloudflare Turnstile site key (S8): the open registration form needs it to show its widget. Without it the form
+// is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
+export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
 const memo = new Map<Locale, ReturnType<typeof build>>();
 
@@ -100,5 +105,11 @@ export function getContent(locale: Locale = 'es') {
 }
 
 enforceContentGate();
+
+const noSiteKey = openFormWithoutSiteKey(getContent('es').timeline, turnstileSiteKey);
+if (noSiteKey.length > 0)
+	console.warn(
+		`[registration] PUBLIC_TURNSTILE_SITE_KEY is not set: the open registration form of ${noSiteKey.join(', ')} is not shown. See docs/DEPLOY.md.`,
+	);
 
 export type SiteData = ReturnType<typeof getContent>;

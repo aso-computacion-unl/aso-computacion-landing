@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatDeadline, registrationClosed } from './rules';
+import type { TimelineEntry } from '../admin-content/model';
+import { formatDeadline, openFormWithoutSiteKey, registrationClosed } from './rules';
 
 const DEADLINE = '2026-11-12T15:00:00.000Z';
 
@@ -35,5 +36,37 @@ describe('formatDeadline', () => {
 		const text = formatDeadline('2026-11-12T23:30:00.000Z', 'en');
 		expect(text).toContain('November 12');
 		expect(text).toContain('Ecuador');
+	});
+});
+
+describe('openFormWithoutSiteKey', () => {
+	const entry = (
+		id: string,
+		registration: TimelineEntry['registration'],
+		kind: TimelineEntry['kind'] = 'upcoming',
+	): TimelineEntry => ({
+		id,
+		kind,
+		title: id,
+		registration,
+	});
+	const open = { mode: 'open' as const, href: 'https://admin.test/api/x' };
+
+	it('names the events whose open form cannot be shown because the Turnstile site key is missing', () => {
+		const entries = [
+			entry('a', open),
+			entry('b', { mode: 'unl', href: 'https://admin.test/foro/eventos/b' }),
+			entry('c', undefined),
+			entry('d', open),
+		];
+		expect(openFormWithoutSiteKey(entries, undefined)).toEqual(['a', 'd']);
+		expect(openFormWithoutSiteKey(entries, '   ')).toEqual(['a', 'd']);
+	});
+
+	it('finds nothing to report when the key is set or no event uses the open form', () => {
+		expect(openFormWithoutSiteKey([entry('a', open)], '0x4AAAA')).toEqual([]);
+		expect(
+			openFormWithoutSiteKey([entry('b', { mode: 'unl', href: 'https://admin.test/foro/eventos/b' })], undefined),
+		).toEqual([]);
 	});
 });

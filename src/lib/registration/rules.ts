@@ -1,4 +1,5 @@
 import type { Locale } from '../../i18n/locales';
+import type { TimelineEntry } from '../admin-content/model';
 
 // Registration rules the landing can evaluate by itself. The seats left are not known here (the site is static), so
 // "full" is only ever learned from the admin's answer; see outcome.ts.
@@ -23,4 +24,11 @@ export function formatDeadline(deadline: string, locale: Locale): string {
 		hourCycle: 'h23',
 	}).format(new Date(deadline));
 	return locale === 'en' ? `${at} (Ecuador time)` : `${at} (hora de Ecuador)`;
+}
+
+// The open form needs the public Turnstile site key (PUBLIC_TURNSTILE_SITE_KEY) to render its widget; without it the
+// card shows no form. The ids of the events that asked for one, so the build can say so instead of failing quietly.
+export function openFormWithoutSiteKey(entries: readonly TimelineEntry[], siteKey: string | undefined): string[] {
+	if (siteKey?.trim()) return [];
+	return entries.filter((entry) => entry.registration?.mode === 'open').map((entry) => entry.id);
 }

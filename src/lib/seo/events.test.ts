@@ -14,6 +14,7 @@ const page = {
 	inLanguage: 'es',
 	pageUrl: 'https://example.test/',
 	fallbackImage: 'https://example.test/og-default.png',
+	openFormShown: true,
 	now: Date.parse('2026-10-22T12:00:00Z'),
 };
 const entry = (overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
@@ -73,6 +74,13 @@ describe('eventsStructuredData', () => {
 			url: 'https://example.test/#evento-taller-de-git',
 			validThrough: '2026-11-12T15:00:00.000Z',
 		});
+	});
+
+	it('does not offer an open registration whose form is not shown, but still offers a UNL one', () => {
+		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/api/x' } });
+		expect(eventsStructuredData([open], { ...page, openFormShown: false })[0]).not.toHaveProperty('offers');
+		const unl = entry({ registration: { mode: 'unl', href: 'https://admin.test/foro/eventos/x' } });
+		expect(eventsStructuredData([unl], { ...page, openFormShown: false })[0]).toHaveProperty('offers');
 	});
 
 	it('offers nothing once the deadline passed or when there is no registration', () => {

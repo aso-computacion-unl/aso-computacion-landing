@@ -528,6 +528,8 @@ async function init(plan: MotionPlan) {
 
 	const refresh = () => ScrollTrigger.refresh();
 	window.addEventListener('load', refresh);
+	// An event card's registration form opens and closes, which moves everything below it.
+	window.addEventListener('aso:relayout', refresh);
 	document.fonts?.ready.then(refresh, () => {}); // A font that fails to load keeps the fallback; nothing to redo.
 	root.dataset.scrollTriggers = String(ScrollTrigger.getAll().length);
 	root.dataset.motionReady = 'true';
