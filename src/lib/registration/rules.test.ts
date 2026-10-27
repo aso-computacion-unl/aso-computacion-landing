@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { registrationClosed } from './rules';
+import { formatDeadline, registrationClosed } from './rules';
 
 const DEADLINE = '2026-11-12T15:00:00.000Z';
 
@@ -16,5 +16,24 @@ describe('registrationClosed', () => {
 
 	it('stays open when the deadline cannot be read, so the admin is the one that decides', () => {
 		expect(registrationClosed('no es una fecha', Date.now())).toBe(false);
+	});
+});
+
+describe('formatDeadline', () => {
+	it('writes the deadline in Ecuador time, whatever the zone of the build machine', () => {
+		const text = formatDeadline('2026-11-12T23:30:00.000Z', 'es');
+		expect(text).toContain('noviembre');
+		expect(text).toContain('18:30');
+		expect(text).toContain('Ecuador');
+	});
+
+	it('crosses midnight with the Ecuador offset, not the UTC date', () => {
+		expect(formatDeadline('2026-11-13T03:00:00.000Z', 'es')).toContain('12 de noviembre');
+	});
+
+	it('speaks English on the English routes', () => {
+		const text = formatDeadline('2026-11-12T23:30:00.000Z', 'en');
+		expect(text).toContain('November 12');
+		expect(text).toContain('Ecuador');
 	});
 });
