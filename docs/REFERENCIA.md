@@ -207,6 +207,15 @@ calendar link and no structured data.
 A `unl` registration without `url`, or an `open` one without `endpoint` (the admin has no `AUTH_URL` yet), is dropped: there
 is nowhere to send the person.
 
+**Links must be on the admin's origin.** A payload can only send people (and what they type) to the host the content came
+from: the origin of `ADMIN_CONTENT_URL` (of `ADMIN_PREVIEW_URL` in a preview build). A `registration` whose `url` or `endpoint`
+is on any other origin (another host, subdomain, port or scheme, or a `user@host` trick), a `calendarUrl`, and a
+`structuredData.registrationUrl` are each **left out** (that event shows no registration, no calendar link, no offer) while the
+rest of the payload stays valid, and the build prints `[registration] events[N] (<slug>): the registration link is not on the
+admin origin (...) and was left out.` If the origin is not known, all of them are left out (fail closed). This is defence in
+depth against a compromised or misconfigured admin, on top of https-only validation (`src/lib/admin-content/validate.ts`,
+`ParseOptions.adminOrigin`; `parsePublicContent` returns these as `warnings`).
+
 **Validation of the three keys** (`src/lib/admin-content/validate.ts`, additive to `version` 1; a rejected value makes the
 whole payload invalid like any other field): `registration` is `null` or `{ mode: "unl" | "open", capacity, deadline, url,
 endpoint }` with `capacity` a whole number from 1 to 100000 or `null`, `deadline` an ISO instant in UTC or `null`; the three
@@ -242,6 +251,11 @@ dates as `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss-05:00`. Only the documented keys a
 
   A second click while a request is in flight is ignored (`aria-disabled`, not `disabled`, so focus stays). The form says
   the data is used only for that activity and deleted 90 days after it ends (the admin's retention rule).
+- **The form can never submit natively**, because a GET to the page would put the name, email, career and semester in the
+  URL (history, server logs, the analytics beacon). The server-rendered `<form>` is `method="post"` with no `action` and
+  `onsubmit="return false"`, and its submit button is `disabled` until `src/scripts/registration.ts` has attached its handler
+  (which enables it). So if the script is blocked or late, Enter in a field does nothing and not even `form.requestSubmit()`
+  navigates or sends a request. Covered in `e2e/event-registration.spec.ts` with the script chunk blocked.
 - Without JavaScript the form is not shown (`js-only`), with a `<noscript>` note; the UNL link and the calendar link work
   without it.
 
@@ -322,7 +336,7 @@ pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of
   `aria-invalid`, no send without the check, a blocked or failing widget), **every answer of the endpoint**
   (201, validation per field, captcha, 404, duplicate, full, closed, 429, 503, 413, bad request, no answer) and
   that a double click sends once, the `.ics` links, the `Event` JSON-LD and its offers, an admin without the S8 keys, a
-  build without the site key (no form, a warning, UNL still works) and axe in both themes and languages with the form open
+  build without the site key (no form, a warning, UNL still works), links on another origin (left out, build warning), the form with its script blocked (nothing in the URL, no request) and axe in both themes and languages with the form open
   and an error showing. Events are dated relative to the day of the run.
 
 Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
