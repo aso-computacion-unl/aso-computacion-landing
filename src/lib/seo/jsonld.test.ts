@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildNewsArticle, buildOrganization, serializeJsonLd } from './jsonld';
+import { buildEvent, buildNewsArticle, buildOrganization, serializeJsonLd } from './jsonld';
 
 const site = new URL('https://example.test');
 const organizationInput = {
@@ -77,5 +77,76 @@ describe('serializeJsonLd', () => {
 		const out = serializeJsonLd({ name: 'a\u2028b\u2029c' });
 		expect(out).not.toMatch(/[\u2028\u2029]/);
 		expect(JSON.parse(out).name).toBe('a\u2028b\u2029c');
+	});
+});
+
+describe('buildEvent', () => {
+	const input = {
+		organization: organizationInput,
+		name: 'Taller de Git',
+		description: 'Control de versiones desde cero.',
+		startDate: '2026-11-12T15:00:00-05:00',
+		endDate: '2026-11-12T17:00:00-05:00',
+		location: 'Laboratorio 2',
+		image: ['https://res.cloudinary.test/taller.jpg'],
+		inLanguage: 'es',
+		url: 'https://example.test/#evento-taller-de-git',
+	};
+
+	it('maps an event to a schema.org Event organized by the association', () => {
+		expect(buildEvent(input)).toEqual({
+			'@context': 'https://schema.org',
+			'@type': 'Event',
+			name: 'Taller de Git',
+			description: 'Control de versiones desde cero.',
+			startDate: '2026-11-12T15:00:00-05:00',
+			endDate: '2026-11-12T17:00:00-05:00',
+			eventStatus: 'https://schema.org/EventScheduled',
+			eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+			location: { '@type': 'Place', name: 'Laboratorio 2', address: 'Laboratorio 2' },
+			image: ['https://res.cloudinary.test/taller.jpg'],
+			inLanguage: 'es',
+			url: 'https://example.test/#evento-taller-de-git',
+			organizer: {
+				'@type': 'Organization',
+				name: 'ASO Computación',
+				url: 'https://example.test/',
+				logo: 'https://example.test/icon-512.png',
+				email: 'role@example.test',
+				sameAs: ['https://www.instagram.com/aso/', 'https://www.linkedin.com/company/aso/'],
+			},
+		});
+	});
+
+	it('leaves out what the event does not have', () => {
+		const event = buildEvent({ ...input, description: undefined, endDate: undefined, location: undefined });
+		for (const key of ['description', 'endDate', 'location', 'offers']) expect(event).not.toHaveProperty(key);
+	});
+
+	it('offers free registration at the given URL, valid until the deadline', () => {
+		const event = buildEvent({
+			...input,
+			registration: {
+				url: 'https://admin.example.test/foro/eventos/taller-de-git',
+				deadline: '2026-11-12T15:00:00.000Z',
+			},
+		});
+		expect(event.offers).toEqual({
+			'@type': 'Offer',
+			url: 'https://admin.example.test/foro/eventos/taller-de-git',
+			price: '0',
+			priceCurrency: 'USD',
+			availability: 'https://schema.org/InStock',
+			validThrough: '2026-11-12T15:00:00.000Z',
+		});
+		expect(buildEvent({ ...input, registration: { url: 'https://example.test/' } }).offers).not.toHaveProperty(
+			'validThrough',
+		);
+	});
+
+	it('cannot be broken out of its script tag by event text', () => {
+		const html = serializeJsonLd(buildEvent({ ...input, name: '</script><script>alert(1)</script>' }));
+		expect(html).not.toContain('</script>');
+		expect(html).toContain('\\u003c/script>');
 	});
 });
