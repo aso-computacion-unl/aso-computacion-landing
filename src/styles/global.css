@@ -3244,6 +3244,9 @@ html.motion [data-member] {
 
 	.reg-ticket,
 	.reg-calendar {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
 		font-size: 0.875rem;
 		font-weight: 600;
 		color: var(--color-sky);
@@ -3751,13 +3754,13 @@ html.motion [data-member] {
 		border: 0;
 		border-radius: 4px;
 		background: var(--tk-field);
-		box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-sky) 55%, transparent);
+		box-shadow: inset 0 0 0 2px var(--color-sky);
 		color: var(--color-ink);
 		font: inherit;
 	}
 
 	.reg-field input:hover {
-		box-shadow: inset 0 0 0 2px var(--color-sky);
+		box-shadow: inset 0 0 0 2px var(--color-ink);
 	}
 
 	.reg-field input[aria-invalid='true'] {
@@ -3813,9 +3816,33 @@ html.motion [data-member] {
 		cursor: pointer;
 	}
 
+	.reg-submit:hover {
+		background: color-mix(in srgb, var(--color-sky) 82%, var(--color-ink));
+	}
+
 	.reg-submit[aria-disabled='true'] {
 		opacity: 0.65;
 		cursor: progress;
+	}
+
+	/* Without the script the button cannot send anything, and says so. */
+	.reg-submit:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	/* Turnstile's widget is 300x65: its place is kept so the note and the button do not jump when it appears. It needs the
+	   script, so without it there is nothing to keep. */
+	.reg-captcha {
+		min-height: 4.0625rem;
+	}
+
+	html:not(.js) .reg-captcha {
+		display: none;
+	}
+
+	.tk-form > noscript .reg-note {
+		margin-bottom: 1.125rem;
 	}
 
 	/* Done (registered, full, closed): only the message stays. */

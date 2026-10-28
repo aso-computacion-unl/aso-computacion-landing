@@ -1180,6 +1180,20 @@ test.describe('registration from the admin', () => {
 			});
 		}
 
+		test('every control of the Inscripciones section is at least 44 px tall', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			await openForm(page);
+			const small = await page
+				.locator('#inscripciones')
+				.locator('a:visible, button:visible, input:visible')
+				.evaluateAll((nodes) =>
+					nodes
+						.map((node) => ({ node: node.className || node.tagName, height: node.getBoundingClientRect().height }))
+						.filter((control) => control.height < 44),
+				);
+			expect(small).toEqual([]);
+		});
+
 		test('works from the keyboard alone: Enter unfolds the form, Tab reaches "Cerrar", every field and the button', async ({
 			page,
 		}) => {
