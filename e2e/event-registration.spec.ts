@@ -933,15 +933,20 @@ test.describe('registration from the admin', () => {
 				organizer: { '@type': 'Organization' },
 				inLanguage: 'es',
 			});
-			// The open form is the card itself; the UNL one is a page on the admin.
-			expect(openEvent.offers).toMatchObject({ url: openEvent.url, price: '0', priceCurrency: 'USD' });
+			// The open form hangs under the activity's ticket; the UNL one is a page on the admin.
+			expect(openEvent.offers).toMatchObject({
+				url: expect.stringMatching(/\/#inscripciones-taller-abierto$/),
+				price: '0',
+				priceCurrency: 'USD',
+			});
 			expect(unlEvent.offers).toMatchObject({ url: `${admin.url}/foro/eventos/charla-unl`, price: '0' });
 			expect(unlEvent.location).toMatchObject({ name: 'Auditorio' });
 			expect(freeEvent).not.toHaveProperty('offers');
 			// Its deadline passed: no registration is offered.
 			expect(closedEvent).not.toHaveProperty('offers');
-			// The anchor the offer points to exists.
+			// The anchors the event and its offer point to exist.
 			await expect(card(page, 'taller-abierto')).toHaveCount(1);
+			await expect(ticket(page, 'taller-abierto')).toHaveCount(1);
 		});
 
 		test('prints the English page in English', async ({ page }) => {

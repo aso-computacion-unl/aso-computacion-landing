@@ -1,6 +1,7 @@
 // schema.org Events of the upcoming activities (S8). Pure: Layout.astro prints what this returns.
 import type { Photo, TimelineEntry } from '../admin-content/model';
 import { registrationClosed } from '../registration/rules';
+import { ticketAnchor } from '../registration/tickets';
 import { buildEvent, type JsonLd, type OrganizationInput } from './jsonld';
 
 // The card's id on the home page. Prefixed so an event called "faq" never takes the id of a section.
@@ -45,8 +46,11 @@ export function eventsStructuredData(entries: readonly TimelineEntry[], page: Ev
 				url,
 				registration: open
 					? {
-							// UNL registration happens on the admin's page; the open form is the card itself.
-							url: registration.mode === 'unl' ? (schema.registrationUrl ?? registration.href) : url,
+							// UNL registration happens on the admin's page; the open form hangs under the activity's ticket.
+							url:
+								registration.mode === 'unl'
+									? (schema.registrationUrl ?? registration.href)
+									: `${page.pageUrl}#${ticketAnchor(entry.id)}`,
 							deadline: registration.deadline,
 						}
 					: undefined,

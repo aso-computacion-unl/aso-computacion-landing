@@ -61,7 +61,7 @@ describe('eventsStructuredData', () => {
 		expect(event.offers).toMatchObject({ url: 'https://admin.test/foro/eventos/taller-de-git', price: '0' });
 	});
 
-	it('points the offer of an open registration to the card on the home page', () => {
+	it('points the offer of an open registration to the ticket of the activity, not to its card', () => {
 		const [event] = eventsStructuredData(
 			[
 				entry({
@@ -71,7 +71,7 @@ describe('eventsStructuredData', () => {
 			page,
 		);
 		expect(event.offers).toMatchObject({
-			url: 'https://example.test/#evento-taller-de-git',
+			url: 'https://example.test/#inscripciones-taller-de-git',
 			validThrough: '2026-11-12T15:00:00.000Z',
 		});
 	});
