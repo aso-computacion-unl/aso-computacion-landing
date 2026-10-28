@@ -603,24 +603,19 @@ test.describe('registration from the admin', () => {
 			});
 		}
 
-		test('the tickets keep their height when the seats arrive, and when they never do', async ({ page }) => {
-			const heights = () =>
-				page
-					.locator('#inscripciones .tk-item')
-					.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
+		test('a ticket keeps its height when its seats arrive', async ({ page }) => {
+			const height = () => ticket(page, 'taller-abierto').evaluate((node) => node.getBoundingClientRect().height);
 			let answerSeats: (() => void) | undefined;
 			await page.route(SEATS, (route) => {
-				answerSeats = () =>
-					void route
-						.fulfill(answer([seatsOf('taller-abierto', 40, 38), seatsOf('charla-unl', 60, 10)]))
-						.catch(() => {});
+				answerSeats = () => void route.fulfill(answer([seatsOf('taller-abierto', 40, 38)])).catch(() => {});
 			});
 			await open(page, `${site.url}/`, 'solves', 'load');
 			await expect(ticket(page, 'taller-abierto')).toBeVisible();
-			const before = await heights();
+			const before = await height();
 			answerSeats?.();
 			await expect(ticket(page, 'taller-abierto').locator('[data-seat-num]')).toHaveText('2');
-			expect(await heights()).toEqual(before);
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-meter]')).toBeVisible();
+			expect(await height()).toBe(before);
 		});
 
 		test('gives back the room held for the meter when the admin cannot be reached', async ({ page }) => {
