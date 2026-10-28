@@ -1,6 +1,5 @@
 ---
 import Photo from './Photo.astro';
-import IsotypeColor from '../assets/brand/isotype-color.svg';
 import { getContent } from '../data/content';
 import { copy } from '../data/site';
 import { toLocale } from '../i18n/locales';
@@ -94,32 +93,6 @@ const photos = collagePhotos;
 			{join.tags.map((tag) => (
 				<span class="c-tag">{tag}</span>
 			))}
-		</div>
-	</div>
-
-	<div class="wrap">
-		<div class="newcomer relative mt-14 lg:mt-20">
-			<span class="stk stk-iso" style="--r:-9deg" aria-hidden="true">
-				<span class="stk-face stk-white" data-pop>
-					<IsotypeColor class="h-full w-auto" />
-				</span>
-			</span>
-			<div class="grid items-end gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
-				<div>
-					<p class="eyebrow eyebrow-light" aria-hidden="true">
-						<span>{join.newcomer.title}</span>
-					</p>
-					<h3 class="newcomer-title">{join.newcomer.lead}</h3>
-					<div class="mt-6 grid gap-4 text-lg text-mist">
-						{join.newcomer.steps.map((step) => (
-							<p>{step}</p>
-						))}
-					</div>
-				</div>
-				<div class="newcomer-hola" aria-hidden="true">
-					<span class="outline-word">{t('join.hello')}</span>
-				</div>
-			</div>
 		</div>
 	</div>
 </section>

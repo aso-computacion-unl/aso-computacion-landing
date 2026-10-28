@@ -357,7 +357,7 @@
 		line-height: 1;
 	}
 
-	/* Flat rotated sticker. Use sparingly: the next event and the newcomer block. */
+	/* Flat rotated sticker. Use sparingly: the next event. */
 	.sticker {
 		position: absolute;
 		z-index: 3;
@@ -1533,28 +1533,6 @@
 		color: var(--color-ink);
 	}
 
-	.stk-iso {
-		top: -2.25rem;
-		right: 1.25rem;
-	}
-
-	.stk-iso .stk-face {
-		width: 4.5rem;
-		height: 4.5rem;
-		padding: 0.75rem;
-	}
-
-	@media (min-width: 64rem) {
-		.stk-iso {
-			right: 2.5rem;
-		}
-
-		.stk-iso .stk-face {
-			width: 6rem;
-			height: 6rem;
-			padding: 1rem;
-		}
-	}
 
 	/* Header hierarchy: eyebrow (mono) -> heading -> lead, with an optional aside on the same grid. */
 	.eyebrow {
@@ -1701,32 +1679,6 @@
 		color: var(--color-on-sky);
 	}
 
-	.newcomer-title {
-		font-family: var(--font-display);
-		font-stretch: 125%;
-		font-weight: 800;
-		font-size: clamp(1.875rem, 4vw, 4rem);
-		line-height: 1.08;
-		letter-spacing: -0.01em;
-		color: var(--color-ink);
-	}
-
-	.newcomer-hola {
-		display: none;
-	}
-
-	@media (min-width: 64rem) {
-		.newcomer-hola {
-			display: block;
-			justify-self: end;
-		}
-
-		.newcomer-hola .outline-word {
-			margin: 0;
-			font-size: clamp(5rem, 11vw, 11rem);
-			-webkit-text-stroke-color: var(--color-sky);
-		}
-	}
 
 	.tile-iso {
 		position: absolute;
@@ -2539,23 +2491,6 @@
 		background: var(--color-ink);
 	}
 
-	.newcomer {
-		border-radius: 4px;
-		background: var(--color-navy);
-		padding: 2rem 1.5rem 2.5rem;
-	}
-
-	@media (min-width: 40rem) {
-		.newcomer {
-			padding: 3rem 2.5rem;
-		}
-	}
-
-	@media (min-width: 64rem) {
-		.newcomer {
-			padding: 4rem 3.5rem;
-		}
-	}
 
 	/* Trunk: the hero stem continues into the Activities main branch (desktop only). */
 	.lane-vars {

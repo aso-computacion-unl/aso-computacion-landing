@@ -132,7 +132,6 @@ const es = {
 	'sponsors.lead': 'Organizaciones y personas que hacen posible lo que hacemos. Gracias.',
 	'sponsors.list': 'Aliados y auspiciantes',
 
-	'join.hello': 'HOLA',
 
 	'faq.termTitle': 'faq — temas',
 	'faq.hint': '# o escribe en la terminal:',
@@ -278,7 +277,6 @@ const en: Record<keyof typeof es, string> = {
 	'sponsors.lead': 'The organizations and people who make what we do possible. Thank you.',
 	'sponsors.list': 'Allies and sponsors',
 
-	'join.hello': 'HELLO',
 
 	'faq.termTitle': 'faq — topics',
 	'faq.hint': '# or type in the terminal:',

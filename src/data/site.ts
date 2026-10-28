@@ -247,14 +247,6 @@ export const join = {
 			text: 'Lo que aprendiste hace un año le sirve a quien está empezando.',
 		},
 	],
-	newcomer: {
-		title: 'Tu primera idea',
-		lead: 'Al principio nadie conoce a nadie.',
-		steps: [
-			'Es normal: llega a una actividad, saluda y quédate a ver. Todas están abiertas a cualquier estudiante de Computación.',
-			'No necesitas experiencia previa para opinar. Escríbenos por mensaje directo y te contamos cuál es la próxima actividad.',
-		],
-	},
 	cta: 'Envíanos tu idea',
 	// Second collage row: activity-type tags (no photos of people here; board photos live only in Directiva).
 	tags: [
@@ -426,14 +418,6 @@ const enCopy: LandingCopy = {
 				text: 'What you learned a year ago helps someone who is just starting.',
 			},
 		],
-		newcomer: {
-			title: 'Your first idea',
-			lead: 'At first nobody knows anybody.',
-			steps: [
-				'That is normal: come to an activity, say hi and stay to watch. They are all open to any Computer Science student.',
-				'You need no experience to have an opinion. Send us a direct message and we will tell you about the next activity.',
-			],
-		},
 		cta: 'Send us your idea',
 		tags: [
 			'#workshops',
