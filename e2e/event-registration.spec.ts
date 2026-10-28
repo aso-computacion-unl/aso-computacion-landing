@@ -552,6 +552,8 @@ test.describe('registration from the admin', () => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'charla-unl');
 			await expect(item.locator('[data-ticket-state]')).toHaveText('Inscripciones cerradas');
+			for (const hook of ['[data-seat-num]', '[data-seat-meter]', '[data-seat-taken]'])
+				await expect(item.locator(hook)).toBeHidden();
 			const link = item.locator('[data-reg-action]');
 			await expect(link).toHaveAttribute('aria-disabled', 'true');
 			await expect(link).not.toHaveAttribute('href', /.+/);

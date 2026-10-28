@@ -64,7 +64,8 @@ export interface SeatView {
 }
 
 export function seatView(seat: Seat): SeatView {
-	if (seat.capacity === null) return { state: seat.status };
+	// Closed: the seats left no longer mean anything, so the ticket shows the state alone.
+	if (seat.capacity === null || seat.status === 'closed') return { state: seat.status };
 	const total = seat.capacity;
 	const taken = Math.min(seat.registered, total);
 	return {

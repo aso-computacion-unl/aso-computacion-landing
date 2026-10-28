@@ -67,6 +67,10 @@ describe('seatView', () => {
 		expect(seatView(seat({ status: 'closed' })).state).toBe('closed');
 	});
 
+	it('has no free-seat count once registration closed: the seats left no longer mean anything', () => {
+		expect(seatView(seat({ registered: 93, seatsLeft: 27, status: 'closed' }))).toEqual({ state: 'closed' });
+	});
+
 	it('has no numbers when the event has no capacity: nothing is invented', () => {
 		expect(seatView(seat({ capacity: null, registered: 5, seatsLeft: null }))).toEqual({ state: 'open' });
 	});
