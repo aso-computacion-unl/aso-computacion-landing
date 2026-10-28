@@ -22,7 +22,7 @@ const items = latestNews.map((item) => {
 });
 ---
 
-<section id="novedades" class="bg-navy py-16 sm:py-24 lg:py-32">
+<section id="novedades" class="bg-navy py-section">
 	<div class="wrap">
 		<SectionHead eyebrow="$ git tag --sort=-creatordate" title={t('news.title')} lead={t('news.lead')}>
 			<div slot="aside" class="flex lg:justify-end">
@@ -32,7 +32,7 @@ const items = latestNews.map((item) => {
 			</div>
 		</SectionHead>
 
-		<div class="term-win news-term mt-12 lg:mt-16" data-news-visor data-tile>
+		<div class="term-win news-term mt-head" data-news-visor data-tile>
 			<p class="term-bar" aria-hidden="true">
 				<span class="term-dots">
 					<i></i>

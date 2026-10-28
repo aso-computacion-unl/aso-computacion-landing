@@ -9,7 +9,7 @@ const { faq } = getContent(locale);
 const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 ---
 
-<section id="faq" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32" data-faq>
+<section id="faq" class="deep bg-navy-deep py-section" data-faq>
 	<div class="wrap">
 		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo}>
 			<p class="lead faq-forum">
@@ -18,7 +18,7 @@ const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 		</SectionHead>
 
 		{/* Static fallback and the single source of the questions: `ui.ts` reads these entries and swaps in the prompt. */}
-		<div class="faq-list mt-12 lg:mt-16" data-faq-static>
+		<div class="faq-list mt-head" data-faq-static>
 			{faq.items.map((item) => (
 				<details class="faq-item" name="faq" data-faq-entry data-topic={item.topic}>
 					<summary>
@@ -42,7 +42,7 @@ const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 			))}
 		</div>
 
-		<div class="faq-term mt-12 lg:mt-16" data-faq-term hidden>
+		<div class="faq-term mt-head" data-faq-term hidden>
 			<form class="faq-prompt" data-faq-form>
 				<label class="faq-prompt-sign" for="faq-input">
 					aso@unl:~$<span class="sr-only"> {t('faq.prompt')}</span>

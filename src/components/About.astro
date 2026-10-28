@@ -18,7 +18,7 @@ const parts = site.about.split(pattern).filter(Boolean);
 const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.length > 0);
 ---
 
-<section id="nosotros" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
+<section id="nosotros" class="deep bg-navy-deep py-section">
 	<div class="wrap">
 		<p class="file-tab" aria-hidden="true">
 			README.md
@@ -66,7 +66,7 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 		</div>
 
 		{pillars.length > 0 && (
-			<ul class="bento mt-14 lg:mt-20">
+			<ul class="bento mt-head">
 				{pillars.map((pillar, index) => (
 					<li class:list={['tile', `tile-${index}`]} data-tile>
 						{pillar.image && (

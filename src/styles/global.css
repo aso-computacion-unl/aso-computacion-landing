@@ -59,6 +59,14 @@
 	--text-secondary: 1rem;
 	--text-label: 0.875rem;
 	--text-small: 0.75rem;
+
+	/*
+	 * Section rhythm: the only vertical spacing between the home sections and their content (py-section, mt-head).
+	 *   section   padding above and below every section (56px on phones, 94px at 1440)
+	 *   head      the gap between a section heading and what it introduces (32px on phones, 48px at 1440)
+	 */
+	--spacing-section: clamp(3.5rem, 2.25rem + 4vw, 6rem);
+	--spacing-head: clamp(2rem, 1.25rem + 2.4vw, 3rem);
 }
 
 /* Light theme: pale surfaces, navy ink, a deeper sky so it still reads as text (4.5:1 on white), white on sky. */
@@ -1695,7 +1703,7 @@
 	}
 
 	.lead {
-		margin-top: 1.5rem;
+		margin-top: 1rem;
 		max-width: 56ch;
 		font-size: var(--text-lead);
 		font-stretch: 112%;
@@ -1712,7 +1720,7 @@
 
 	.section-head {
 		display: grid;
-		gap: 2.5rem;
+		gap: var(--spacing-head);
 	}
 
 	.section-head-main {

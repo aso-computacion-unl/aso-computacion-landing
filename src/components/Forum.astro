@@ -21,11 +21,11 @@ const tabs = [{ id: 'all', name: t('forum.all'), description: t('forum.allDescri
 const categoryName = (id: string) => forum.categories.find((category) => category.id === id)?.name ?? id;
 ---
 
-<section id="foro" class="bg-navy py-16 sm:py-24 lg:py-32">
+<section id="foro" class="bg-navy py-section">
 	<div class="wrap">
 		<SectionHead eyebrow={forum.eyebrow} title={forum.title} lead={forum.lead} demo={forum.demo} />
 
-		<div class="term-win forum-box mt-12 lg:mt-16">
+		<div class="term-win forum-box mt-head">
 			<p class="term-bar" aria-hidden="true">
 				<span class="term-dots">
 					<i></i>

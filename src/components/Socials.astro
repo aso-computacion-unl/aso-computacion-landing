@@ -12,11 +12,11 @@ const display = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace
 const segments = (url: string) => display(url).split(/(?<=\/)/);
 ---
 
-<section id="redes" class="bg-navy py-16 sm:py-24 lg:py-32">
+<section id="redes" class="bg-navy py-section">
 	<div class="wrap">
 		<SectionHead eyebrow="$ git remote -v" title={t('socials.title')} lead={t('socials.lead')} />
 
-		<ul class="socials mt-12 lg:mt-16">
+		<ul class="socials mt-head">
 			{socials.map((social) => (
 				<li class:list={['social', `social-${social.remote}`]} data-social>
 					<a href={social.href} target="_blank" rel="me noopener" class="social-link">

@@ -39,7 +39,7 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 	article={{ headline: item.title, datePublished: item.date }}
 >
 	<SiteHeader />
-	<main id="contenido" class="bg-navy py-12 sm:py-20 lg:py-24">
+	<main id="contenido" class="bg-navy py-section">
 		<div class="wrap grid gap-8 lg:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)] lg:gap-16">
 			<aside class="lg:sticky lg:top-24 lg:self-start" aria-label={t('news.postAside')}>
 				<a href={newsHref} class="back">

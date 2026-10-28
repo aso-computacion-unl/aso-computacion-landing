@@ -16,7 +16,7 @@ const instagram = socials.find((social) => social.remote === 'instagram');
 const photos = collagePhotos;
 ---
 
-<section id="ideas" class="on-sky relative overflow-clip bg-sky py-16 text-on-sky sm:py-24 lg:py-32">
+<section id="ideas" class="on-sky relative overflow-clip bg-sky py-section text-on-sky">
 	<div class="wrap grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
 		<div>
 			<p class="eyebrow" aria-hidden="true">
@@ -62,7 +62,7 @@ const photos = collagePhotos;
 		</ol>
 	</div>
 
-	<div class="collage mt-14 lg:mt-20" data-collage aria-hidden="true">
+	<div class="collage mt-head" data-collage aria-hidden="true">
 		<span class="stk" style="--r:-7deg;left:5%;top:-0.25rem">
 			<span class="stk-face stk-white" data-pop>
 				{join.stickers[0]}
