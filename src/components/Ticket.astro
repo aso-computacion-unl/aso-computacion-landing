@@ -80,10 +80,10 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 						<span data-seat-num>{capacity}</span>
 						<small data-seat-label>{t(capacity === 1 ? 'ticket.seatOne' : 'ticket.seatMany')}</small>
 					</p>
-					<div class="tk-meter" role="img" data-seat-meter hidden>
+					<div class="tk-meter" role="img" data-seat-meter data-seat-slot>
 						<i />
 					</div>
-					<p class="tk-cap" data-seat-taken hidden />
+					<p class="tk-cap" data-seat-taken data-seat-slot />
 				</div>
 				<p class="tk-state" data-ticket-state hidden={!closed}>
 					{closed && t('ticket.closed')}

@@ -603,6 +603,33 @@ test.describe('registration from the admin', () => {
 			});
 		}
 
+		test('the tickets keep their height when the seats arrive, and when they never do', async ({ page }) => {
+			const heights = () =>
+				page
+					.locator('#inscripciones .tk-item')
+					.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
+			let answerSeats: (() => void) | undefined;
+			await page.route(SEATS, (route) => {
+				answerSeats = () =>
+					void route
+						.fulfill(answer([seatsOf('taller-abierto', 40, 38), seatsOf('charla-unl', 60, 10)]))
+						.catch(() => {});
+			});
+			await open(page, `${site.url}/`, 'solves', 'load');
+			await expect(ticket(page, 'taller-abierto')).toBeVisible();
+			const before = await heights();
+			answerSeats?.();
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-num]')).toHaveText('2');
+			expect(await heights()).toEqual(before);
+		});
+
+		test('gives back the room held for the meter when the admin cannot be reached', async ({ page }) => {
+			await page.route(SEATS, (route) => route.abort());
+			await open(page, `${site.url}/`);
+			await expect(page.locator('#inscripciones')).toHaveAttribute('data-seats-settled', '');
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-meter]')).toHaveCSS('display', 'none');
+		});
+
 		test('when the admin is slow the ticket keeps its capacity and the form still works, and a late answer is ignored', async ({
 			page,
 		}) => {

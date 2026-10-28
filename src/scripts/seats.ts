@@ -22,11 +22,11 @@ function paint(ticket: HTMLElement, seat: Seat, translate: Translate) {
 		if (meter) {
 			meter.setAttribute('aria-label', translate('ticket.meter', { taken: view.taken, total: view.total }));
 			meter.querySelector('i')?.style.setProperty('width', `${view.percent}%`);
-			meter.removeAttribute('hidden');
+			meter.setAttribute('data-seat-shown', '');
 		}
 		if (taken) {
 			taken.textContent = translate('ticket.taken', { count: view.taken });
-			taken.removeAttribute('hidden');
+			taken.setAttribute('data-seat-shown', '');
 		}
 	}
 	if (view.state === 'full') closeTicket(ticket, translate('ticket.full'));
@@ -35,9 +35,12 @@ function paint(ticket: HTMLElement, seat: Seat, translate: Translate) {
 }
 
 async function showSeats() {
-	const url = document.querySelector<HTMLElement>('[data-seats-url]')?.dataset.seatsUrl;
+	const section = document.querySelector<HTMLElement>('[data-seats-url]');
+	const url = section?.dataset.seatsUrl;
 	const seats = url ? await fetchSeats(url) : undefined;
-	if (!seats) return;
+	// Answered or not, the places held for the meter are either filled or given back.
+	section?.setAttribute('data-seats-settled', '');
+	if (!seats) return relayout();
 	document.querySelectorAll<HTMLElement>('[data-ticket]').forEach((ticket) => {
 		const seat = ticket.dataset.ticket ? seats.get(ticket.dataset.ticket) : undefined;
 		if (seat) paint(ticket, seat, t);

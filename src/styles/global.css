@@ -3487,8 +3487,27 @@ html.motion [data-member] {
 		gap: 0.625rem;
 	}
 
-	.tk-seat:not(:has(> :not([hidden]))) {
+	.tk-seat:not(:has(> .tk-seat-n:not([hidden]), > [data-seat-shown])) {
 		display: none;
+	}
+
+	/* The meter and the count of taken seats appear when the admin answers. Until it has answered (or failed to) their
+	   place is held, unseen, so the tickets do not grow under the reader. src/scripts/seats.ts marks the section once done. */
+	.tk-seat [data-seat-slot] {
+		display: none;
+	}
+
+	.tk-seat [data-seat-slot][data-seat-shown] {
+		display: block;
+	}
+
+	html.js .tk-section[data-seats-url]:not([data-seats-settled]) .tk-seat [data-seat-slot]:not([data-seat-shown]) {
+		display: block;
+		visibility: hidden;
+	}
+
+	.tk-seat .tk-cap[data-seat-slot] {
+		min-height: 1lh;
 	}
 
 	.tk-seat-n {
@@ -3669,8 +3688,8 @@ html.motion [data-member] {
 	.tk-close {
 		display: inline-flex;
 		align-items: center;
-		height: 2.5rem;
-		padding: 0 0.875rem;
+		height: 2.75rem;
+		padding: 0 1rem;
 		border: 1px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
 		border-radius: 2px;
 		background: transparent;
