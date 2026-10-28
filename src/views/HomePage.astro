@@ -24,15 +24,16 @@ const { faq, latestNews, site, socials, sponsors, team, timeline } = getContent(
 <Layout title={`${site.name} · ${site.tagline}`} description={site.description} events={timeline}>
 	<SiteHeader />
 	<main id="contenido">
+		{/* Task first: sign up, read the news, see the activities and ask in the forum come before who we are. */}
 		<Hero />
 		<Ribbon />
-		<ActivityGraph />
 		<Registrations />
 		{latestNews.length > 0 && <News />}
+		<ActivityGraph />
+		<Forum />
 		<About />
 		{team.length > 0 && <Board />}
 		<Join />
-		<Forum />
 		{(faq.items.length > 0 || faq.commands.length > 0) && <Faq />}
 		{socials.length > 0 && <Socials />}
 		<Sponsors sponsors={sponsors} />

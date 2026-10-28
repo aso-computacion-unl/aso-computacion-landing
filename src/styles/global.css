@@ -981,6 +981,35 @@
 		--bg: var(--color-navy-deep);
 	}
 
+	/* The activity graph sits on either surface: its node rims and the rail end take the section's colour. */
+	.deep .graph {
+		--bg: var(--color-navy-deep);
+	}
+
+	/* Hero shortcuts: the three things a visitor most often came to do, one tap from the first screen. */
+	.quick ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 1.75rem;
+	}
+
+	.quick-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-secondary);
+		font-weight: 600;
+		color: var(--color-sky);
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
+	}
+
+	.quick-link:hover {
+		color: var(--color-ink);
+	}
+
 	/* Flat file-tab panels (README.md, CONTRIBUTING.md, git remote -v). */
 	.file-tab {
 		display: inline-block;

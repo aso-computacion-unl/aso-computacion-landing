@@ -8,8 +8,18 @@ import HeroMark from './HeroMark.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { site, socials, timeline } = getContent(locale);
+const { latestNews, navLinks, site, socials, timeline } = getContent(locale);
 const instagram = socials.find((social) => social.remote === 'instagram');
+// Shortcuts to what a visitor can do now. Each one is left out with its section: the tickets (nav link) and the news
+// only render when there is something to show; the forum always renders.
+const quickLinks = [
+	navLinks.some((link) => link.href === '#inscripciones') && {
+		href: '#inscripciones',
+		label: t('hero.quick.registrations'),
+	},
+	{ href: '#foro', label: t('hero.quick.forum') },
+	latestNews.length > 0 && { href: '#novedades', label: t('hero.quick.news') },
+].filter((link) => link !== false);
 // Preview of the timeline, upcoming first: the two nearest upcoming entries (in log order) on the dashed
 // planned lane, then HEAD on the solid lane. The full list lives in the activity graph below.
 const head = timeline.find((entry) => entry.kind === 'head');
@@ -59,6 +69,18 @@ const planned = timeline
 					</Button>
 				)}
 			</div>
+			<nav class="quick mt-8" aria-label={t('hero.quick')} data-hero-fade>
+				<ul>
+					{quickLinks.map((link) => (
+						<li>
+							<a href={link.href} class="quick-link">
+								{link.label}
+								<span aria-hidden="true"> →</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			</nav>
 		</div>
 	</div>
 

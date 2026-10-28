@@ -19,6 +19,10 @@ const es = {
 
 	'hero.activities': 'Ver actividades',
 	'hero.instagram': 'Síguenos en Instagram',
+	'hero.quick': 'Atajos',
+	'hero.quick.registrations': 'Inscripciones',
+	'hero.quick.forum': 'Foro',
+	'hero.quick.news': 'Novedades',
 
 	'activities.title': 'Actividades',
 	'activities.aside': 'Próxima actividad y filtros',
@@ -222,6 +226,10 @@ const en: Record<keyof typeof es, string> = {
 
 	'hero.activities': 'See activities',
 	'hero.instagram': 'Follow us on Instagram',
+	'hero.quick': 'Shortcuts',
+	'hero.quick.registrations': 'Sign-ups',
+	'hero.quick.forum': 'Forum',
+	'hero.quick.news': 'News',
 
 	'activities.title': 'Activities',
 	'activities.aside': 'Next activity and filters',
