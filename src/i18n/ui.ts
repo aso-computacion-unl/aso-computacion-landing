@@ -141,7 +141,7 @@ const es = {
 	'faq.man.output': 'Salida',
 	'faq.man.topics': 'Temas',
 	'faq.man.error': 'Error',
-	'faq.man.clear': 'Limpiar la respuesta',
+	'faq.man.clear': 'clear: limpiar la respuesta',
 
 	'forum.threads': 'Hilos de ejemplo del foro',
 	'forum.tabs': 'Filtrar los hilos por categoría',
@@ -308,7 +308,7 @@ const en: Record<keyof typeof es, string> = {
 	'faq.man.output': 'Output',
 	'faq.man.topics': 'Topics',
 	'faq.man.error': 'Error',
-	'faq.man.clear': 'Clear the answer',
+	'faq.man.clear': 'clear: clear the answer',
 
 	'forum.threads': 'Example forum threads',
 	'forum.tabs': 'Filter the threads by category',
