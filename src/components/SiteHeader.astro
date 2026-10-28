@@ -30,9 +30,9 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 		>
 			<IsotypeWhite class="theme-dark-only h-6 w-auto sm:h-8" aria-hidden="true" />
 			<IsotypeColor class="theme-light-only h-6 w-auto sm:h-8" aria-hidden="true" />
-			<span class="hidden font-brand text-base text-ink md:inline">{site.name}</span>
+			<span class="hidden font-brand text-secondary text-ink md:inline">{site.name}</span>
 		</a>
-		<ul class="nav-scroll flex min-w-0 items-center gap-2 overflow-x-auto font-mono text-xs [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-[0.8125rem] sm:gap-0">
+		<ul class="nav-scroll flex min-w-0 items-center gap-2 overflow-x-auto font-mono text-small [scrollbar-width:none] min-[400px]:gap-3.5 min-[400px]:text-label sm:gap-0">
 			{navLinks.map((link) => (
 				<li class="nav-item flex shrink-0 items-center">
 					<a
@@ -46,7 +46,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 				</li>
 			))}
 		</ul>
-		<div class="flex shrink-0 items-center font-mono text-xs min-[400px]:text-[0.8125rem]">
+		<div class="flex shrink-0 items-center font-mono text-small min-[400px]:text-label">
 			<a
 				href={alternatePath(Astro.url.pathname, other)}
 				hreflang={other}

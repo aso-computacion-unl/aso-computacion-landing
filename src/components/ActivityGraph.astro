@@ -22,8 +22,8 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
 			aria-label={t('activities.aside')}
 		>
-			<p class="max-w-[34ch] text-lg text-mist">{t('activities.intro')}</p>
-			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">
+			<p class="max-w-[34ch] text-body text-mist">{t('activities.intro')}</p>
+			<p class="mt-2 font-mono text-label text-sky" aria-hidden="true">
 				$ git log --graph main
 			</p>
 
@@ -40,27 +40,27 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 						)}
 					</p>
 					<div data-static>
-						<p class="mt-5 font-mono text-[0.8125rem] text-mist">{t('activities.date')}</p>
-						<p class="font-display text-4xl leading-none text-ink sm:text-5xl">{nextEvent.stamp}</p>
+						<p class="mt-5 font-mono text-label text-mist">{t('activities.date')}</p>
+						<p class="font-display text-title leading-none text-ink">{nextEvent.stamp}</p>
 					</div>
 					<div data-live hidden>
-						<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>
+						<p class="mt-4 font-mono text-label text-mist sm:mt-5" data-count-label>
 							{t('count.many')}
 						</p>
 						<p class="flex items-baseline gap-3 leading-none">
 							<span
-								class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-ink sm:text-[7rem]"
+								class="inline-flex overflow-hidden font-display text-display leading-[0.95] text-ink"
 								data-count-num
 							>
 								00
 							</span>
-							<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>
+							<span class="font-display text-lead text-sky" data-count-unit>
 								{t('count.dayMany')}
 							</span>
 						</p>
 					</div>
-					<p class="mt-4 text-lg font-semibold leading-snug text-ink">{nextEvent.title}</p>
-					<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
+					<p class="mt-4 text-body font-semibold leading-snug text-ink">{nextEvent.title}</p>
+					<p class="mt-1 font-mono text-label leading-5 text-mist">
 						{nextEvent.stamp}
 						{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
 						{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
@@ -69,7 +69,7 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 			)}
 
 			<div class="js-only mt-8" data-filters>
-				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">
+				<p class="font-mono text-label text-sky" aria-hidden="true">
 					git log --grep=
 				</p>
 				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('filters.label')}>
@@ -83,11 +83,11 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 						</button>
 					))}
 				</div>
-				<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
+				<p class="mt-3 min-h-5 font-mono text-label text-mist" data-filter-status aria-live="polite"></p>
 			</div>
 
 			<ul
-				class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block"
+				class="legend mt-8 hidden space-y-3 font-mono text-label leading-5 text-mist lg:block"
 				aria-label={t('legend.label')}
 			>
 				<li class="flex items-center gap-3">

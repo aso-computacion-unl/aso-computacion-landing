@@ -15,7 +15,7 @@ const html = renderMarkdown(Astro.props.body);
 <style is:global>
 	.news-prose {
 		max-width: 68ch;
-		font-size: 1.125rem;
+		font-size: var(--text-body);
 		line-height: 1.7;
 		color: var(--color-mist);
 	}

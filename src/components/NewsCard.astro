@@ -135,14 +135,14 @@ const feature = variant === 'feature';
 
 	.news-hash {
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
+		font-size: var(--text-label);
 		color: var(--color-mist);
 	}
 
 	.news-title {
 		margin-top: 0.875rem;
 		font-family: var(--font-display);
-		font-size: 1.25rem;
+		font-size: var(--text-lead);
 		line-height: 1.2;
 		color: var(--color-ink);
 		overflow-wrap: anywhere;
@@ -158,7 +158,7 @@ const feature = variant === 'feature';
 		margin-top: auto;
 		padding-top: 1rem;
 		font-family: var(--font-mono);
-		font-size: 0.8125rem;
+		font-size: var(--text-label);
 		line-height: 1.25rem;
 		color: var(--color-mist);
 		overflow-wrap: anywhere;
@@ -183,7 +183,7 @@ const feature = variant === 'feature';
 
 	@media (min-width: 40rem) {
 		.news-card-feature .news-title {
-			font-size: 1.5rem;
+			font-size: var(--text-title);
 		}
 
 		.news-text {
@@ -197,10 +197,6 @@ const feature = variant === 'feature';
 			aspect-ratio: var(--cover-ratio, 3 / 2);
 		}
 
-		.news-card-feature .news-title {
-			font-size: 1.75rem;
-		}
-
 		.news-card-wide {
 			flex-direction: row;
 		}
@@ -211,11 +207,11 @@ const feature = variant === 'feature';
 		}
 
 		.news-card-wide .news-title {
-			font-size: 2.25rem;
+			font-size: var(--text-title);
 		}
 
 		.news-card-wide .news-summary {
-			font-size: 1.125rem;
+			font-size: var(--text-body);
 		}
 	}
 
