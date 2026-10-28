@@ -136,6 +136,40 @@ describe('join copy marked demo', () => {
 	});
 });
 
+describe('forum copy marked demo', () => {
+	it('adds a note but does not fail by default', () => {
+		const result = evaluateContentGate(api({ forumDemo: true }));
+		expect(result.status).toBe('warn');
+		if (result.status !== 'warn') return;
+		expect(result.message).toContain('forum');
+	});
+
+	it('fails a production build with strictForum on, and only then', () => {
+		const result = evaluateContentGate(api({ forumDemo: true, strictForum: true }));
+		expect(result.status).toBe('fail');
+		if (result.status !== 'fail') return;
+		expect(result.message).toContain('forum');
+		expect(evaluateContentGate(api({ env: {}, forumDemo: true, strictForum: true })).status).toBe('warn');
+	});
+
+	it('is ignored when the forum is not demo', () => {
+		expect(evaluateContentGate(api({ forumDemo: false, strictForum: true }))).toEqual({ status: 'ok' });
+	});
+
+	it('lists join and forum together without one strict switch failing for the other', () => {
+		const both = evaluateContentGate(api({ joinDemo: true, forumDemo: true }));
+		expect(both.status).toBe('warn');
+		if (both.status !== 'warn') return;
+		expect(both.message).toContain('join');
+		expect(both.message).toContain('forum');
+		const onlyForumStrict = evaluateContentGate(api({ joinDemo: true, forumDemo: true, strictForum: true }));
+		expect(onlyForumStrict.status).toBe('fail');
+		if (onlyForumStrict.status !== 'fail') return;
+		expect(onlyForumStrict.message).toContain('forum');
+		expect(onlyForumStrict.message).not.toContain('join section');
+	});
+});
+
 describe('detectDemoContent', () => {
 	const clean = { timeline: [{}], pillars: [{}], faq: { demo: false }, team: [{}] };
 

@@ -8,6 +8,7 @@ import Impact from '../components/Impact.astro';
 import Join from '../components/Join.astro';
 import News from '../components/News.astro';
 import Faq from '../components/Faq.astro';
+import Forum from '../components/Forum.astro';
 import Socials from '../components/Socials.astro';
 import Sponsors from '../components/Sponsors.astro';
 import Testimonials from '../components/Testimonials.astro';
@@ -35,6 +36,7 @@ const { faq, impact, latestNews, site, socials, sponsors, team, testimonials, ti
 		<Impact stats={impact} />
 		<Testimonials testimonials={testimonials} />
 		<Join />
+		<Forum />
 		{(faq.items.length > 0 || faq.commands.length > 0) && <Faq />}
 		{socials.length > 0 && <Socials />}
 		<Sponsors sponsors={sponsors} />

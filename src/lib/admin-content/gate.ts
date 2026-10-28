@@ -21,6 +21,9 @@ export interface GateInput {
 	joinDemo?: boolean;
 	// Make joinDemo fail production builds too. Off until the board approves the join copy.
 	strictJoin?: boolean;
+	// The forum section's example threads (src/data/site.ts `forum`) are still marked `demo`; same rules as the join copy.
+	forumDemo?: boolean;
+	strictForum?: boolean;
 }
 
 export type GateResult = { status: 'ok' } | { status: 'warn'; message: string } | { status: 'fail'; message: string };
@@ -53,8 +56,11 @@ const describeAdmin = (url: string | undefined) => {
 const JOIN_NOTE =
 	'the join section copy (src/data/site.ts `join`) is still marked demo pending board approval and renders a "demo" tag';
 
+const FORUM_NOTE =
+	'the forum section threads (src/data/site.ts `forum`) are still invented examples marked demo and render a "demo" tag';
+
 export function evaluateContentGate(input: GateInput): GateResult {
-	const { env, source, demo, joinDemo = false, strictJoin = false } = input;
+	const { env, source, demo, joinDemo = false, strictJoin = false, forumDemo = false, strictForum = false } = input;
 	const production = isProduction(env);
 	const reason = redactUrls(input.reason ?? 'unknown reason');
 	const admin = describeAdmin(input.url);
@@ -63,13 +69,16 @@ export function evaluateContentGate(input: GateInput): GateResult {
 	if (source === 'fallback')
 		problems.push(`content fell back to src/data/fallback.json (${[reason, admin].filter(Boolean).join('; ')})`);
 	if (demo.length > 0) problems.push(`demo content (${demo.join(', ')}) would be rendered`);
-	const joinProblem = joinDemo ? JOIN_NOTE : undefined;
-
-	if (production && strictJoin && joinProblem) problems.push(joinProblem);
+	// The landing's own demo copy: noted on every build, a problem for production once its `strict` switch is on.
+	const copyNotes = [
+		...(joinDemo ? [{ note: JOIN_NOTE, strict: strictJoin }] : []),
+		...(forumDemo ? [{ note: FORUM_NOTE, strict: strictForum }] : []),
+	];
+	if (production) problems.push(...copyNotes.filter(({ strict }) => strict).map(({ note }) => note));
 
 	if (problems.length === 0) {
-		if (!joinProblem) return { status: 'ok' };
-		return { status: 'warn', message: `[content-gate] Note: ${joinProblem}.` };
+		if (copyNotes.length === 0) return { status: 'ok' };
+		return { status: 'warn', message: `[content-gate] Note: ${copyNotes.map(({ note }) => note).join('; ')}.` };
 	}
 
 	if (production && !emergencyOverride(env)) {
@@ -86,7 +95,7 @@ export function evaluateContentGate(input: GateInput): GateResult {
 		'[content-gate] WARNING: this build does not use real admin content.',
 		...problems.map((p) => `  - ${p}`),
 	];
-	if (joinProblem && !problems.includes(joinProblem)) lines.push(`  - ${joinProblem}`);
+	for (const { note } of copyNotes) if (!problems.includes(note)) lines.push(`  - ${note}`);
 	if (production) lines.push('  - ALLOW_CONTENT_FALLBACK=1 is set: a production build is shipping this on purpose.');
 	else lines.push('  - Not a production build, so it continues. Production would fail here.');
 	return { status: 'warn', message: lines.join('\n') };

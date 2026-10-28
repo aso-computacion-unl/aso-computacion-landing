@@ -522,6 +522,11 @@ async function init(plan: MotionPlan) {
 				gsap.to(batch, { opacity: 1, y: 0, duration: 0.85, ease: 'expo.out', stagger: 0.12 }),
 			);
 
+			/* ---------- Forum: the three steps rise in turn ---------- */
+			reveal('[data-step]', 'top 92%', (batch) =>
+				gsap.to(batch, { opacity: 1, y: 0, duration: 0.85, ease: 'expo.out', stagger: 0.12 }),
+			);
+
 			return () => cleanups.forEach((off) => off());
 		},
 	);

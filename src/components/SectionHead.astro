@@ -3,7 +3,8 @@ import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 
 // Section header with a fixed hierarchy: eyebrow (mono label) -> heading -> lead, plus an optional aside on the right.
-// Nothing floats on its own: the lead sits directly under the heading and the aside belongs to the same grid.
+// Nothing floats on its own: the lead sits directly under the heading and the aside belongs to the same grid. The default
+// slot adds one more line of lead under it (the FAQ points to the forum there).
 interface Props {
 	eyebrow: string;
 	title: string;
@@ -33,6 +34,7 @@ const hasAside = Astro.slots.has('aside');
 		</p>
 		<Heading class:list={['h2-xl', { 'text-on-sky': tone === 'on-sky' }]}>{title}</Heading>
 		{lead && <p class="lead">{lead}</p>}
+		{Astro.slots.has('default') && <slot />}
 	</div>
 	{hasAside && (
 		<div class="section-head-aside">

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	completeFaqCommand,
 	helpLines,
+	manualFor,
 	runFaqCommand,
 	tabFaqCommand,
 	type FaqCommandEntry,
@@ -198,5 +199,93 @@ describe('FAQ terminal: free commands', () => {
 	it('behaves as before when there are no free commands', () => {
 		expect(runFaqCommand('whoami', items)).toEqual(runFaqCommand('whoami', items, 'es', []));
 		expect(helpLines(items)).toHaveLength(items.length + 1);
+	});
+});
+
+describe('manualFor: the answer as a manual page', () => {
+	const commands: FaqCommandEntry[] = [
+		{ name: 'whoami', description: 'Quiénes somos', output: 'Somos la ASO.\nTe esperamos.' },
+	];
+	const page = (input: string, locale: 'es' | 'en' = 'es') => {
+		const result = manualFor(input, items, locale, commands);
+		if (result.kind !== 'page') throw new Error(`expected a page, got ${result.kind}`);
+		return result.page;
+	};
+
+	it('opens a topic as name, question and answer, titled like a man page', () => {
+		expect(page('git help costo')).toEqual({
+			title: 'GIT-HELP-COSTO(1)',
+			current: 'git help costo',
+			sections: [
+				{ kind: 'name', text: 'git help costo — tema de la ASO' },
+				{ kind: 'question', text: '¿Tiene algún costo?' },
+				{ kind: 'answer', text: 'Es gratis.' },
+			],
+		});
+	});
+
+	it('accepts the same forms as the terminal: bare topic, any case, extra spaces', () => {
+		expect(page('  COSTO ')).toEqual(page('git help costo'));
+		expect(page('git   help   Costo')).toEqual(page('git help costo'));
+	});
+
+	it('words the name line in the page language', () => {
+		expect(page('costo', 'en').sections[0]).toEqual({ kind: 'name', text: 'git help costo — ASO topic' });
+	});
+
+	it('prints a free command as its name and its output, and marks it as the open one', () => {
+		expect(page('whoami')).toEqual({
+			title: 'WHOAMI(1)',
+			current: 'whoami',
+			sections: [
+				{ kind: 'name', text: 'whoami — Quiénes somos' },
+				{ kind: 'output', text: 'Somos la ASO.\nTe esperamos.' },
+			],
+		});
+	});
+
+	it('lists every topic, then every free command, on help and its aliases', () => {
+		const help = page('help');
+		expect(help.current).toBe('');
+		expect(help.sections).toEqual([
+			{
+				kind: 'topics',
+				rows: [
+					{ command: 'git help participar', note: '¿Quién puede participar?' },
+					{ command: 'git help costo', note: '¿Tiene algún costo?' },
+					{ command: 'git help contacto', note: '¿Cómo contacto a la directiva?' },
+					{ command: 'whoami', note: 'Quiénes somos' },
+				],
+			},
+		]);
+		expect(page('ayuda')).toEqual(help);
+		expect(page('ls')).toEqual(help);
+	});
+
+	it('explains an unknown command with the terminal message and a suggestion', () => {
+		expect(page('cotso').sections).toEqual([
+			{ kind: 'error', text: "comando no encontrado: 'cotso'. ¿Quisiste decir 'git help costo'?" },
+		]);
+		expect(page('rm -rf /').title).toBe('ERROR');
+	});
+
+	it('clears the page, and does nothing for an empty line', () => {
+		expect(manualFor('clear', items)).toEqual({ kind: 'clear' });
+		expect(manualFor('   ', items)).toEqual({ kind: 'none' });
+	});
+
+	it('shows the full command of a long topic, whatever its length', () => {
+		const long = [{ topic: 'como-me-inscribo-a-un-evento', q: '¿Cómo me inscribo?', a: 'Con el botón.' }];
+		const result = manualFor('help', long);
+		expect(result.kind === 'page' && result.page.sections[0]).toEqual({
+			kind: 'topics',
+			rows: [{ command: 'git help como-me-inscribo-a-un-evento', note: '¿Cómo me inscribo?' }],
+		});
+	});
+
+	it('uses the admin alias as the topic when there is one', () => {
+		const aliased = [{ topic: 'eventos', q: '¿Quién puede participar en los eventos?', a: 'Cualquier estudiante.' }];
+		const result = manualFor('git help eventos', aliased);
+		expect(result.kind === 'page' && result.page.current).toBe('git help eventos');
 	});
 });

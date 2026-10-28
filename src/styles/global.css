@@ -766,8 +766,8 @@
 			order: 0;
 			margin-top: 0;
 			font-family: var(--font-display);
-		font-stretch: 125%;
-		font-weight: 800;
+			font-stretch: 125%;
+			font-weight: 800;
 			font-size: max(1.375rem, calc((60cqw - 4rem) / 11.5));
 			line-height: 1.05;
 			color: var(--color-ink);
@@ -1533,7 +1533,6 @@
 		color: var(--color-ink);
 	}
 
-
 	/* Header hierarchy: eyebrow (mono) -> heading -> lead, with an optional aside on the same grid. */
 	.eyebrow {
 		display: flex;
@@ -1678,7 +1677,6 @@
 		line-height: 1.45;
 		color: var(--color-on-sky);
 	}
-
 
 	.tile-iso {
 		position: absolute;
@@ -1828,222 +1826,51 @@
 		}
 	}
 
-	/* FAQ terminal: guide of topics + a small shell. Enhances the <details> list above, which stays as the no-JS view. */
+	/* FAQ prompt: a big prompt, the answer as a manual page, and a card per topic. Enhances the <details> list above, which
+	   stays as the no-JS view. */
 	.faq-list[hidden],
-	.faq-term[hidden] {
+	.faq-term[hidden],
+	.faq-man[hidden] {
 		display: none;
 	}
 
-	.faq-term {
-		display: grid;
-		gap: 1rem;
+	/* The darker well the prompt, the cards of the forum and the free commands sit in (follows the theme's surfaces). */
+	.faq-prompt,
+	.forum-card {
+		--well: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
 	}
 
-	@media (min-width: 64rem) {
-		.faq-term {
-			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-			align-items: stretch;
-			gap: 1.25rem;
-		}
+	.faq-forum {
+		margin-top: 0.75rem;
 	}
 
-	.term-window {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-		overflow: hidden;
-		border: 1px solid color-mix(in oklab, var(--color-sky) 28%, transparent);
-		border-radius: 4px;
-		background: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
-		font-family: var(--font-mono);
-	}
-
-	.term-titlebar {
-		display: flex;
-		align-items: center;
-		gap: 0.875rem;
-		padding: 0.625rem 1rem;
-		border-bottom: 1px solid color-mix(in oklab, var(--color-sky) 18%, transparent);
-		background: var(--color-navy-lift);
-	}
-
-	.term-dots {
-		display: flex;
-		gap: 0.375rem;
-	}
-
-	.term-dots span {
-		width: 0.625rem;
-		height: 0.625rem;
-		background: var(--color-sky);
-	}
-
-	.term-dots span:first-child {
-		background: var(--color-signal);
-	}
-
-	.term-dots span:nth-child(2) {
-		background: var(--color-mist);
-	}
-
-	.term-title {
-		font-size: 0.8125rem;
-		color: var(--color-mist);
-	}
-
-	/* DOM order (guide, then shell) is also the visual order at every width, so focus order matches what is seen. */
-	.faq-shell-window {
-		height: min(26rem, 62dvh);
-		/* Clears the sticky header when a tap scrolls the shell into view. */
-		scroll-margin-top: 5rem;
-	}
-
-	@media (min-width: 64rem) {
-		/* Size containment: the guide alone sets the row height and the shell scrolls inside it instead of growing. */
-		.faq-shell-window {
-			height: auto;
-			min-height: 30rem;
-			contain: size;
-		}
-	}
-
-	.faq-guide {
-		display: grid;
-		padding: 0.5rem;
-	}
-
-	.faq-guide-row {
-		display: grid;
-		gap: 0.25rem;
-		width: 100%;
-		padding: 0.75rem;
-		border-radius: 4px;
-		text-align: left;
-		cursor: pointer;
-		transition: background-color 160ms ease;
-	}
-
-	.faq-guide-row:hover,
-	.faq-guide-row[aria-current] {
-		background: var(--color-navy-lift);
-	}
-
-	.faq-guide-cmd {
-		font-size: 0.8125rem;
-		color: var(--color-sky);
-	}
-
-	.faq-guide-q {
-		font-family: var(--font-sans);
-		font-size: 1.0625rem;
-		font-stretch: 118%;
-		font-weight: 700;
-		line-height: 1.3;
+	.faq-forum a {
 		color: var(--color-ink);
-	}
-
-	.faq-guide-hint {
-		margin-top: auto;
-		padding: 0.75rem 1.25rem 1.125rem;
-		font-size: 0.8125rem;
-		line-height: 1.6;
-		color: color-mix(in oklab, var(--color-mist) 88%, transparent);
-	}
-
-	.faq-guide-hint code {
-		color: var(--color-mist);
-	}
-
-	.faq-out {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		padding: 1rem 1.25rem 0.5rem;
-		font-size: 0.9375rem;
-		line-height: 1.6;
-		color: var(--color-mist);
-		scrollbar-width: thin;
-	}
-
-	.term-line {
-		overflow-wrap: anywhere;
-		white-space: pre-wrap;
-	}
-
-	.term-line + .term-line {
-		margin-top: 0.125rem;
-	}
-
-	.term-line.is-in {
-		margin-top: 0.875rem;
-		color: var(--color-ink);
-	}
-
-	.term-line.is-in:first-child {
-		margin-top: 0;
-	}
-
-	.term-sign,
-	.faq-prompt-sign {
-		color: var(--color-sky);
-	}
-
-	.term-line.is-topic {
-		display: flex;
-		flex-wrap: wrap;
-		column-gap: 1rem;
-		padding-left: 1rem;
-	}
-
-	.term-run {
-		color: var(--color-sky);
 		text-decoration: underline;
-		text-decoration-color: color-mix(in oklab, var(--color-sky) 40%, transparent);
-		text-underline-offset: 3px;
-		cursor: pointer;
-	}
-
-	.term-run:hover {
-		text-decoration-color: var(--color-sky);
-	}
-
-	.term-note {
-		color: color-mix(in oklab, var(--color-mist) 88%, transparent);
-	}
-
-	.term-line.is-question {
-		margin-top: 0.375rem;
-		font-weight: 700;
-		color: var(--color-ink);
-	}
-
-	.term-line.is-question::before {
-		content: '# ';
-		color: var(--color-sky);
-	}
-
-	.term-line.is-answer {
-		padding-left: 1rem;
-		border-left: 2px solid var(--color-sky);
-	}
-
-	/* Signal fails contrast as text on navy, so errors use a light tint of it. */
-	.term-line.is-error {
-		color: color-mix(in oklab, var(--color-signal) 40%, var(--color-ink));
+		text-decoration-color: var(--color-signal);
+		text-decoration-thickness: 3px;
+		text-underline-offset: 5px;
 	}
 
 	.faq-prompt {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem 1.25rem 1rem;
-		border-top: 1px solid color-mix(in oklab, var(--color-sky) 14%, transparent);
-		font-size: 0.9375rem;
+		gap: 0.75rem 1rem;
+		padding: 0.875rem 0.875rem 0.875rem 1.75rem;
+		border: 2px solid color-mix(in oklab, var(--color-sky) 50%, transparent);
+		border-radius: 4px;
+		background: var(--well);
+		font-family: var(--font-mono);
+	}
+
+	.faq-prompt:focus-within {
+		border-color: var(--color-ink);
 	}
 
 	.faq-prompt-sign {
 		flex: none;
+		font-size: 1.375rem;
+		color: var(--color-sky);
 	}
 
 	.faq-input {
@@ -2052,34 +1879,742 @@
 		background: transparent;
 		color: var(--color-ink);
 		font: inherit;
-		/* 16px keeps iOS from zooming into the field. */
-		font-size: 1rem;
+		font-size: 1.5rem;
+		font-weight: 500;
+		line-height: 1.4;
+		caret-color: var(--color-sky);
 	}
 
 	.faq-input::placeholder {
-		color: color-mix(in oklab, var(--color-mist) 55%, transparent);
+		color: color-mix(in oklab, var(--color-mist) 75%, transparent);
+		opacity: 1;
 	}
 
 	.faq-input:focus-visible {
 		outline: none;
 	}
 
-	.faq-prompt:focus-within {
-		box-shadow: inset 0 2px 0 var(--color-sky);
+	.faq-run {
+		--lift: 4px;
+		flex: none;
+	}
+
+	.faq-run .btn-face {
+		height: 3rem;
+		padding-inline: 1.25rem;
+		font-size: 1rem;
+		cursor: pointer;
+	}
+
+	.faq-hint {
+		margin: 0.75rem 0 1.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		line-height: 1.6;
+		color: var(--color-mist);
+	}
+
+	.faq-hint code {
+		color: var(--color-ink);
+	}
+
+	/* The manual page: title bar, then name / question / answer as a definition list. */
+	.faq-man {
+		margin-bottom: 2rem;
+		padding: 1.75rem 2.5rem 2.25rem;
+		border: 1px solid color-mix(in oklab, var(--color-sky) 32%, transparent);
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+		/* Clears the sticky header when a tap scrolls the page into view. */
+		scroll-margin-top: 5rem;
+	}
+
+	.faq-man-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-bottom: 0.875rem;
+		border-bottom: 1px dashed color-mix(in oklab, var(--color-ink) 30%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.84375rem;
+		color: var(--color-mist);
+	}
+
+	.faq-man-clear {
+		padding: 0.25rem 0.625rem;
+		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 50%, transparent);
+		color: var(--color-ink);
+		font-family: var(--font-mono);
+		cursor: pointer;
+	}
+
+	.faq-man-clear:hover,
+	.faq-man-topic:hover,
+	.faq-card:hover {
+		background: color-mix(in srgb, var(--color-sky) 18%, var(--color-navy-lift));
+	}
+
+	.faq-man-sections {
+		display: grid;
+		grid-template-columns: 9.375rem minmax(0, 1fr);
+		gap: 1.375rem 1.5rem;
+		margin-top: 1.375rem;
+	}
+
+	.faq-man-sections dt {
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.9;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-sky);
+	}
+
+	.faq-man-sections dd {
+		min-width: 0;
+		font-size: 1.125rem;
+		color: var(--color-mist);
+	}
+
+	.faq-man-name {
+		font-family: var(--font-mono);
+		font-size: 1.0625rem;
+		font-weight: 500;
+		line-height: 1.6;
+		color: var(--color-ink);
+		overflow-wrap: anywhere;
+	}
+
+	.faq-man-question {
+		font-size: 1.3125rem;
+		font-stretch: 118%;
+		font-weight: 750;
+		line-height: 1.3;
+		color: var(--color-ink);
+	}
+
+	.faq-man-answer {
+		max-width: 46ch;
+		font-size: clamp(1.25rem, 1vw + 0.95rem, 1.875rem);
+		font-stretch: 112%;
+		font-weight: 560;
+		line-height: 1.35;
+		letter-spacing: -0.012em;
+		color: var(--color-ink);
+		white-space: pre-line;
+	}
+
+	/* Signal as a bar over the answer, never as text. */
+	.faq-man-answer::before {
+		content: '';
+		display: block;
+		width: 3.5rem;
+		height: 4px;
+		margin-bottom: 1rem;
+		background: var(--color-signal);
+	}
+
+	.faq-man-output {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 1.25rem;
+		font-weight: 500;
+		line-height: 1.5;
+		color: var(--color-ink);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	/* Signal fails contrast as text on navy, so errors use a light tint of it. */
+	.faq-man-error {
+		font-family: var(--font-mono);
+		font-size: 1.0625rem;
+		line-height: 1.5;
+		color: color-mix(in oklab, var(--color-signal) 40%, var(--color-ink));
+		overflow-wrap: anywhere;
+	}
+
+	.faq-man-topics {
+		display: grid;
+		gap: 0.125rem;
+	}
+
+	.faq-man-topic {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 1rem;
+		margin-left: -0.625rem;
+		padding: 0.375rem 0.625rem;
+		border-radius: 2px;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		line-height: 1.5;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.faq-man-cmd {
+		color: var(--color-sky);
+		overflow-wrap: anywhere;
+	}
+
+	.faq-man-note {
+		color: var(--color-mist);
+	}
+
+	.faq-cards {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.625rem;
+	}
+
+	@media (min-width: 64rem) {
+		.faq-cards {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 1rem;
+		}
+	}
+
+	.faq-cards > li {
+		display: grid;
+		min-width: 0;
+	}
+
+	.faq-card {
+		position: relative;
+		display: grid;
+		align-content: start;
+		gap: 0.5rem;
+		width: 100%;
+		height: 100%;
+		min-height: 5.5rem;
+		padding: 0.875rem 0.875rem 1rem;
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+		text-align: left;
+		cursor: pointer;
+	}
+
+	@media (min-width: 48rem) {
+		.faq-card {
+			min-height: 9.375rem;
+			padding: 1.25rem 1.25rem 1.375rem;
+		}
+	}
+
+	/* Commands are shown whole: a long topic wraps instead of being cut. */
+	.faq-card-cmd {
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		line-height: 1.3;
+		color: var(--color-sky);
+		overflow-wrap: anywhere;
+	}
+
+	.faq-card-q {
+		font-size: 1.0625rem;
+		font-stretch: 118%;
+		font-weight: 750;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		color: var(--color-ink);
+		overflow-wrap: anywhere;
+	}
+
+	@media (min-width: 48rem) {
+		.faq-card-q {
+			font-size: 1.25rem;
+		}
+	}
+
+	.faq-card.is-free {
+		min-height: 0;
+		background: transparent;
+		box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--color-ink) 35%, transparent);
+	}
+
+	.faq-card.is-free .faq-card-q {
+		font-size: 1rem;
+		font-weight: 650;
+	}
+
+	@media (min-width: 48rem) {
+		.faq-card.is-free .faq-card-q {
+			font-size: 1.125rem;
+		}
+	}
+
+	.faq-card-tag {
+		font-family: var(--font-mono);
+		font-size: 0.78125rem;
+		line-height: 1.3;
+		color: var(--color-mist);
+	}
+
+	/* The open topic: the action surface, with a signal bar on top. */
+	.faq-card[aria-current] {
+		background: var(--color-action);
+	}
+
+	.faq-card[aria-current]::before {
+		content: '';
+		position: absolute;
+		inset: 0 0 auto;
+		height: 5px;
+		background: var(--color-signal);
+	}
+
+	.faq-card[aria-current] .faq-card-cmd {
+		font-weight: 700;
+		color: color-mix(in oklab, var(--color-sky) 60%, var(--color-on-action));
+	}
+
+	.faq-card[aria-current] .faq-card-q {
+		color: var(--color-on-action);
+	}
+
+	.faq-card[aria-current] .faq-card-tag {
+		color: color-mix(in oklab, var(--color-on-action) 78%, var(--color-action));
+	}
+
+	@media (max-width: 47.99rem) {
+		.faq-prompt {
+			flex-wrap: wrap;
+			padding: 0.875rem 1rem;
+		}
+
+		.faq-prompt-sign {
+			font-size: 1.0625rem;
+		}
+
+		.faq-input {
+			flex: 1 1 9rem;
+			font-size: 1.0625rem;
+		}
+
+		.faq-run {
+			flex: 1 1 100%;
+		}
+
+		.faq-run .btn-face {
+			justify-content: center;
+		}
+
+		.faq-man {
+			padding: 1.25rem 1.125rem 1.625rem;
+		}
+
+		.faq-man-sections {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0.25rem;
+		}
+
+		.faq-man-sections dt {
+			padding-top: 0.875rem;
+		}
+
+		.faq-man-sections dt:first-child {
+			padding-top: 0;
+		}
+
+		.faq-man-sections dd {
+			margin-bottom: 0.375rem;
+		}
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.faq-out > .term-line {
-			animation: term-line-in 260ms steps(6, end) both;
+		.faq-card {
+			transition:
+				background-color 150ms ease,
+				transform 150ms ease;
+		}
+
+		.faq-man-sections {
+			animation: man-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		}
 	}
 
-	@keyframes term-line-in {
+	@keyframes man-in {
 		from {
-			clip-path: inset(0 100% 0 0);
+			opacity: 0;
+			transform: translateY(0.5rem);
 		}
-		to {
-			clip-path: inset(0 0 0 0);
+	}
+
+	/* Forum: category tabs over example threads, the way in beside them, then three steps. */
+	.forum-grid {
+		display: grid;
+		gap: 1.25rem;
+		align-items: start;
+	}
+
+	@media (min-width: 64rem) {
+		.forum-grid {
+			grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+			gap: 2rem;
+		}
+	}
+
+	.forum-box {
+		min-width: 0;
+		overflow: hidden;
+		border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		border-radius: 4px;
+		background: var(--color-navy-lift);
+		box-shadow: 0 28px 60px -30px rgb(0 0 0 / 0.5);
+	}
+
+	.forum-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.875rem 1rem;
+		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+	}
+
+	.forum-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.forum-tabs[hidden] {
+		display: none;
+	}
+
+	.forum-tab {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.75rem;
+		padding: 0.5625rem 1rem;
+		border-radius: 2px;
+		box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--color-ink) 40%, transparent);
+		color: var(--color-ink);
+		font-size: 1rem;
+		font-stretch: 108%;
+		font-weight: 650;
+		line-height: 1.2;
+		cursor: pointer;
+	}
+
+	.forum-tab:hover {
+		background: color-mix(in srgb, var(--color-sky) 18%, var(--color-navy-lift));
+	}
+
+	.forum-tab[aria-selected='true'] {
+		background: var(--color-action);
+		color: var(--color-on-action);
+		box-shadow: none;
+	}
+
+	.forum-count {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		line-height: 1;
+		opacity: 0.85;
+	}
+
+	.forum-example {
+		margin-left: auto;
+		padding: 1px 0.5rem;
+		border: 1px dashed color-mix(in oklab, var(--color-ink) 40%, transparent);
+		border-radius: 2px;
+		font-family: var(--font-mono);
+		font-size: 0.78125rem;
+		line-height: 1.4;
+		color: var(--color-mist);
+	}
+
+	.forum-row {
+		display: grid;
+		grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+		gap: 0.125rem 0.875rem;
+		padding: 1.0625rem 1.25rem;
+		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+	}
+
+	.forum-row[hidden] {
+		display: none;
+	}
+
+	.forum-row:last-child {
+		border-bottom: 0;
+	}
+
+	.forum-icon {
+		grid-row: span 2;
+		padding-top: 0.1875rem;
+	}
+
+	.forum-icon svg {
+		display: block;
+	}
+
+	.forum-icon .ring,
+	.forum-icon .tick {
+		fill: none;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.forum-icon.is-open .ring {
+		stroke: var(--color-sky);
+	}
+
+	.forum-icon.is-open .dot {
+		fill: var(--color-sky);
+	}
+
+	.forum-icon.is-solved .dot {
+		fill: var(--color-ink);
+	}
+
+	.forum-icon.is-solved .tick {
+		stroke: var(--color-navy-lift);
+	}
+
+	.forum-icon.is-locked .dot {
+		fill: var(--color-mist);
+	}
+
+	.forum-icon.is-locked .ring {
+		stroke: var(--color-mist);
+	}
+
+	.forum-thread {
+		font-size: 1.1875rem;
+		font-stretch: 104%;
+		font-weight: 650;
+		line-height: 1.35;
+		color: var(--color-ink);
+	}
+
+	.forum-replies {
+		grid-row: span 2;
+		align-self: center;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		line-height: 1;
+		color: color-mix(in oklab, var(--color-ink) 78%, transparent);
+	}
+
+	.forum-replies svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.6;
+		stroke-linejoin: round;
+	}
+
+	.forum-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.375rem 0.75rem;
+		font-size: 0.875rem;
+		color: var(--color-mist);
+	}
+
+	.forum-chip {
+		padding: 0.1875rem 0.625rem;
+		border-radius: 2px;
+		background: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
+		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 28%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 500;
+		line-height: 1.4;
+		color: var(--color-ink);
+	}
+
+	.forum-status {
+		padding: 0.75rem 1.25rem;
+		border-top: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.84375rem;
+		line-height: 1.4;
+		color: var(--color-mist);
+	}
+
+	.forum-status:empty {
+		display: none;
+	}
+
+	.forum-side {
+		display: grid;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+
+	.forum-card {
+		overflow: hidden;
+		border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		border-radius: 4px;
+		background: var(--well);
+	}
+
+	.forum-card-title {
+		padding: 0.875rem 1.25rem;
+		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		font-size: 1.0625rem;
+		font-stretch: 118%;
+		font-weight: 750;
+		color: var(--color-ink);
+	}
+
+	.forum-card-body {
+		display: grid;
+		justify-items: start;
+		gap: 0.875rem;
+		padding: 1.25rem;
+	}
+
+	.forum-card-big {
+		font-size: 1.3125rem;
+		font-stretch: 118%;
+		font-weight: 750;
+		line-height: 1.25;
+		color: var(--color-ink);
+	}
+
+	.forum-note {
+		font-size: 1rem;
+		line-height: 1.5;
+		color: var(--color-mist);
+	}
+
+	.forum-note strong {
+		font-weight: 650;
+		color: var(--color-ink);
+	}
+
+	.forum-google {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	/* The Google mark keeps its own colours, so it sits on white in both themes. */
+	.forum-g {
+		display: grid;
+		place-items: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 2px;
+		background: #fff;
+	}
+
+	.forum-reg {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: 0.375rem 0.875rem;
+		padding: 0.875rem 1.25rem;
+		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+		text-decoration: none;
+	}
+
+	li:last-child > .forum-reg {
+		border-bottom: 0;
+	}
+
+	.forum-reg:hover {
+		background: var(--color-navy-lift);
+	}
+
+	.forum-reg strong {
+		font-size: 1.0625rem;
+		font-weight: 650;
+		line-height: 1.3;
+		color: var(--color-ink);
+	}
+
+	.forum-stamp {
+		padding: 0.1875rem 0.625rem;
+		background: var(--color-signal);
+		color: #fff;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		line-height: 1.5;
+		white-space: nowrap;
+	}
+
+	.forum-seats {
+		grid-column: 2;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		line-height: 1.3;
+		color: var(--color-mist);
+	}
+
+	.forum-steps {
+		display: grid;
+		gap: 1.5rem;
+		margin-top: 2.25rem;
+		counter-reset: step;
+	}
+
+	@media (min-width: 48rem) {
+		.forum-steps {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 2rem;
+			margin-top: 3rem;
+		}
+	}
+
+	.forum-step {
+		display: grid;
+		align-content: start;
+		gap: 0.375rem;
+		padding-top: 1.125rem;
+		border-top: 2px solid var(--color-sky);
+		counter-increment: step;
+	}
+
+	.forum-step::before {
+		content: '0' counter(step);
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.2;
+		color: var(--color-sky);
+	}
+
+	.forum-step strong {
+		font-size: 1.3125rem;
+		font-stretch: 118%;
+		font-weight: 750;
+		line-height: 1.25;
+		color: var(--color-ink);
+	}
+
+	.forum-step span {
+		font-size: 1.0625rem;
+		line-height: 1.5;
+		color: var(--color-mist);
+	}
+
+	@media (max-width: 47.99rem) {
+		.forum-bar {
+			padding: 0.75rem;
+		}
+
+		.forum-example {
+			margin-left: 0;
+		}
+
+		.forum-row {
+			padding: 0.875rem 1rem;
 		}
 	}
 
@@ -2491,7 +3026,6 @@
 		background: var(--color-ink);
 	}
 
-
 	/* Trunk: the hero stem continues into the Activities main branch (desktop only). */
 	.lane-vars {
 		--s: 1;
@@ -2647,7 +3181,8 @@ html.motion [data-card] {
 }
 
 html.motion [data-tile],
-html.motion [data-reason] {
+html.motion [data-reason],
+html.motion [data-step] {
 	opacity: 0;
 	transform: translateY(3rem);
 }

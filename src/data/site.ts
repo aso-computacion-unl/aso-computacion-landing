@@ -97,6 +97,7 @@ export const navLinks = [
 	{ label: 'Novedades', href: '/novedades' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
+	{ label: 'Foro', href: '#foro' },
 	{ label: 'FAQ', href: '#faq' },
 	{ label: 'Redes', href: '#redes' },
 ];
@@ -268,10 +269,105 @@ export const demoCollage: Photo[] = [
 	{ src: colectivoC, alt: '' },
 ];
 
+// The forum section. The forum itself lives on the admin's origin (`/foro`, see ../lib/admin-content/forum.ts); this is
+// its door on the landing: the categories as they exist there, three steps, and a few example threads.
+export type ForumCategoryId = 'general' | 'materias' | 'propuestas';
+export type ForumThreadStatus = 'open' | 'solved' | 'locked';
+
+export interface ForumThread {
+	id: string;
+	status: ForumThreadStatus;
+	title: string;
+	category: ForumCategoryId;
+	// Age as the forum shows it ("hace 2 h"): fixed text, since the page is built ahead of time.
+	when: string;
+	replies: number;
+}
+
+// DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
+// public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
+// feed, or with the board's own words, then drop `demo`.
+export const forum = {
+	demo: true,
+	eyebrow: '$ git log foro --oneline',
+	title: 'El foro de Computación',
+	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL, y aquí también se abren las inscripciones con cuenta UNL.',
+	// Names and descriptions as the forum has them.
+	categories: [
+		{ id: 'general', name: 'General', description: 'Todo lo que no cabe en otra categoría.' },
+		{ id: 'materias', name: 'Materias', description: 'Dudas de las materias, apuntes y preparación de exámenes.' },
+		{ id: 'propuestas', name: 'Propuestas', description: 'Ideas de talleres, charlas y eventos para la asociación.' },
+	] as { id: ForumCategoryId; name: string; description: string }[],
+	threads: [
+		{
+			id: 'estructuras-de-datos',
+			status: 'open',
+			title: '¿Cómo preparo el examen de Estructuras de Datos?',
+			category: 'materias',
+			when: 'hace 2 h',
+			replies: 6,
+		},
+		{
+			id: 'postgres-docker',
+			status: 'solved',
+			title: 'Error al conectar Postgres desde Docker en el laboratorio',
+			category: 'materias',
+			when: 'hace 5 h',
+			replies: 9,
+		},
+		{
+			id: 'taller-docker',
+			status: 'open',
+			title: 'Propuesta: taller de Docker para primeros ciclos',
+			category: 'propuestas',
+			when: 'ayer',
+			replies: 14,
+		},
+		{
+			id: 'equipo-hackathon',
+			status: 'open',
+			title: 'Busco equipo para el hackathon (backend con Node)',
+			category: 'general',
+			when: 'ayer',
+			replies: 3,
+		},
+		{
+			id: 'electivas',
+			status: 'solved',
+			title: '¿Qué electivas recomiendan para 7.º ciclo?',
+			category: 'general',
+			when: 'hace 3 días',
+			replies: 21,
+		},
+		{
+			id: 'laboratorio-sabados',
+			status: 'locked',
+			title: 'Horario del laboratorio abierto los sábados',
+			category: 'general',
+			when: 'hace 1 semana',
+			replies: 4,
+		},
+	] as ForumThread[],
+	steps: [
+		{
+			title: 'Pregunta o responde',
+			text: 'Abre un hilo en Materias, Propuestas o General, o responde el de otra persona.',
+		},
+		{
+			title: 'Dile “me sirvió”',
+			text: 'Reacciona a las respuestas útiles para que las vea más gente.',
+		},
+		{
+			title: 'Marca la mejor respuesta',
+			text: 'Quien abrió el hilo la marca y el hilo queda resuelto. La directiva modera y puedes reportar cualquier mensaje.',
+		},
+	],
+};
+
 // Section copy of the FAQ. The items come from the admin; `demoFaqItems` fills the section while the fallback has none.
 export const faqCopy = {
 	title: 'Preguntas frecuentes',
-	lead: 'Lo que más nos preguntan sobre la ASO y sus actividades. Si falta algo, escríbenos por mensaje directo.',
+	lead: 'Escribe un tema o toca una tarjeta: la respuesta se abre aquí mismo, como una página de manual.',
 };
 
 // DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). `topic` is the slug shown as
@@ -334,8 +430,18 @@ export interface LandingCopy {
 	navLinks: typeof navLinks;
 	timelineAnchors: Anchors;
 	join: typeof join;
+	forum: typeof forum;
 	faqCopy: typeof faqCopy;
 }
+
+const enThreadAge: Record<string, string> = {
+	'estructuras-de-datos': '2 h ago',
+	'postgres-docker': '5 h ago',
+	'taller-docker': 'yesterday',
+	'equipo-hackathon': 'yesterday',
+	electivas: '3 days ago',
+	'laboratorio-sabados': '1 week ago',
+};
 
 const enCopy: LandingCopy = {
 	site: {
@@ -369,6 +475,7 @@ const enCopy: LandingCopy = {
 		{ label: 'News', href: '/novedades' },
 		{ label: 'About', href: '#nosotros' },
 		{ label: 'Board', href: '#directiva' },
+		{ label: 'Forum', href: '#foro' },
 		{ label: 'FAQ', href: '#faq' },
 		{ label: 'Socials', href: '#redes' },
 	],
@@ -430,13 +537,34 @@ const enCopy: LandingCopy = {
 			'#learn-by-doing',
 		],
 	},
+	// The categories keep the forum's own names (the forum is in Spanish) and so do the example threads; what is
+	// translated is the landing's words around them.
+	forum: {
+		...forum,
+		title: 'The Computer Science forum',
+		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students, and event registrations with a UNL account open here too.',
+		categories: [
+			{ ...forum.categories[0], description: 'Everything that does not fit another category.' },
+			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
+			{ ...forum.categories[2], description: 'Ideas for workshops, talks and events for the association.' },
+		],
+		threads: forum.threads.map((thread) => ({ ...thread, when: enThreadAge[thread.id] ?? thread.when })),
+		steps: [
+			{ title: 'Ask or answer', text: 'Open a thread in Materias, Propuestas or General, or answer someone else’s.' },
+			{ title: 'Say “it helped”', text: 'React to the useful answers so more people see them.' },
+			{
+				title: 'Mark the best answer',
+				text: 'Whoever opened the thread marks it and the thread is solved. The board moderates and you can report any message.',
+			},
+		],
+	},
 	faqCopy: {
 		title: 'Frequently asked questions',
-		lead: 'What people ask us most about the ASO and its activities. If something is missing, send us a direct message.',
+		lead: 'Type a topic or tap a card: the answer opens right here, like a manual page.',
 	},
 };
 
 export const copy: Record<Locale, LandingCopy> = {
-	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, faqCopy },
+	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
 	en: enCopy,
 };
