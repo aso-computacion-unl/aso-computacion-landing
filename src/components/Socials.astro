@@ -7,7 +7,9 @@ import SectionHead from './SectionHead.astro';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { socials } = getContent(locale);
-const display = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+const display = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+// The address only wraps after a slash, never in the middle of a segment.
+const segments = (url: string) => display(url).split(/(?<=\/)/);
 ---
 
 <section id="redes" class="bg-navy py-16 sm:py-24 lg:py-32">
@@ -31,7 +33,12 @@ const display = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, 
 							<span class="social-name">{social.label}</span>
 							<span class="social-handle">{social.handle}</span>
 							<span class="social-url" aria-hidden="true">
-								{display(social.href)}
+								{segments(social.href).map((segment) => (
+									<>
+										<span class="url-seg">{segment}</span>
+										<wbr />
+									</>
+								))}
 							</span>
 						</span>
 						<span class="social-go" aria-hidden="true">
