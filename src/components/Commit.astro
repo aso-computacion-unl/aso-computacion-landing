@@ -78,7 +78,7 @@ const showRef = !dense && Boolean(hash || deco);
 		)}
 		<div class="card-main">
 			{entry.stamp && (
-				<p class="leading-none">
+				<p class="stamp-line leading-none">
 					<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
 					{entry.demo && (
 						<span class="demo-tag" title={t('demo.title')}>
@@ -87,17 +87,17 @@ const showRef = !dense && Boolean(hash || deco);
 					)}
 				</p>
 			)}
-			<h3 class:list={['font-display text-lead leading-snug text-ink', dense ? 'mt-2' : 'mt-3']}>{entry.title}</h3>
+			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
 			{entry.msg && <p class="msg">{entry.msg}</p>}
 			{!compact && entry.description && (
-				<p class:list={['mt-2 max-w-[60ch] text-mist', { 'text-secondary': dense }]}>{entry.description}</p>
+				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
 			)}
 			{!compact && entry.href && (
 				<a
 					href={entry.href}
 					class:list={[
 						'inline-block text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
-						dense ? 'mt-2' : 'mt-3',
+						{ 'mt-3': !dense },
 					]}
 					target={external ? '_blank' : undefined}
 					rel={external ? 'me noopener' : undefined}
