@@ -6,13 +6,12 @@
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
-import { registrationClosed } from '../lib/registration/rules';
 import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { forum, timeline } = getContent(locale);
+const { forum } = getContent(locale);
 
 const count = (id: string) =>
 	id === 'all' ? forum.threads.length : forum.threads.filter((thread) => thread.category === id).length;
@@ -20,15 +19,6 @@ const tabs = [{ id: 'all', name: t('forum.all'), description: t('forum.allDescri
 	(tab) => ({ ...tab, count: count(tab.id) }),
 );
 const categoryName = (id: string) => forum.categories.find((category) => category.id === id)?.name ?? id;
-
-// Upcoming events that sign people in with their UNL account (the admin's page enforces the deadline; this page is built
-// ahead of time, so the ones already closed at build time are left out).
-const enrolling = timeline.filter(
-	(entry) =>
-		entry.kind === 'upcoming' &&
-		entry.registration?.mode === 'unl' &&
-		!registrationClosed(entry.registration.deadline, Date.now()),
-);
 ---
 
 <section id="foro" class="bg-navy py-16 sm:py-24 lg:py-32">
@@ -145,27 +135,19 @@ const enrolling = timeline.filter(
 					</div>
 				</section>
 
-				{enrolling.length > 0 && (
-					<section class="forum-card" aria-labelledby="forum-regs">
-						<h3 id="forum-regs" class="forum-card-title">
-							{t('forum.regs.title')}
-						</h3>
-						<ul>
-							{enrolling.map((entry) => (
-								<li>
-									<a class="forum-reg" href={entry.registration?.href} target="_blank" rel="noopener">
-										{entry.stamp && <span class="forum-stamp">{entry.stamp}</span>}
-										<strong>{entry.title}</strong>
-										{entry.registration?.capacity && (
-											<span class="forum-seats">{t('forum.regs.seats', { count: entry.registration.capacity })}</span>
-										)}
-										<span class="sr-only"> {t('newTab')}</span>
-									</a>
-								</li>
-							))}
-						</ul>
-					</section>
-				)}
+				<section class="forum-card" aria-labelledby="forum-cats">
+					<h3 id="forum-cats" class="forum-card-title">
+						{t('forum.cats.title')}
+					</h3>
+					<ul>
+						{forum.categories.map((category) => (
+							<li class="forum-cat">
+								<strong>{category.name}</strong>
+								<span>{category.description}</span>
+							</li>
+						))}
+					</ul>
+				</section>
 			</div>
 		</div>
 

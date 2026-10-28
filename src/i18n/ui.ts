@@ -158,8 +158,7 @@ const es = {
 	'forum.signin.text': 'Sin registro: la primera vez se crea tu cuenta.',
 	'forum.signin.button': 'Entrar con Google',
 	'forum.signin.only': 'Solo con tu correo',
-	'forum.regs.title': 'Inscripciones abiertas',
-	'forum.regs.seats': '{count} cupos',
+	'forum.cats.title': 'De qué se habla',
 	'forum.steps': 'Cómo funciona',
 
 	'socials.title': 'Síguenos',
@@ -325,8 +324,7 @@ const en: Record<keyof typeof es, string> = {
 	'forum.signin.text': 'No sign-up: your account is created the first time.',
 	'forum.signin.button': 'Sign in with Google',
 	'forum.signin.only': 'Only with your',
-	'forum.regs.title': 'Open registrations',
-	'forum.regs.seats': '{count} seats',
+	'forum.cats.title': 'What gets discussed',
 	'forum.steps': 'How it works',
 
 	'socials.title': 'Follow us',

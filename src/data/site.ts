@@ -291,7 +291,7 @@ export const forum = {
 	demo: true,
 	eyebrow: '$ git log foro --oneline',
 	title: 'El foro de Computación',
-	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL, y aquí también se abren las inscripciones con cuenta UNL.',
+	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL.',
 	// Names and descriptions as the forum has them.
 	categories: [
 		{ id: 'general', name: 'General', description: 'Todo lo que no cabe en otra categoría.' },
@@ -542,7 +542,7 @@ const enCopy: LandingCopy = {
 	forum: {
 		...forum,
 		title: 'The Computer Science forum',
-		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students, and event registrations with a UNL account open here too.',
+		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students.',
 		categories: [
 			{ ...forum.categories[0], description: 'Everything that does not fit another category.' },
 			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
