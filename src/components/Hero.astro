@@ -41,7 +41,7 @@ const planned = timeline
 			<h1 class="hero-title">
 				<span class="sr-only">{site.name}: </span>
 				{site.headline.map((line, index) => (
-					<span class:list={['hero-line', { 'text-sky': index === site.headlineAccent }]} data-hero-line>
+					<span class:list={['hero-line', { 'hero-accent': index === site.headlineAccent }]} data-hero-line>
 						{line}
 					</span>
 				))}
