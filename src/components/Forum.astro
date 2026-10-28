@@ -25,135 +25,150 @@ const categoryName = (id: string) => forum.categories.find((category) => categor
 	<div class="wrap">
 		<SectionHead eyebrow={forum.eyebrow} title={forum.title} lead={forum.lead} demo={forum.demo} />
 
-		<div class="forum-grid mt-12 lg:mt-16">
-			<div class="forum-box" data-forum>
-				<div class="forum-bar">
-					<div class="forum-tabs" role="tablist" aria-label={t('forum.tabs')} data-forum-tabs hidden>
-						{tabs.map((tab, index) => (
-							<button
-								type="button"
-								role="tab"
-								id={`forum-tab-${tab.id}`}
-								class="forum-tab"
-								aria-selected={index === 0 ? 'true' : 'false'}
-								aria-controls="forum-panel"
-								tabindex={index === 0 ? 0 : -1}
-								data-forum-tab
-								data-category={tab.id}
-								data-description={tab.description}
-							>
-								{tab.name}
-								<span class="forum-count" aria-hidden="true">
-									{tab.count}
-								</span>
-							</button>
-						))}
+		<div class="term-win forum-box mt-12 lg:mt-16">
+			<p class="term-bar" aria-hidden="true">
+				<span class="term-dots">
+					<i></i>
+					<i></i>
+					<i></i>
+				</span>
+				<span>aso-computacion — git log foro</span>
+			</p>
+			<div class="forum-grid">
+				<div class="forum-main" data-forum>
+					<div class="forum-bar">
+						<span class="forum-grep" aria-hidden="true">
+							$ git log --grep=
+						</span>
+						<div class="forum-tabs" role="tablist" aria-label={t('forum.tabs')} data-forum-tabs hidden>
+							{tabs.map((tab, index) => (
+								<button
+									type="button"
+									role="tab"
+									id={`forum-tab-${tab.id}`}
+									class="forum-tab"
+									aria-selected={index === 0 ? 'true' : 'false'}
+									aria-controls="forum-panel"
+									tabindex={index === 0 ? 0 : -1}
+									data-forum-tab
+									data-category={tab.id}
+									data-description={tab.description}
+								>
+									{tab.name}
+									<span class="forum-count" aria-hidden="true">
+										{tab.count}
+									</span>
+								</button>
+							))}
+						</div>
+						{forum.demo && <span class="forum-example">{t('forum.example')}</span>}
 					</div>
-					{forum.demo && <span class="forum-example">{t('forum.example')}</span>}
-				</div>
 
-				<div id="forum-panel" data-forum-panel>
-					<ul class="forum-rows" aria-label={t('forum.threads')}>
-						{forum.threads.map((thread) => (
-							<li class="forum-row" data-forum-thread data-category={thread.category}>
-								<span class={`forum-icon is-${thread.status}`} aria-hidden="true">
-									<svg width="18" height="18" viewBox="0 0 18 18">
-										{thread.status === 'open' && (
-											<>
-												<circle class="ring" cx="9" cy="9" r="7" />
-												<circle class="dot" cx="9" cy="9" r="2.6" />
-											</>
-										)}
-										{thread.status === 'solved' && (
-											<>
-												<circle class="dot" cx="9" cy="9" r="8" />
-												<path class="tick" d="M5.3 9.3l2.7 2.7 4.8-5.2" />
-											</>
-										)}
-										{thread.status === 'locked' && (
-											<>
-												<rect class="dot" x="3.5" y="8" width="11" height="8" rx="1.5" />
-												<path class="ring" d="M6 8V6a3 3 0 016 0v2" />
-											</>
-										)}
-									</svg>
-								</span>
-								<h3 class="forum-thread">{thread.title}</h3>
-								<span class="forum-replies">
-									<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-										<path d="M2 3h12v8H7l-3 3v-3H2z" />
-									</svg>
-									{thread.replies}
-									<span class="sr-only"> {t('forum.replies')}</span>
-								</span>
-								<p class="forum-meta">
-									<span class="forum-chip">{categoryName(thread.category)}</span>
-									<span>{thread.when}</span>
-									<span>{t(`forum.status.${thread.status}`)}</span>
-								</p>
-							</li>
-						))}
-					</ul>
-				</div>
-				<p class="forum-status" data-forum-status aria-live="polite"></p>
-			</div>
-
-			<div class="forum-side">
-				<section class="forum-card" aria-labelledby="forum-signin">
-					<h3 id="forum-signin" class="forum-card-title">
-						{t('forum.signin.title')}
-					</h3>
-					<div class="forum-card-body">
-						<p class="forum-card-big">{t('forum.signin.text')}</p>
-						{forum.url && (
-							<Button href={forum.url} external>
-								<span class="forum-google">
-									<span class="forum-g" aria-hidden="true">
-										<svg width="18" height="18" viewBox="0 0 24 24">
-											<path
-												fill="#4285F4"
-												d="M23 12.3c0-.8-.1-1.5-.2-2.2H12v4.3h6.2a5.3 5.3 0 01-2.3 3.5v2.9h3.7c2.2-2 3.4-4.9 3.4-8.5z"
-											/>
-											<path
-												fill="#34A853"
-												d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3A11.5 11.5 0 0012 24z"
-											/>
-											<path fill="#FBBC05" d="M5.6 14.7a6.9 6.9 0 010-4.4v-3H1.8a11.5 11.5 0 000 10.4z" />
-											<path
-												fill="#EA4335"
-												d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3A11.5 11.5 0 001.8 7.3l3.8 3A6.9 6.9 0 0112 4.8z"
-											/>
+					<div id="forum-panel" data-forum-panel>
+						<ul class="forum-rows" aria-label={t('forum.threads')}>
+							{forum.threads.map((thread) => (
+								<li class="forum-row" data-forum-thread data-category={thread.category}>
+									<span class={`forum-icon is-${thread.status}`} aria-hidden="true">
+										<svg width="18" height="18" viewBox="0 0 18 18">
+											{thread.status === 'open' && (
+												<>
+													<circle class="ring" cx="9" cy="9" r="7" />
+													<circle class="dot" cx="9" cy="9" r="2.6" />
+												</>
+											)}
+											{thread.status === 'solved' && (
+												<>
+													<circle class="dot" cx="9" cy="9" r="8" />
+													<path class="tick" d="M5.3 9.3l2.7 2.7 4.8-5.2" />
+												</>
+											)}
+											{thread.status === 'locked' && (
+												<>
+													<rect class="dot" x="3.5" y="8" width="11" height="8" rx="1.5" />
+													<path class="ring" d="M6 8V6a3 3 0 016 0v2" />
+												</>
+											)}
 										</svg>
 									</span>
-									{t('forum.signin.button')}
-								</span>
-							</Button>
-						)}
-						<p class="forum-note">
-							{t('forum.signin.only')} <strong>@unl.edu.ec</strong>.
-						</p>
+									<h3 class="forum-thread">{thread.title}</h3>
+									<span class="forum-replies">
+										<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+											<path d="M2 3h12v8H7l-3 3v-3H2z" />
+										</svg>
+										{thread.replies}
+										<span class="sr-only"> {t('forum.replies')}</span>
+									</span>
+									<p class="forum-meta">
+										<span class="forum-chip">{categoryName(thread.category)}</span>
+										<span>{thread.when}</span>
+										<span>{t(`forum.status.${thread.status}`)}</span>
+									</p>
+								</li>
+							))}
+						</ul>
 					</div>
-				</section>
+					<p class="forum-status" data-forum-status aria-live="polite"></p>
+				</div>
 
-				<section class="forum-card" aria-labelledby="forum-cats">
-					<h3 id="forum-cats" class="forum-card-title">
-						{t('forum.cats.title')}
-					</h3>
-					<ul>
-						{forum.categories.map((category) => (
-							<li class="forum-cat">
-								<strong>{category.name}</strong>
-								<span>{category.description}</span>
-							</li>
-						))}
-					</ul>
-				</section>
+				<div class="forum-side">
+					<section class="forum-card" aria-labelledby="forum-signin">
+						<h3 id="forum-signin" class="forum-card-title">
+							{t('forum.signin.title')}
+						</h3>
+						<div class="forum-card-body">
+							<p class="forum-card-big">{t('forum.signin.text')}</p>
+							{forum.url && (
+								<Button href={forum.url} external>
+									<span class="forum-google">
+										<span class="forum-g" aria-hidden="true">
+											<svg width="18" height="18" viewBox="0 0 24 24">
+												<path
+													fill="#4285F4"
+													d="M23 12.3c0-.8-.1-1.5-.2-2.2H12v4.3h6.2a5.3 5.3 0 01-2.3 3.5v2.9h3.7c2.2-2 3.4-4.9 3.4-8.5z"
+												/>
+												<path
+													fill="#34A853"
+													d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3A11.5 11.5 0 0012 24z"
+												/>
+												<path fill="#FBBC05" d="M5.6 14.7a6.9 6.9 0 010-4.4v-3H1.8a11.5 11.5 0 000 10.4z" />
+												<path
+													fill="#EA4335"
+													d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3A11.5 11.5 0 001.8 7.3l3.8 3A6.9 6.9 0 0112 4.8z"
+												/>
+											</svg>
+										</span>
+										{t('forum.signin.button')}
+									</span>
+								</Button>
+							)}
+							<p class="forum-note">
+								{t('forum.signin.only')} <strong>@unl.edu.ec</strong>.
+							</p>
+						</div>
+					</section>
+
+					<section class="forum-card" aria-labelledby="forum-cats">
+						<h3 id="forum-cats" class="forum-cats-title">
+							<span aria-hidden="true">$ ls categorias/</span>
+							<span class="sr-only">{t('forum.cats.title')}</span>
+						</h3>
+						<ul>
+							{forum.categories.map((category) => (
+								<li class="forum-cat">
+									<strong>{category.name}</strong>
+									<span>{category.description}</span>
+								</li>
+							))}
+						</ul>
+					</section>
+				</div>
 			</div>
 		</div>
 
 		<ol class="forum-steps" aria-label={t('forum.steps')}>
-			{forum.steps.map((step) => (
+			{forum.steps.map((step, index) => (
 				<li class="forum-step" data-step>
+					<span class="forum-step-n">{t('forum.step', { n: index + 1 })}</span>
 					<strong>{step.title}</strong>
 					<span>{step.text}</span>
 				</li>

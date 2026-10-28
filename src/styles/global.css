@@ -2244,36 +2244,94 @@
 		}
 	}
 
-	/* Forum: category tabs over example threads, the way in beside them, then three steps. */
+	/* Terminal window shared by the news and forum sections: a title bar with three square lights, then panes. */
+	.term-win {
+		--term-bg: color-mix(in oklab, var(--color-navy-deep) 70%, var(--color-shade));
+		--term-line: color-mix(in oklab, var(--color-sky) 24%, transparent);
+		min-width: 0;
+		overflow: hidden;
+		border: 1px solid color-mix(in oklab, var(--color-sky) 32%, transparent);
+		border-radius: 4px;
+		background: var(--term-bg);
+	}
+
+	.term-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+		padding: 0.75rem 1.25rem;
+		border-bottom: 1px solid var(--term-line);
+		background: var(--color-navy-lift);
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		color: var(--color-mist);
+	}
+
+	.term-dots {
+		display: flex;
+		gap: 0.375rem;
+	}
+
+	.term-dots i {
+		width: 0.625rem;
+		height: 0.625rem;
+		background: var(--color-sky);
+	}
+
+	.term-dots i:first-child {
+		background: var(--color-signal);
+	}
+
+	.term-dots i:nth-child(2) {
+		background: var(--color-mist);
+	}
+
+	.term-prompt {
+		padding: 1.375rem 1.5rem 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		line-height: 1.4;
+		color: var(--color-mist);
+	}
+
+	.term-prompt span {
+		color: var(--color-sky);
+	}
+
+	/* Forum: one terminal with the category tabs over example threads and the way in beside them, then three steps. */
 	.forum-grid {
 		display: grid;
-		gap: 1.25rem;
-		align-items: start;
 	}
 
 	@media (min-width: 64rem) {
 		.forum-grid {
-			grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
-			gap: 2rem;
+			grid-template-columns: minmax(0, 1fr) 25rem;
 		}
 	}
 
-	.forum-box {
+	.forum-main {
 		min-width: 0;
-		overflow: hidden;
-		border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		box-shadow: 0 28px 60px -30px rgb(0 0 0 / 0.5);
 	}
 
 	.forum-bar {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.875rem 1rem;
-		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		gap: 0.625rem;
+		padding: 1rem 1.5rem;
+		border-bottom: 1px solid var(--term-line);
+	}
+
+	.forum-grep {
+		margin-right: 0.375rem;
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		color: var(--color-sky);
+	}
+
+	/* Without JS the tabs stay hidden, and so does the command that names them. */
+	.forum-grep:has(+ .forum-tabs[hidden]) {
+		display: none;
 	}
 
 	.forum-tabs {
@@ -2293,11 +2351,11 @@
 		min-height: 2.75rem;
 		padding: 0.5625rem 1rem;
 		border-radius: 2px;
-		box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--color-ink) 40%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 40%, transparent);
 		color: var(--color-ink);
-		font-size: 1rem;
-		font-stretch: 108%;
-		font-weight: 650;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 500;
 		line-height: 1.2;
 		cursor: pointer;
 	}
@@ -2335,8 +2393,13 @@
 		display: grid;
 		grid-template-columns: 1.25rem minmax(0, 1fr) auto;
 		gap: 0.125rem 0.875rem;
-		padding: 1.0625rem 1.25rem;
+		padding: 1.375rem 1.5rem;
 		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+		transition: background-color 0.15s;
+	}
+
+	.forum-row:hover {
+		background: var(--color-navy-lift);
 	}
 
 	.forum-row[hidden] {
@@ -2437,8 +2500,8 @@
 	}
 
 	.forum-status {
-		padding: 0.75rem 1.25rem;
-		border-top: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+		padding: 0.75rem 1.5rem;
+		border-top: 1px solid var(--term-line);
 		font-family: var(--font-mono);
 		font-size: 0.84375rem;
 		line-height: 1.4;
@@ -2450,40 +2513,54 @@
 	}
 
 	.forum-side {
-		display: grid;
-		gap: 1.25rem;
+		display: flex;
+		flex-direction: column;
 		min-width: 0;
+		border-top: 1px solid var(--term-line);
 	}
 
-	.forum-card {
-		overflow: hidden;
-		border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
-		border-radius: 4px;
-		background: var(--well);
+	@media (min-width: 64rem) {
+		.forum-side {
+			border-top: 0;
+			border-left: 1px solid var(--term-line);
+		}
+	}
+
+	.forum-card + .forum-card {
+		border-top: 1px solid var(--term-line);
 	}
 
 	.forum-card-title {
-		padding: 0.875rem 1.25rem;
-		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
-		font-size: 1.0625rem;
-		font-stretch: 118%;
-		font-weight: 750;
+		padding: 1.75rem 1.75rem 0;
+		font-size: 1.5rem;
+		font-stretch: 125%;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
 		color: var(--color-ink);
+		text-wrap: balance;
 	}
 
 	.forum-card-body {
 		display: grid;
 		justify-items: start;
-		gap: 0.875rem;
-		padding: 1.25rem;
+		gap: 1rem;
+		padding: 0.75rem 1.75rem 1.75rem;
 	}
 
 	.forum-card-big {
-		font-size: 1.3125rem;
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.25;
-		color: var(--color-ink);
+		font-size: 1.125rem;
+		line-height: 1.5;
+		color: var(--color-mist);
+	}
+
+	.forum-cats-title {
+		padding: 1.5rem 1.75rem 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.4;
+		color: var(--color-sky);
 	}
 
 	.forum-note {
@@ -2516,12 +2593,13 @@
 	.forum-cat {
 		display: grid;
 		gap: 0.25rem;
-		padding: 0.875rem 1.25rem;
-		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+		margin-inline: 1.75rem;
+		padding: 0.75rem 0;
+		border-top: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
 	}
 
 	.forum-cat:last-child {
-		border-bottom: 0;
+		margin-bottom: 1.25rem;
 	}
 
 	.forum-cat strong {
@@ -2541,7 +2619,6 @@
 		display: grid;
 		gap: 1.5rem;
 		margin-top: 2.25rem;
-		counter-reset: step;
 	}
 
 	@media (min-width: 48rem) {
@@ -2556,16 +2633,12 @@
 		display: grid;
 		align-content: start;
 		gap: 0.375rem;
-		padding-top: 1.125rem;
-		border-top: 2px solid var(--color-sky);
-		counter-increment: step;
 	}
 
-	.forum-step::before {
-		content: '0' counter(step);
+	.forum-step-n {
 		font-family: var(--font-mono);
 		font-size: 0.875rem;
-		font-weight: 600;
+		font-weight: 500;
 		line-height: 1.2;
 		color: var(--color-sky);
 	}
@@ -2578,7 +2651,7 @@
 		color: var(--color-ink);
 	}
 
-	.forum-step span {
+	.forum-step span:not(.forum-step-n) {
 		font-size: 1.0625rem;
 		line-height: 1.5;
 		color: var(--color-mist);

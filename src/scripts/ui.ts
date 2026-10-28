@@ -9,6 +9,7 @@ import {
 	type ManualSection,
 } from './faq-shell';
 import { initForumTabs } from './forum-tabs';
+import { initNewsVisor } from './news-visor';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
@@ -99,6 +100,10 @@ if (history && rootNode && mainRail) {
 // Forum tabs: pick a category and the example threads filter to it (the bar stays hidden without JS, which shows them all).
 const forum = document.querySelector<HTMLElement>('[data-forum]');
 if (forum) initForumTabs(forum, t);
+
+// News terminal: the row under the pointer or focus shows its post in the pane beside it.
+const newsVisor = document.querySelector<HTMLElement>('[data-news-visor]');
+if (newsVisor) initNewsVisor(newsVisor);
 
 // FAQ prompt: replaces the static <details> list with a big prompt (help, git help <tema>, clear, history, Tab), the
 // answer as a manual page and a card per topic. The <details> entries stay the single source of questions and answers,

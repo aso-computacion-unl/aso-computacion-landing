@@ -100,6 +100,7 @@ const es = {
 	'news.postAside': 'Datos de la novedad',
 	'news.backAll': '← Todas las novedades',
 	'news.related': 'Sigue leyendo',
+	'news.read': 'Leer novedad',
 	'share.title': 'Compartir',
 	'share.native': 'Compartir…',
 	'share.copy': 'Copiar enlace',
@@ -119,8 +120,6 @@ const es = {
 	'board.hint': '¿quién es?',
 	'board.more': 'pasa el cursor o toca para ver más',
 	'board.language': 'lenguaje favorito',
-
-
 
 	'sponsors.title': 'Aliados',
 	'sponsors.lead': 'Organizaciones y personas que hacen posible lo que hacemos. Gracias.',
@@ -160,6 +159,7 @@ const es = {
 	'forum.signin.only': 'Solo con tu correo',
 	'forum.cats.title': 'De qué se habla',
 	'forum.steps': 'Cómo funciona',
+	'forum.step': 'paso {n}',
 
 	'socials.title': 'Síguenos',
 	'socials.lead': 'Todo se anuncia en redes, y por ahí mismo puedes escribirnos por mensaje directo.',
@@ -267,6 +267,7 @@ const en: Record<keyof typeof es, string> = {
 	'news.postAside': 'News details',
 	'news.backAll': '← All news',
 	'news.related': 'Keep reading',
+	'news.read': 'Read it',
 	'share.title': 'Share',
 	'share.native': 'Share…',
 	'share.copy': 'Copy link',
@@ -285,8 +286,6 @@ const en: Record<keyof typeof es, string> = {
 	'board.hint': 'who is it?',
 	'board.more': 'hover or tap to see more',
 	'board.language': 'favorite language',
-
-
 
 	'sponsors.title': 'Allies',
 	'sponsors.lead': 'The organizations and people who make what we do possible. Thank you.',
@@ -326,6 +325,7 @@ const en: Record<keyof typeof es, string> = {
 	'forum.signin.only': 'Only with your',
 	'forum.cats.title': 'What gets discussed',
 	'forum.steps': 'How it works',
+	'forum.step': 'step {n}',
 
 	'socials.title': 'Follow us',
 	'socials.lead': 'Everything is announced on socials, and you can send us a direct message there too.',
