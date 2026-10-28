@@ -3,8 +3,8 @@ import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { typeLabel, useTranslations } from '../i18n/ui';
 import { activityTypes } from '../data/site';
-import { shortHash } from './shortHash';
 import Commit from './Commit.astro';
+import HistoryEntries from './HistoryEntries.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
@@ -12,11 +12,17 @@ const { nextEvent, timeline } = getContent(locale);
 const headIndex = timeline.findIndex((entry) => entry.kind === 'head');
 const planned = timeline.slice(0, headIndex);
 const history = timeline.slice(headIndex);
-const last = history.length - 1;
+// Compact history: HEAD and the latest past entries show; the older ones fold into a disclosure (a plain <details>, so it
+// opens without JS) and the root commit always shows, because the rail ends on it.
+const RECENT_PAST = 2;
+const recent = history.slice(0, 1 + RECENT_PAST);
+const older = history.length > RECENT_PAST + 2 ? history.slice(1 + RECENT_PAST, -1) : [];
+const shown = older.length > 0 ? recent : history.slice(0, -1);
+const root = history.slice(-1);
 const typedCount = (type: string) => timeline.filter((entry) => entry.type === type).length;
 ---
 
-<section id="actividades" class="deep bg-navy-deep pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-28 lg:pt-32">
+<section id="actividades" class="deep bg-navy-deep pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-20 lg:pt-24">
 	<div class="wrap grid gap-10 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
 		<aside
 			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
@@ -125,51 +131,24 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
 						{planned.map((entry) => (
-							<Commit entry={entry} />
+							<Commit entry={entry} dense />
 						))}
 					</ol>
 				</div>
 				<div class="graph" data-history>
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
-					<ol>
-						{history.map((entry, index) => (
-							<Commit entry={entry} last={index === last}>
-								{entry.branch && (
-									<div class="branch">
-										<div class="bend">
-											<svg viewBox="0 0 56 48" aria-hidden="true">
-												<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
-											</svg>
-											<p class="px-3">
-												<span class="tag">{entry.branch.name}</span>
-											</p>
-										</div>
-										<span class="rail rail-feat" data-rail data-rail-scrub></span>
-										<ol aria-label={t('activities.branch', { title: entry.title })}>
-											{entry.branch.commits.map((sub) => (
-												<li class="commit">
-													<span class="node" data-node aria-hidden="true" />
-													<span class="link" data-link aria-hidden="true" />
-													<div class="card" data-card>
-														<h4 class="font-semibold leading-6 text-ink">{sub.title}</h4>
-														<p class="ref" aria-hidden="true">
-															{shortHash(`${entry.id}/${sub.id}`)}
-														</p>
-													</div>
-												</li>
-											))}
-										</ol>
-										<div class="bend">
-											<svg viewBox="0 0 56 48" aria-hidden="true">
-												<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
-											</svg>
-										</div>
-									</div>
-								)}
-							</Commit>
-						))}
-					</ol>
+					<HistoryEntries entries={shown} />
+					{older.length > 0 && (
+						<details class="history-more" data-history-more>
+							<summary class="history-toggle">
+								<span class="history-show">{t('activities.history.show', { count: older.length })}</span>
+								<span class="history-hide">{t('activities.history.hide')}</span>
+							</summary>
+							<HistoryEntries entries={older} />
+						</details>
+					)}
+					<HistoryEntries entries={root} last />
 				</div>
 			</div>
 		</div>

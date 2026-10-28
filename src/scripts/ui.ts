@@ -58,6 +58,8 @@ if (filters && timeline) {
 			const match = type === 'all' || item.dataset.type === type;
 			item.classList.toggle('is-dim', !match);
 			if (match) shown += 1;
+			// A match in the folded history opens it, so a filter never points at something that cannot be seen.
+			if (match && type !== 'all') item.closest('details')?.setAttribute('open', '');
 		});
 		if (status)
 			status.textContent =
@@ -96,6 +98,11 @@ if (history && rootNode && mainRail) {
 	document.fonts?.ready.then(fitRail, () => {}); // A font that fails to load keeps the fallback; nothing to redo.
 	new ResizeObserver(fitRail).observe(history);
 }
+
+// The folded history opens and closes, which moves everything below it: the scroll animations measure again.
+history
+	?.querySelector('[data-history-more]')
+	?.addEventListener('toggle', () => window.dispatchEvent(new Event('aso:relayout')));
 
 // Forum tabs: pick a category and the example threads filter to it (the bar stays hidden without JS, which shows them all).
 const forum = document.querySelector<HTMLElement>('[data-forum]');

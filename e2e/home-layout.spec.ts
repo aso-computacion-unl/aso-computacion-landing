@@ -109,3 +109,60 @@ for (const width of [390, 768, 1440]) {
 		});
 	});
 }
+
+test.describe('activities history', () => {
+	test('folds the older entries and always shows the root commit', async ({ page }) => {
+		await page.goto('/');
+		const fold = page.locator('[data-history-more]');
+		test.skip((await fold.count()) === 0, 'the build has too few past entries to fold');
+		await expect(fold).not.toHaveAttribute('open', '');
+		// The node pops in when it scrolls into view, so bring it there first.
+		await page.locator('[data-root-node]').scrollIntoViewIfNeeded();
+		await expect(page.locator('[data-root-node]')).toBeVisible();
+		const older = fold.locator('[data-card]').first();
+		await expect(older).toBeHidden();
+
+		const summary = fold.locator('summary');
+		await expect(summary).toHaveText(/^Ver historial \(\d+ más\)$/, { useInnerText: true });
+		await summary.focus();
+		await page.keyboard.press('Enter');
+		await expect(fold).toHaveAttribute('open', '');
+		await expect(summary).toHaveText('Ocultar historial', { useInnerText: true });
+		await older.scrollIntoViewIfNeeded();
+		await expect(older).toBeVisible();
+		await page.keyboard.press('Space');
+		await expect(fold).not.toHaveAttribute('open', '');
+		await expect(older).toBeHidden();
+	});
+
+	test('a filter that matches a folded entry opens the fold', async ({ page }) => {
+		await page.goto('/');
+		const fold = page.locator('[data-history-more]');
+		test.skip((await fold.count()) === 0, 'the build has too few past entries to fold');
+		const type = await fold.locator('[data-type]').first().getAttribute('data-type');
+		test.skip(!type, 'the folded entries have no type to filter by');
+		await page.locator(`[data-filter="${type}"]`).click();
+		await expect(fold).toHaveAttribute('open', '');
+	});
+
+	test.describe('without JS', () => {
+		test.use({ javaScriptEnabled: false });
+
+		test('the summary opens the fold by itself', async ({ page }) => {
+			await page.goto('/');
+			const fold = page.locator('[data-history-more]');
+			test.skip((await fold.count()) === 0, 'the build has too few past entries to fold');
+			const older = fold.locator('[data-card]').first();
+			await expect(older).toBeHidden();
+			await fold.locator('summary').click();
+			await expect(older).toBeVisible();
+		});
+	});
+
+	test('the English page names the control in English', async ({ page }) => {
+		await page.goto('/en/');
+		const fold = page.locator('[data-history-more]');
+		test.skip((await fold.count()) === 0, 'the build has too few past entries to fold');
+		await expect(fold.locator('summary')).toHaveText(/^Show history \(\d+ more\)$/, { useInnerText: true });
+	});
+});

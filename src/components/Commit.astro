@@ -14,9 +14,11 @@ interface Props {
 	entry: Entry;
 	last?: boolean;
 	compact?: boolean;
+	// The activity graph's tighter card: less padding, no hash line, the links in one row.
+	dense?: boolean;
 }
 
-const { entry, last = false, compact = false } = Astro.props;
+const { entry, last = false, compact = false, dense = false } = Astro.props;
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { nextEvent } = getContent(locale);
@@ -49,6 +51,8 @@ const isNext = !compact && entry === nextEvent;
 const mode = entry.kind === 'upcoming' ? ticketMode(entry, turnstileSiteKey) : undefined;
 const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
 const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
+// The hash line is decoration (aria-hidden, derived from the id): a dense card leaves it out.
+const showRef = !dense && Boolean(hash || deco);
 ---
 
 <li
@@ -63,7 +67,10 @@ const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 		aria-hidden="true"
 	></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class:list={['card', 'card-row', { 'has-reg': hasRegistration }]} data-card={compact ? undefined : ''}>
+	<div
+		class:list={['card', 'card-row', { 'has-reg': hasRegistration, 'card-dense': dense }]}
+		data-card={compact ? undefined : ''}
+	>
 		{isNext && (
 			<span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">
 				{t('commit.new')}
@@ -80,13 +87,18 @@ const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 					)}
 				</p>
 			)}
-			<h3 class="mt-3 font-display text-lead leading-snug text-ink">{entry.title}</h3>
+			<h3 class:list={['font-display text-lead leading-snug text-ink', dense ? 'mt-2' : 'mt-3']}>{entry.title}</h3>
 			{entry.msg && <p class="msg">{entry.msg}</p>}
-			{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
+			{!compact && entry.description && (
+				<p class:list={['mt-2 max-w-[60ch] text-mist', { 'text-secondary': dense }]}>{entry.description}</p>
+			)}
 			{!compact && entry.href && (
 				<a
 					href={entry.href}
-					class="mt-3 inline-block text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink"
+					class:list={[
+						'inline-block text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
+						dense ? 'mt-2' : 'mt-3',
+					]}
 					target={external ? '_blank' : undefined}
 					rel={external ? 'me noopener' : undefined}
 				>
@@ -94,7 +106,7 @@ const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 					{external && <span class="sr-only"> {t('newTab')}</span>}
 				</a>
 			)}
-			{(hash || deco) && (
+			{showRef && (
 				<p class="ref" aria-hidden="true">
 					{hash}
 					{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
