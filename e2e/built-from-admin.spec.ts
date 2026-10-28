@@ -67,22 +67,11 @@ test.describe('social proof from the admin', () => {
 		await Promise.all([site?.close(), admin?.close(), emptySite?.close(), emptyAdmin?.close()]);
 	});
 
-	test('renders the impact figures, the testimonials and the allies in Spanish', async ({ page }) => {
+	test('renders the allies in Spanish and never the impact figures or testimonials the admin still sends', async ({ page }) => {
 		await open(page, `${site.url}/`);
 
-		const impact = page.locator('#impacto');
-		await expect(impact.getByRole('heading', { name: 'Impacto' })).toBeVisible();
-		await expect(impact.locator('.impact-stat')).toHaveCount(2);
-		await expect(impact.locator('.impact-stat').first()).toContainText('120+');
-		await expect(impact.locator('.impact-stat').first()).toContainText('estudiantes en nuestras actividades');
-
-		const quotes = page.locator('#testimonios');
-		await expect(quotes.getByRole('heading', { name: 'Testimonios' })).toBeVisible();
-		await expect(quotes.locator('.quote')).toHaveCount(2);
-		await expect(quotes.locator('.quote').first().locator('blockquote')).toContainText('Aprendí Git en un taller');
-		await expect(quotes.locator('.quote').first().locator('img')).toHaveAttribute('alt', 'Retrato de Luis Torres');
-		await expect(quotes.locator('.quote').nth(1).locator('img')).toHaveCount(0);
-		await expect(quotes.locator('.quote').nth(1)).toContainText('Egresada');
+		await expect(page.locator('#impacto')).toHaveCount(0);
+		await expect(page.locator('#testimonios')).toHaveCount(0);
 
 		const allies = page.locator('#aliados');
 		await expect(allies.getByRole('heading', { name: 'Aliados' })).toBeVisible();
@@ -97,8 +86,6 @@ test.describe('social proof from the admin', () => {
 
 	test('speaks English on the English home', async ({ page }) => {
 		await open(page, `${site.url}/en/`);
-		await expect(page.locator('#impacto').getByRole('heading', { name: 'Impact' })).toBeVisible();
-		await expect(page.locator('#testimonios').getByRole('heading', { name: 'Testimonials' })).toBeVisible();
 		await expect(page.locator('#aliados').getByRole('heading', { name: 'Allies' })).toBeVisible();
 	});
 
@@ -133,7 +120,7 @@ test.describe('social proof from the admin', () => {
 		test('the sections sit still: no transform or opacity is applied to them', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			await expect(page.locator('html')).not.toHaveClass(/\bmotion\b/);
-			for (const selector of ['.impact-stat', '.quote', '.ally-tile']) {
+			for (const selector of ['.ally-tile']) {
 				const style = await page
 					.locator(selector)
 					.first()
