@@ -10,10 +10,13 @@ import {
 import { endsRegistration, messageKey, type Outcome } from '../lib/registration/outcome';
 import { registrationClosed } from '../lib/registration/rules';
 import { submitRegistration } from '../lib/registration/submit';
+import { closesIn, closesInLabel } from '../lib/registration/tickets';
+import { closeTicket, relayout } from './ticket';
 
-// Event registration (S8), loaded only on pages that have a registration block (components/EventRegistration.astro).
-// The server renders everything; this closes what expired since the build and runs the open form: Cloudflare Turnstile
-// on first open, the checks, the POST to the admin and an accessible message for every outcome.
+// Event registration (S8), loaded only on pages that have a ticket that takes registrations (components/Ticket.astro).
+// The server renders everything; this closes what expired since the build, keeps the days left honest and runs the open
+// form: it unfolds under its ticket, Cloudflare Turnstile loads on first unfold, then the checks, the POST to the admin
+// and an accessible message for every outcome.
 
 const locale = toLocale(document.documentElement.lang);
 const t = useTranslations(locale);
@@ -60,25 +63,30 @@ const loadTurnstile = (): Promise<TurnstileApi> => {
 	return turnstileLoad;
 };
 
-// The layout below a form that opens, closes or changes height moves; the motion script re-measures when told.
-const relayout = () => window.dispatchEvent(new Event('aso:relayout'));
-
 function closeIfExpired(block: HTMLElement): boolean {
 	if (!registrationClosed(block.dataset.regDeadline, Date.now())) return false;
-	block.querySelector<HTMLElement>('[data-reg-live]')?.setAttribute('hidden', '');
-	block.querySelector<HTMLElement>('[data-reg-closed]')?.removeAttribute('hidden');
-	relayout();
+	closeTicket(block, t('ticket.closed'));
 	return true;
 }
 
+// The page was built days ago: "Cierra en 14 días" is recomputed with the visitor's clock.
+function refreshDaysLeft(block: HTMLElement) {
+	const label = block.querySelector<HTMLElement>('[data-reg-closes]');
+	const left = closesIn(block.dataset.regDeadline, Date.now());
+	if (!label || !left) return;
+	const { key, vars } = closesInLabel(left.days);
+	label.textContent = t(key, vars);
+}
+
 function setupForm(block: HTMLElement, form: HTMLFormElement) {
-	const details = block.querySelector<HTMLDetailsElement>('[data-reg-details]');
+	const trigger = block.querySelector<HTMLButtonElement>('[data-reg-action]');
+	const close = block.querySelector<HTMLButtonElement>('[data-reg-close]');
 	const captcha = form.querySelector<HTMLElement>('[data-reg-captcha]');
 	const submit = form.querySelector<HTMLButtonElement>('[data-reg-submit]');
 	const errorBox = form.querySelector<HTMLElement>('[data-reg-error]');
 	const okBox = form.querySelector<HTMLElement>('[data-reg-ok]');
 	const { endpoint, siteKey } = form.dataset;
-	if (!details || !captcha || !submit || !errorBox || !okBox || !endpoint || !siteKey) return;
+	if (!trigger || !close || !captcha || !submit || !errorBox || !okBox || !endpoint || !siteKey) return;
 
 	const input = (field: FormField) => form.elements.namedItem(field) as HTMLInputElement;
 	const fieldError = (field: FormField) => form.querySelector<HTMLElement>(`[data-reg-field-error="${field}"]`);
@@ -154,9 +162,16 @@ function setupForm(block: HTMLElement, form: HTMLFormElement) {
 		);
 	};
 
-	details.addEventListener('toggle', () => {
-		if (details.open && !closeIfExpired(block)) mountWidget();
+	const setOpen = (open: boolean) => {
+		block.classList.toggle('is-open', open);
+		trigger.setAttribute('aria-expanded', String(open));
+		if (open && !closeIfExpired(block)) mountWidget();
 		relayout();
+	};
+	trigger.addEventListener('click', () => setOpen(!block.classList.contains('is-open')));
+	close.addEventListener('click', () => {
+		setOpen(false);
+		trigger.focus();
 	});
 
 	// A field that was wrong stops being flagged as soon as the person edits it.
@@ -205,6 +220,7 @@ function setupForm(block: HTMLElement, form: HTMLFormElement) {
 
 document.querySelectorAll<HTMLElement>('[data-reg]').forEach((block) => {
 	if (closeIfExpired(block)) return;
+	refreshDaysLeft(block);
 	const form = block.querySelector<HTMLFormElement>('[data-reg-form]');
 	if (form) setupForm(block, form);
 });

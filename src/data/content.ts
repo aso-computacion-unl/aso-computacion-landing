@@ -10,6 +10,7 @@ import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gat
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
 import { openFormWithoutSiteKey } from '../lib/registration/rules';
+import { chooseTickets } from '../lib/registration/tickets';
 import fallback from './fallback.json';
 import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
 
@@ -35,7 +36,8 @@ const loaded = preview
 
 // The forum lives on the admin's origin: the one the content came from (the preview's, in a preview build). Unknown or
 // unsafe, there is no forum link (fail closed, like the registration links).
-const forumLink = forumUrl(adminOriginOf(preview ? preview.url : adminUrl));
+const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
+const forumLink = forumUrl(adminOrigin);
 
 // Public Cloudflare Turnstile site key (S8): the open registration form needs it to show its widget. Without it the form
 // is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
@@ -71,7 +73,10 @@ function build(locale: Locale) {
 		// True on a preview build: the layout adds the banner and noindex, and the site is never meant to be public.
 		preview: resolved.source === 'preview',
 		site: resolved.site,
-		navLinks: resolved.navLinks,
+		// No ticket to show (nothing upcoming, or only open forms without the Turnstile key): no link to the section either.
+		navLinks: resolved.navLinks.filter(
+			(link) => link.href !== '#inscripciones' || chooseTickets(resolved.timeline, turnstileSiteKey).length > 0,
+		),
 		timeline: resolved.timeline,
 		nextEvent: resolved.nextEvent,
 		pillars: resolved.pillars,

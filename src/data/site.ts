@@ -94,6 +94,7 @@ export const demoPillars: Pillar[] = [
 
 export const navLinks = [
 	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Inscripciones', href: '#inscripciones' },
 	{ label: 'Novedades', href: '/novedades' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
@@ -472,6 +473,7 @@ const enCopy: LandingCopy = {
 	},
 	navLinks: [
 		{ label: 'Activities', href: '#actividades' },
+		{ label: 'Sign-ups', href: '#inscripciones' },
 		{ label: 'News', href: '/novedades' },
 		{ label: 'About', href: '#nosotros' },
 		{ label: 'Board', href: '#directiva' },

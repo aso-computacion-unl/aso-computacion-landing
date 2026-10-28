@@ -1,11 +1,11 @@
 ---
-import EventRegistration from './EventRegistration.astro';
 import Photo from './Photo.astro';
-import { getContent } from '../data/content';
+import { getContent, turnstileSiteKey } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { metaLabel, useTranslations } from '../i18n/ui';
 import type { TimelineKind } from '../lib/admin-content/model';
 import { eventAnchor } from '../lib/seo/events';
+import { ticketAnchor, ticketMode } from '../lib/registration/tickets';
 import { shortHash } from './shortHash';
 
 type Entry = ReturnType<typeof getContent>['timeline'][number];
@@ -45,7 +45,10 @@ const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
-const hasRegistration = !compact && Boolean(entry.registration || entry.calendarHref);
+// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity has no ticket to point to.
+const mode = entry.kind === 'upcoming' ? ticketMode(entry, turnstileSiteKey) : undefined;
+const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
+const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 ---
 
 <li
@@ -108,7 +111,22 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 				))}
 			</dl>
 		)}
-		{hasRegistration && <EventRegistration entry={entry} />}
+		{hasRegistration && (
+			<div class="reg">
+				{ticketLink && (
+					<a class="reg-ticket" href={ticketLink}>
+						{t('ticket.link')}
+						<span aria-hidden="true"> →</span>
+					</a>
+				)}
+				{entry.calendarHref && (
+					<a class="reg-calendar" href={entry.calendarHref}>
+						{t('calendar.add')}
+						<span aria-hidden="true"> · .ics</span>
+					</a>
+				)}
+			</div>
+		)}
 		{showPhoto && entry.image && (
 			<div class="duo photo">
 				<Photo

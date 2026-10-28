@@ -123,22 +123,35 @@ const foreignContent = (admin: string) => {
 
 const FIELDS = { name: 'Ana Mora', email: 'ana@unl.edu.ec', career: 'Computación', semester: '5' };
 
-const open = async (page: Page, url: string, behavior: TurnstileBehavior = 'solves') => {
+const open = async (
+	page: Page,
+	url: string,
+	behavior: TurnstileBehavior = 'solves',
+	waitUntil: 'networkidle' | 'load' = 'networkidle',
+) => {
 	await page.route('https://res.cloudinary.com/**', (route) =>
 		route.fulfill({ status: 200, contentType: 'image/png', body: PIXEL }),
 	);
 	await page.route('https://challenges.cloudflare.com/**', (route) =>
 		route.fulfill({ status: 200, contentType: 'text/javascript', body: fakeTurnstile(behavior) }),
 	);
-	await page.goto(url, { waitUntil: 'networkidle' });
+	await page.goto(url, { waitUntil });
 };
 
 const card = (page: Page, slug: string) => page.locator(`#evento-${slug}`);
+// The ticket of an activity in the Inscripciones section: its action unfolds the form that hangs under it.
+const ticket = (page: Page, slug: string) => page.locator(`#inscripciones-${slug}`);
+const action = (page: Page, slug = 'taller-abierto') => ticket(page, slug).locator('[data-reg-action]');
 const openForm = async (page: Page, slug = 'taller-abierto') => {
-	const details = card(page, slug).locator('[data-reg-details]');
-	await details.locator('summary').click();
-	await expect(details).toHaveAttribute('open', '');
-	return card(page, slug).locator('[data-reg-form]');
+	await action(page, slug).click();
+	await expect(action(page, slug)).toHaveAttribute('aria-expanded', 'true');
+	await expect(ticket(page, slug).locator('[data-reg-panel]')).toBeVisible();
+	return ticket(page, slug).locator('[data-reg-form]');
+};
+// Folds and unfolds the form again (the click on the ticket's action toggles it).
+const refold = async (page: Page, slug = 'taller-abierto') => {
+	await action(page, slug).click();
+	await action(page, slug).click();
 };
 const fillForm = async (form: Locator, values: Partial<typeof FIELDS> = {}) => {
 	const all = { ...FIELDS, ...values };
@@ -168,6 +181,8 @@ test.describe('registration from the admin', () => {
 	let foreignOutput = '';
 	let foreignDir = '';
 	let mainDir = '';
+	let emptyAdmin: MockAdmin;
+	let emptySite: StaticSite;
 
 	test.beforeAll(async () => {
 		test.setTimeout(420_000);
@@ -206,6 +221,15 @@ test.describe('registration from the admin', () => {
 		foreignOutput = foreign.output;
 		foreignDir = foreign.outDir;
 		foreignSite = await serveDirectory(foreign.outDir);
+
+		// Nothing upcoming: no ticket, so no section and no link to it.
+		emptyAdmin = await startMockAdmin({ content: () => payload({ events: [event('viejo', 'Taller viejo', -20)] }) });
+		const empty = await buildSite('registration-empty', {
+			ADMIN_CONTENT_URL: `${emptyAdmin.url}/api/public/content`,
+			PUBLIC_TURNSTILE_SITE_KEY: SITE_KEY,
+		});
+		expect(empty.exitCode, empty.output).toBe(0);
+		emptySite = await serveDirectory(empty.outDir);
 	});
 
 	test.afterAll(async () => {
@@ -218,6 +242,8 @@ test.describe('registration from the admin', () => {
 			legacyAdmin?.close(),
 			foreignSite?.close(),
 			foreignAdmin?.close(),
+			emptySite?.close(),
+			emptyAdmin?.close(),
 		]);
 	});
 
@@ -226,80 +252,210 @@ test.describe('registration from the admin', () => {
 		admin.registrationReply = { status: 201, body: { ok: true } };
 	});
 
-	test.describe('what each event shows', () => {
-		test('an open-mode event has a closed disclosure with the seats and the deadline', async ({ page }) => {
+	test.describe('what each ticket shows', () => {
+		test('an open-mode ticket has a folded form, the capacity, the deadline and an action that controls it', async ({
+			page,
+		}) => {
 			await open(page, `${site.url}/`);
-			const block = card(page, 'taller-abierto').locator('[data-reg]');
-			await expect(block.locator('summary')).toHaveText(/Inscribirme/);
-			await expect(block.locator('[data-reg-details]')).not.toHaveAttribute('open', '');
-			await expect(block).toContainText('Cupos limitados: 40');
-			await expect(block).toContainText('Inscripciones hasta el');
-			await expect(block).toContainText('hora de Ecuador');
-			// Nothing of Turnstile is requested until someone opens the form.
+			const item = ticket(page, 'taller-abierto');
+			const button = action(page);
+			await expect(button).toHaveText(/Llenar mi boleto/);
+			await expect(button).toHaveAttribute('aria-expanded', 'false');
+			await expect(button).toHaveAttribute('aria-controls', 'reg-taller-abierto-panel');
+			await expect(item.locator('[data-reg-panel]')).toBeHidden();
+			await expect(item.locator('[data-seat-num]')).toHaveText('40');
+			await expect(item.locator('[data-seat-label]')).toHaveText('cupos');
+			await expect(item.locator('[data-seat-meter]')).toBeHidden();
+			// The build saw the deadline 20 days away; the days left are counted from the visitor's clock.
+			await expect(item.locator('[data-reg-closes]')).toHaveText(/Cierra en (19|20) días/);
+			await expect(item).toContainText('hora de Ecuador');
+			// Nothing of Turnstile is requested until someone unfolds the form.
 			expect(await page.evaluate(() => (window as never as Partial<FakeTurnstile>).__turnstile)).toBeUndefined();
 		});
 
-		test('a UNL-mode event links to the admin page and has no form', async ({ page }) => {
+		test('a UNL-mode ticket links to the admin page and has no form', async ({ page }) => {
 			await open(page, `${site.url}/`);
-			const block = card(page, 'charla-unl');
-			const link = block.getByRole('link', { name: /Inscribirme con mi cuenta UNL/ });
+			const item = ticket(page, 'charla-unl');
+			const link = item.getByRole('link', { name: /Inscribirme con mi cuenta UNL/ });
 			await expect(link).toHaveAttribute('href', `${admin.url}/foro/eventos/charla-unl`);
 			await expect(link).toHaveAttribute('target', '_blank');
 			await expect(link).toHaveAttribute('rel', /noopener/);
-			await expect(block.locator('[data-reg-form]')).toHaveCount(0);
-			await expect(block).toContainText('@unl.edu.ec');
+			await expect(item.locator('[data-reg-form]')).toHaveCount(0);
+			await expect(item).toContainText('@unl.edu.ec');
+			await expect(item).toContainText('Sin fecha límite de inscripción');
 		});
 
-		test('an event with registration off shows no registration at all, only its calendar link', async ({ page }) => {
+		test('an activity with registration off gets a free pass: no action, no seats, its calendar link', async ({
+			page,
+		}) => {
 			await open(page, `${site.url}/`);
-			const block = card(page, 'taller-libre');
-			await expect(block.locator('[data-reg-details], [data-reg-form], .reg-cta')).toHaveCount(0);
-			await expect(block.getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
+			const item = ticket(page, 'taller-libre');
+			await expect(item).toContainText('Pase libre');
+			await expect(item).toContainText('Entrada libre');
+			await expect(item.locator('[data-reg], [data-reg-action], [data-reg-panel], [data-seat-num]')).toHaveCount(0);
+			await expect(item.getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
 				'href',
 				calendar(admin.url, 'taller-libre'),
 			);
+			// A free pass has no seats: the script that paints them never looks for it.
+			await expect(item).not.toHaveAttribute('data-ticket', /.+/);
 		});
 
-		test('an event whose deadline passed says so, with no way to sign up', async ({ page }) => {
+		test('a ticket whose deadline passed says so, with its action disabled and no form', async ({ page }) => {
 			await open(page, `${site.url}/`);
-			const block = card(page, 'taller-cerrado');
-			await expect(block.locator('[data-reg-closed]')).toBeVisible();
-			await expect(block.locator('[data-reg-closed]')).toHaveText('Las inscripciones están cerradas.');
-			await expect(block.locator('[data-reg-details], [data-reg-form]')).toHaveCount(0);
+			const item = ticket(page, 'taller-cerrado');
+			await expect(item.locator('[data-ticket-state]')).toHaveText('Inscripciones cerradas');
+			await expect(action(page, 'taller-cerrado')).toBeDisabled();
+			await expect(item.locator('[data-reg-panel], [data-reg-form]')).toHaveCount(0);
 		});
 
-		test('a past event offers neither registration nor calendar, and an event the admin gave no extras shows none', async ({
+		test('a past event has no ticket and no calendar, and an event the admin gave no extras is a free pass', async ({
 			page,
 		}) => {
 			await open(page, `${site.url}/`);
 			await expect(page.locator('#evento-taller-pasado')).toHaveCount(0);
+			await expect(ticket(page, 'taller-pasado')).toHaveCount(0);
 			const past = page.locator('li.commit', { hasText: 'Taller pasado' });
 			await expect(past).toHaveCount(1);
-			await expect(past.locator('[data-reg], .reg-calendar')).toHaveCount(0);
-			const plain = card(page, 'sin-extras');
-			await expect(plain.locator('[data-reg]')).toHaveCount(0);
+			await expect(past.locator('.reg, .reg-calendar')).toHaveCount(0);
+			await expect(card(page, 'sin-extras').locator('.reg')).toHaveCount(0);
+			await expect(ticket(page, 'sin-extras')).toContainText('Pase libre');
 		});
 
 		test('a registration that expired after the build closes in the browser', async ({ page }) => {
 			// The build saw an open deadline (20 days away); the visitor's clock is past it.
 			await page.clock.setFixedTime(new Date(Date.now() + 25 * DAY));
 			await open(page, `${site.url}/`);
-			const block = card(page, 'taller-abierto').locator('[data-reg]');
-			await expect(block.locator('[data-reg-closed]')).toBeVisible();
-			await expect(block.locator('[data-reg-live]')).toBeHidden();
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.locator('[data-ticket-state]')).toHaveText('Inscripciones cerradas');
+			await expect(action(page)).toBeDisabled();
+			await expect(item.locator('[data-reg-panel]')).toBeHidden();
+			await expect(item.locator('[data-reg-extra]')).toBeHidden();
 		});
 
 		test('speaks English on the English home', async ({ page }) => {
 			await open(page, `${site.url}/en/`);
-			const block = card(page, 'taller-abierto').locator('[data-reg]');
-			await expect(block.locator('summary')).toHaveText(/Sign up/);
-			await expect(block).toContainText('Limited seats: 40');
-			await expect(block).toContainText('Ecuador time');
-			await expect(block.getByRole('link', { name: /Add to calendar/ })).toBeVisible();
-			await expect(card(page, 'charla-unl').getByRole('link', { name: /Sign up with my UNL account/ })).toBeVisible();
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.getByRole('heading', { level: 3 })).toHaveText('Taller abierto');
+			await expect(item).toContainText('Ticket 001');
+			await expect(item).toContainText('With a form');
+			await expect(action(page)).toHaveText(/Fill in my ticket/);
+			await expect(item.locator('[data-seat-label]')).toHaveText('seats');
+			await expect(item).toContainText('Ecuador time');
+			await expect(ticket(page, 'taller-libre').getByRole('link', { name: /Add to calendar/ })).toBeVisible();
+			await expect(ticket(page, 'charla-unl').getByRole('link', { name: /Sign up with my UNL account/ })).toBeVisible();
 			const form = await openForm(page);
 			await expect(form.getByLabel('Full name')).toBeVisible();
 			await expect(form.getByRole('button', { name: 'Send registration' })).toBeVisible();
+		});
+	});
+
+	test.describe('the Inscripciones section', () => {
+		test('has one ticket per upcoming activity, nearest date first, numbering only the ones that take registrations', async ({
+			page,
+		}) => {
+			await open(page, `${site.url}/`);
+			const ids = await page.locator('#inscripciones .tk-item').evaluateAll((nodes) => nodes.map((node) => node.id));
+			expect(ids).toEqual([
+				'inscripciones-taller-abierto',
+				'inscripciones-charla-unl',
+				'inscripciones-taller-libre',
+				'inscripciones-taller-cerrado',
+				'inscripciones-sin-extras',
+			]);
+			const labels = await page.locator('#inscripciones .tk-no').allTextContents();
+			expect(labels).toEqual(['Boleto 001', 'Boleto 002', 'Pase libre', 'Boleto 003', 'Pase libre']);
+			const modes = await page.locator('#inscripciones .tk-chip').allTextContents();
+			expect(modes).toEqual([
+				'Con formulario',
+				'Con cuenta UNL',
+				'Sin inscripción',
+				'Con formulario',
+				'Sin inscripción',
+			]);
+		});
+
+		test('shows the facts the admin gave and only those', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			const facts = ticket(page, 'taller-abierto').locator('.tk-facts');
+			await expect(facts).toContainText('Fecha');
+			await expect(facts).toContainText('Hora');
+			await expect(facts).toContainText('Lugar');
+			await expect(facts).toContainText('Laboratorio');
+			await expect(facts).toContainText('Para');
+		});
+
+		test('is in the header menu, and its legend lists how people sign up', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			await expect(page.locator('header nav a[href="#inscripciones"]')).toHaveText('inscripciones');
+			await expect(page.locator('#inscripciones .tk-key li')).toHaveCount(3);
+		});
+
+		test('the activity cards link to their ticket instead of holding a form', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			for (const slug of ['taller-abierto', 'charla-unl', 'taller-cerrado']) {
+				await expect(card(page, slug).getByRole('link', { name: /Ver el boleto de inscripción/ })).toHaveAttribute(
+					'href',
+					`#inscripciones-${slug}`,
+				);
+			}
+			// A free activity has no ticket to send people to.
+			await expect(card(page, 'taller-libre').getByRole('link', { name: /Ver el boleto/ })).toHaveCount(0);
+			await expect(page.locator('li.commit [data-reg-form], li.commit [data-reg-panel]')).toHaveCount(0);
+			await expect(page.locator('[data-reg-form]')).toHaveCount(1);
+			await card(page, 'taller-abierto')
+				.getByRole('link', { name: /Ver el boleto/ })
+				.click();
+			await expect(page).toHaveURL(/#inscripciones-taller-abierto$/);
+			await expect(ticket(page, 'taller-abierto')).toBeInViewport();
+		});
+
+		test('is left out, with its link in the menu, when nothing is upcoming', async ({ page }) => {
+			await open(page, `${emptySite.url}/`);
+			await expect(page.locator('#inscripciones')).toHaveCount(0);
+			await expect(page.locator('header nav a[href="#inscripciones"]')).toHaveCount(0);
+			await expect(page.locator('#evento-viejo')).toHaveCount(0);
+		});
+
+		test('unfolds the form under its ticket and "Cerrar" folds it and returns focus to the action', async ({
+			page,
+		}) => {
+			await open(page, `${site.url}/`);
+			const item = ticket(page, 'taller-abierto');
+			const panel = item.locator('[data-reg-panel]');
+			await action(page).click();
+			await expect(action(page)).toHaveAttribute('aria-expanded', 'true');
+			await expect(panel).toBeVisible();
+			await solved(page);
+			await panel.getByRole('button', { name: 'Cerrar' }).click();
+			await expect(action(page)).toHaveAttribute('aria-expanded', 'false');
+			await expect(panel).toBeHidden();
+			await expect(action(page)).toBeFocused();
+			// Unfolding again is the same form: nothing is rendered twice.
+			await action(page).click();
+			await expect(panel).toBeVisible();
+			expect(await page.evaluate(() => (window as never as FakeTurnstile).__turnstile.renders)).toBe(1);
+		});
+
+		test('without JavaScript the open form is shown expanded and cannot be sent', async ({ browser }) => {
+			const context = await browser.newContext({ javaScriptEnabled: false });
+			const page = await context.newPage();
+			await page.route('https://res.cloudinary.com/**', (route) =>
+				route.fulfill({ status: 200, contentType: 'image/png', body: PIXEL }),
+			);
+			await page.goto(`${site.url}/`);
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.locator('[data-reg-panel]')).toBeVisible();
+			await expect(item.getByLabel('Nombre completo')).toBeVisible();
+			await expect(item.locator('noscript .reg-note')).toContainText('Activa JavaScript para inscribirte desde aquí.');
+			await expect(item.getByRole('button', { name: 'Enviar inscripción' })).toBeDisabled();
+			// What only works with JavaScript is not offered.
+			await expect(action(page)).toBeHidden();
+			await expect(item.getByRole('button', { name: 'Cerrar' })).toBeHidden();
+			await expect(
+				ticket(page, 'charla-unl').getByRole('link', { name: /Inscribirme con mi cuenta UNL/ }),
+			).toBeVisible();
+			await context.close();
 		});
 	});
 
@@ -333,8 +489,7 @@ test.describe('registration from the admin', () => {
 				language: 'es',
 			});
 			// Closing and opening again does not draw a second widget.
-			await card(page, 'taller-abierto').locator('[data-reg-details] summary').click();
-			await card(page, 'taller-abierto').locator('[data-reg-details] summary').click();
+			await refold(page);
 			expect(await page.evaluate(() => (window as never as FakeTurnstile).__turnstile.renders)).toBe(1);
 		});
 
@@ -462,8 +617,7 @@ test.describe('registration from the admin', () => {
 			await page.goto(`${site.url}/`, { waitUntil: 'networkidle' });
 			const form = await openForm(page);
 			await expect(form.locator('[data-reg-error]')).toHaveText(/verificación de seguridad/);
-			await card(page, 'taller-abierto').locator('[data-reg-details] summary').click();
-			await card(page, 'taller-abierto').locator('[data-reg-details] summary').click();
+			await refold(page);
 			await solved(page);
 			expect(attempts).toBe(2);
 		});
@@ -579,7 +733,8 @@ test.describe('registration from the admin', () => {
 					calendar(admin.url, slug),
 				);
 			}
-			await expect(page.getByRole('link', { name: /Añadir al calendario/ })).toHaveCount(4);
+			// The cards of the activity graph; the free pass's ticket repeats its own.
+			await expect(page.locator('li.commit').getByRole('link', { name: /Añadir al calendario/ })).toHaveCount(4);
 		});
 
 		test('prints one Event per upcoming event that has schema values, with its registration as the offer', async ({
@@ -663,9 +818,14 @@ test.describe('registration from the admin', () => {
 			expect(noKeyOutput).toContain('taller-abierto');
 			expect(mainOutput).not.toContain('PUBLIC_TURNSTILE_SITE_KEY is not set');
 			await open(page, `${noKeySite.url}/`);
-			await expect(page.locator('[data-reg-details], [data-reg-form]')).toHaveCount(0);
+			await expect(page.locator('[data-reg-panel], [data-reg-form]')).toHaveCount(0);
+			// The activity keeps its card and its calendar link, but has no ticket (it is not free either) and nothing links to one.
 			await expect(card(page, 'taller-abierto').getByRole('link', { name: /Añadir al calendario/ })).toBeVisible();
-			await expect(card(page, 'charla-unl').getByRole('link', { name: /Inscribirme con mi cuenta UNL/ })).toBeVisible();
+			await expect(ticket(page, 'taller-abierto')).toHaveCount(0);
+			await expect(card(page, 'taller-abierto').getByRole('link', { name: /Ver el boleto/ })).toHaveCount(0);
+			await expect(
+				ticket(page, 'charla-unl').getByRole('link', { name: /Inscribirme con mi cuenta UNL/ }),
+			).toBeVisible();
 			// The Event data cannot promise a form that is not there, but the UNL registration is still offered.
 			const events = await ldEvents(page);
 			expect(events).toHaveLength(4);
@@ -707,7 +867,11 @@ test.describe('registration from the admin', () => {
 				if (request.method() !== 'GET' || /ana|unl\.edu|Computaci/.test(request.url())) sent.push(request.url());
 			});
 			const before = page.url();
-			const form = await openForm(page);
+			// Without its script the action does nothing and the form stays folded: take the `js` class away to look at the
+			// form as the page ships it, which is also what a browser without JavaScript shows.
+			await page.evaluate(() => document.documentElement.classList.remove('js'));
+			const form = ticket(page, 'taller-abierto').locator('[data-reg-form]');
+			await expect(form).toBeVisible();
 			await fillForm(form);
 			const send = form.getByRole('button', { name: 'Enviar inscripción' });
 			// The handler never attached, so nothing enabled the button.
@@ -749,7 +913,8 @@ test.describe('registration from the admin', () => {
 			expect(foreignOutput).toContain('not on the admin origin');
 			expect(mainOutput).not.toContain('not on the admin origin');
 			await open(page, `${foreignSite.url}/`);
-			await expect(page.locator('[data-reg-details], [data-reg-form], .reg-cta, .reg-calendar')).toHaveCount(0);
+			await expect(page.locator('[data-reg-panel], [data-reg-form], [data-reg-action], .reg-calendar')).toHaveCount(0);
+			await expect(page.locator('#inscripciones .tk:not(.tk-free)')).toHaveCount(0);
 		});
 
 		test('nothing of the foreign host reaches the page, the Event data included', async () => {
@@ -787,14 +952,16 @@ test.describe('registration from the admin', () => {
 			}
 		}
 
-		test('works from the keyboard alone: Enter opens the form, Tab reaches every field and the button', async ({
+		test('works from the keyboard alone: Enter unfolds the form, Tab reaches "Cerrar", every field and the button', async ({
 			page,
 		}) => {
 			await open(page, `${site.url}/`);
-			await card(page, 'taller-abierto').locator('summary').focus();
+			await action(page).focus();
 			await page.keyboard.press('Enter');
-			const form = card(page, 'taller-abierto').locator('[data-reg-form]');
+			const form = ticket(page, 'taller-abierto').locator('[data-reg-form]');
 			await expect(form).toBeVisible();
+			await page.keyboard.press('Tab');
+			await expect(ticket(page, 'taller-abierto').getByRole('button', { name: 'Cerrar' })).toBeFocused();
 			for (const label of ['Nombre completo', 'Correo electrónico', 'Carrera', 'Semestre (1 a 12)']) {
 				await page.keyboard.press('Tab');
 				await expect(form.getByLabel(label)).toBeFocused();
