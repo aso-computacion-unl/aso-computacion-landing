@@ -10,6 +10,7 @@ import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gat
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
 import { openFormWithoutSiteKey } from '../lib/registration/rules';
+import { seatsUrl } from '../lib/registration/seats';
 import { chooseTickets } from '../lib/registration/tickets';
 import fallback from './fallback.json';
 import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
@@ -35,9 +36,10 @@ const loaded = preview
 	: await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
 
 // The forum lives on the admin's origin: the one the content came from (the preview's, in a preview build). Unknown or
-// unsafe, there is no forum link (fail closed, like the registration links).
+// unsafe, there is no forum link (fail closed, like the registration links), and the tickets never ask for their seats.
 const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
 const forumLink = forumUrl(adminOrigin);
+const seatsLink = seatsUrl(adminOrigin);
 
 // Public Cloudflare Turnstile site key (S8): the open registration form needs it to show its widget. Without it the form
 // is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
@@ -81,6 +83,8 @@ function build(locale: Locale) {
 		nextEvent: resolved.nextEvent,
 		pillars: resolved.pillars,
 		forum: { ...landing.forum, url: forumLink },
+		// The admin's public seats endpoint, when its origin is known.
+		seatsUrl: seatsLink,
 		faq: { ...landing.faqCopy, demo: resolved.faqIsDemo, items: resolved.faqItems, commands: resolved.faqCommands },
 		team: resolved.team,
 		socials: resolved.socials,

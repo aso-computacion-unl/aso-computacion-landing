@@ -459,6 +459,172 @@ test.describe('registration from the admin', () => {
 		});
 	});
 
+	test.describe('live seats', () => {
+		const SEATS = '**/api/public/events/seats';
+		const answer = (events: unknown[]) => ({
+			status: 200,
+			contentType: 'application/json',
+			headers: { 'access-control-allow-origin': '*' },
+			body: JSON.stringify({ events }),
+		});
+		const seatsOf = (slug: string, capacity: number | null, registered: number, status = 'open') => ({
+			slug,
+			capacity,
+			registered,
+			seatsLeft: capacity === null ? null : Math.max(0, capacity - registered),
+			status,
+		});
+
+		test('asks the admin once at page load, as a plain GET with no credentials', async ({ page }) => {
+			const requests: { method: string; cookie: string | undefined }[] = [];
+			await page.route(SEATS, (route) => {
+				requests.push({ method: route.request().method(), cookie: route.request().headers().cookie });
+				return route.fulfill(answer([seatsOf('taller-abierto', 40, 5)]));
+			});
+			await open(page, `${site.url}/`);
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-num]')).toHaveText('35');
+			expect(requests).toEqual([{ method: 'GET', cookie: undefined }]);
+		});
+
+		test('shows "N cupos libres de M" and the meter on each ticket', async ({ page }) => {
+			await page.route(SEATS, (route) =>
+				route.fulfill(answer([seatsOf('taller-abierto', 40, 38), seatsOf('charla-unl', 60, 42)])),
+			);
+			await open(page, `${site.url}/`);
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.locator('[data-seat-num]')).toHaveText('2');
+			await expect(item.locator('[data-seat-label]')).toHaveText('cupos libres de 40');
+			await expect(item.locator('[data-seat-taken]')).toHaveText('38 ocupados');
+			const meter = item.locator('[data-seat-meter]');
+			await expect(meter).toHaveAttribute('aria-label', '38 de 40 cupos ocupados');
+			expect(await meter.locator('i').evaluate((node) => (node as HTMLElement).style.width)).toBe('95%');
+			// Still open: the action works and the form unfolds.
+			await expect(action(page)).toBeEnabled();
+			await openForm(page);
+			// The UNL ticket gets its own numbers from the same answer.
+			await expect(ticket(page, 'charla-unl').locator('[data-seat-label]')).toHaveText('cupos libres de 60');
+			await expect(ticket(page, 'charla-unl').locator('[data-seat-num]')).toHaveText('18');
+		});
+
+		test('says "1 cupo libre" in the singular', async ({ page }) => {
+			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('taller-abierto', 40, 39)])));
+			await open(page, `${site.url}/`);
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-label]')).toHaveText('cupo libre de 40');
+		});
+
+		test('speaks English', async ({ page }) => {
+			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('taller-abierto', 40, 38)])));
+			await open(page, `${site.url}/en/`);
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.locator('[data-seat-label]')).toHaveText('seats left of 40');
+			await expect(item.locator('[data-seat-meter]')).toHaveAttribute('aria-label', '38 of 40 seats taken');
+		});
+
+		test('a full event says "Sin cupos", disables the action and does not offer the form', async ({ page }) => {
+			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('taller-abierto', 40, 40, 'full')])));
+			await open(page, `${site.url}/`);
+			const item = ticket(page, 'taller-abierto');
+			await expect(item.locator('[data-ticket-state]')).toHaveText('Sin cupos');
+			await expect(item.locator('[data-seat-num]')).toHaveText('0');
+			await expect(action(page)).toBeDisabled();
+			await expect(item.locator('[data-reg-panel]')).toBeHidden();
+			await expect(item.locator('[data-reg-extra]')).toBeHidden();
+		});
+
+		test('a full form that was already unfolded is taken away when the answer arrives', async ({ page }) => {
+			let release: () => void = () => {};
+			const gate = new Promise<void>((resolve) => (release = resolve));
+			await page.route(SEATS, async (route) => {
+				await gate;
+				await route.fulfill(answer([seatsOf('taller-abierto', 40, 40, 'full')]));
+			});
+			await open(page, `${site.url}/`, 'solves', 'load');
+			await expect(page.locator('[data-reg-submit]')).toBeEnabled();
+			await openForm(page);
+			release();
+			await expect(ticket(page, 'taller-abierto').locator('[data-ticket-state]')).toHaveText('Sin cupos');
+			await expect(ticket(page, 'taller-abierto').locator('[data-reg-panel]')).toBeHidden();
+			await expect(action(page)).toBeDisabled();
+		});
+
+		test('a closed event says "Inscripciones cerradas" and its UNL link goes nowhere', async ({ page }) => {
+			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('charla-unl', 60, 10, 'closed')])));
+			await open(page, `${site.url}/`);
+			const item = ticket(page, 'charla-unl');
+			await expect(item.locator('[data-ticket-state]')).toHaveText('Inscripciones cerradas');
+			const link = item.locator('[data-reg-action]');
+			await expect(link).toHaveAttribute('aria-disabled', 'true');
+			await expect(link).not.toHaveAttribute('href', /.+/);
+		});
+
+		test('an event with no capacity shows no numbers, only its state', async ({ page }) => {
+			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('charla-unl', null, 12)])));
+			await open(page, `${site.url}/`);
+			const item = ticket(page, 'charla-unl');
+			for (const hook of ['[data-seat-num]', '[data-seat-meter]', '[data-seat-taken]'])
+				await expect(item.locator(hook)).toBeHidden();
+			await expect(item.locator('[data-reg-action]')).toHaveAttribute('href', /charla-unl/);
+		});
+
+		test('an answer that does not match the contract changes nothing', async ({ page }) => {
+			await page.route(SEATS, (route) =>
+				route.fulfill(answer([{ slug: 'taller-abierto', capacity: 'muchos', registered: 1, status: 'open' }, null])),
+			);
+			await open(page, `${site.url}/`);
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-num]')).toHaveText('40');
+			await expect(action(page)).toBeEnabled();
+		});
+
+		for (const [name, handler] of [
+			['the request fails', (route: import('@playwright/test').Route) => route.abort()],
+			[
+				'the admin answers with an error',
+				(route: import('@playwright/test').Route) => route.fulfill({ status: 503, body: '{}' }),
+			],
+			[
+				'the answer is not JSON',
+				(route: import('@playwright/test').Route) =>
+					route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, body: '<html>' }),
+			],
+		] as const) {
+			test(`when ${name} the ticket keeps its capacity and its action`, async ({ page }) => {
+				await page.route(SEATS, handler);
+				await open(page, `${site.url}/`);
+				const item = ticket(page, 'taller-abierto');
+				await expect(item.locator('[data-seat-num]')).toHaveText('40');
+				await expect(item.locator('[data-seat-label]')).toHaveText('cupos');
+				await expect(item.locator('[data-seat-meter]')).toBeHidden();
+				await expect(item.locator('[data-ticket-state]')).toBeHidden();
+				await expect(action(page)).toBeEnabled();
+				await openForm(page);
+				await expect(
+					ticket(page, 'charla-unl').getByRole('link', { name: /Inscribirme con mi cuenta UNL/ }),
+				).toHaveAttribute('href', /charla-unl/);
+			});
+		}
+
+		test('when the admin is slow the ticket keeps its capacity and the form still works, and a late answer is ignored', async ({
+			page,
+		}) => {
+			test.setTimeout(30_000);
+			let late: (() => void) | undefined;
+			await page.route(SEATS, (route) => {
+				late = () => void route.fulfill(answer([seatsOf('taller-abierto', 40, 40, 'full')])).catch(() => {});
+			});
+			await open(page, `${site.url}/`);
+			const form = await openForm(page);
+			await solved(page);
+			await fillForm(form);
+			await form.getByRole('button', { name: 'Enviar inscripción' }).click();
+			await expect(form.locator('[data-reg-ok]')).toHaveText(/quedó registrada/);
+			// `open` waited for the network to be idle, which only happens once the request gave up (4 s).
+			late?.();
+			await page.waitForTimeout(300);
+			await expect(ticket(page, 'taller-abierto').locator('[data-seat-num]')).toHaveText('40');
+			await expect(ticket(page, 'taller-abierto').locator('[data-ticket-state]')).toBeHidden();
+		});
+	});
+
 	test.describe('the open form', () => {
 		for (const theme of ['dark', 'light'] as const) {
 			test(`renders the Turnstile widget in the ${theme} theme`, async ({ page }) => {
@@ -950,6 +1116,36 @@ test.describe('registration from the admin', () => {
 					).toEqual([]);
 				});
 			}
+		}
+
+		for (const theme of ['dark', 'light'] as const) {
+			test(`the tickets with live, full and closed seats have no serious or critical axe violations (${theme} theme)`, async ({
+				page,
+			}) => {
+				await page.route('**/api/public/events/seats', (route) =>
+					route.fulfill({
+						status: 200,
+						contentType: 'application/json',
+						headers: { 'access-control-allow-origin': '*' },
+						body: JSON.stringify({
+							events: [
+								{ slug: 'taller-abierto', capacity: 40, registered: 40, seatsLeft: 0, status: 'full' },
+								{ slug: 'charla-unl', capacity: 60, registered: 10, seatsLeft: 50, status: 'closed' },
+								{ slug: 'taller-cerrado', capacity: 30, registered: 3, seatsLeft: 27, status: 'open' },
+							],
+						}),
+					}),
+				);
+				await page.addInitScript((value) => localStorage.setItem('aso-theme', value), theme);
+				await open(page, `${site.url}/`);
+				await expect(ticket(page, 'taller-abierto').locator('[data-ticket-state]')).toHaveText('Sin cupos');
+				const { violations } = await new AxeBuilder({ page }).include('#inscripciones').analyze();
+				expect(
+					violations
+						.filter((violation) => BLOCKING.includes(violation.impact ?? ''))
+						.map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(' | ')}`),
+				).toEqual([]);
+			});
 		}
 
 		test('works from the keyboard alone: Enter unfolds the form, Tab reaches "Cerrar", every field and the button', async ({
