@@ -4058,6 +4058,8 @@ html.motion .hero-mark-svg {
 	.reg-calendar {
 		display: inline-flex;
 		align-items: center;
+		/* A flex container drops the space that leads its last child, so the gap puts it back. */
+		gap: 0.25em;
 		min-height: 2.75rem;
 		font-size: var(--text-label);
 		font-weight: 600;

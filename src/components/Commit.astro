@@ -128,12 +128,14 @@ const showRef = !dense && Boolean(hash || deco);
 				{ticketLink && (
 					<a class="reg-ticket" href={ticketLink}>
 						{t('ticket.link')}
+						<span class="sr-only">: {entry.title}</span>
 						<span aria-hidden="true"> →</span>
 					</a>
 				)}
 				{entry.calendarHref && (
 					<a class="reg-calendar" href={entry.calendarHref}>
 						{t('calendar.add')}
+						<span class="sr-only">: {entry.title}</span>
 						<span aria-hidden="true"> · .ics</span>
 					</a>
 				)}

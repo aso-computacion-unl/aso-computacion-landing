@@ -222,6 +222,24 @@ test.describe('registration from the admin', () => {
 			expect(challenges).toEqual([]);
 		});
 
+		test('the links of a ticket say which activity they are for, so a list of links tells them apart', async ({
+			page,
+		}) => {
+			await open(page, `${site.url}/`);
+			const names = await page.locator('#inscripciones .tk-item').evaluateAll((items) =>
+				items.flatMap((item) => {
+					const title = item.querySelector('.tk-title')?.textContent?.trim() ?? '';
+					return [...item.querySelectorAll('a[href]')].map((link) => ({
+						title,
+						name: (link.textContent ?? '').replace(/\s+/g, ' ').trim(),
+					}));
+				}),
+			);
+			expect(names.length).toBeGreaterThan(2);
+			for (const { title, name } of names) expect(name).toContain(title);
+			expect(new Set(names.map(({ name }) => name)).size).toBe(names.length);
+		});
+
 		test('a UNL-mode ticket links to the same page and says the account it takes', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'charla-unl');

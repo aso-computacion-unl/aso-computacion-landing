@@ -109,7 +109,10 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 					data-reg-action
 				>
 					<span class="btn-face">
-						<span>{t('ticket.enroll')}</span>
+						<span>
+							{t('ticket.enroll')}
+							<span class="sr-only">: {entry.title}</span>
+						</span>
 						<span class="btn-glyph" aria-hidden="true">
 							→
 						</span>
@@ -145,6 +148,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 						</svg>
 						{t('calendar.add')}
 						<span aria-hidden="true"> · .ics</span>
+						<span class="sr-only">: {entry.title}</span>
 					</a>
 				)}
 			</div>
