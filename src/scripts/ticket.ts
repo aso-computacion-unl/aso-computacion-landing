@@ -20,6 +20,7 @@ export function closeTicket(ticket: HTMLElement, message: string) {
 		state.textContent = message;
 		state.removeAttribute('hidden');
 	}
+	ticket.querySelector('.tk')?.classList.add('is-closed');
 	ticket.querySelectorAll<HTMLElement>('[data-reg-action]').forEach(disableAction);
 	ticket.querySelectorAll<HTMLElement>('[data-reg-extra]').forEach((extra) => extra.setAttribute('hidden', ''));
 	relayout();

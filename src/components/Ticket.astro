@@ -1,10 +1,10 @@
 ---
-// One ticket of the Inscripciones section (S1, S2): the activity's body on the left, the perforated stub on the right
-// with the seats, the deadline and the single action. `unl` and `open` both link to the admin's event page, where the
-// student signs up (there is no form on the landing); `free` has no registration, only its calendar link. The page is
-// built ahead of time, so what can change afterwards carries a data hook: src/scripts/ticket-deadline.ts closes the
-// ticket when its deadline passes and keeps the days left honest, src/scripts/seats.ts paints the live seats and
-// src/scripts/ticket.ts is what both do to a closed one.
+// One ticket of the Inscripciones section (S1, S2): white paper with the activity on top and, under the perforation,
+// a sky stub with the seats, the deadline and the single action. `unl` and `open` both link to the admin's event page,
+// where the student signs up (there is no form on the landing); `free` has no registration, only its calendar link.
+// The page is built ahead of time, so what can change afterwards carries a data hook: src/scripts/ticket-deadline.ts
+// closes the ticket when its deadline passes and keeps the days left honest, src/scripts/seats.ts paints the live
+// seats and src/scripts/ticket.ts is what both do to a closed one.
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { formatDeadline, registrationClosed } from '../lib/registration/rules';
@@ -27,8 +27,12 @@ const left = registration && !closed ? closesIn(registration.deadline, now) : un
 const daysLeft = left ? closesInLabel(left.days) : undefined;
 const capacity = registration?.capacity;
 
+// "14 abr 2026": the day is the big numeral of the ticket and the rest its caption. A month-only date has no day, so the
+// month takes its place; an undated activity has no date block.
+const [big, ...rest] = (entry.stamp ?? '').split(' ');
+const when = entry.stamp ? { big, rest: rest.join(' ') } : undefined;
+
 const facts = [
-	{ label: t('ticket.fact.date'), value: entry.stamp },
 	{ label: t('ticket.fact.time'), value: meta?.hora },
 	{ label: t('ticket.fact.place'), value: meta?.lugar },
 	{ label: t('ticket.fact.for'), value: meta?.para },
@@ -44,7 +48,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 	data-reg={registration ? '' : undefined}
 	data-reg-deadline={registration?.deadline}
 >
-	<article class:list={['tk', { 'tk-free': mode === 'free' }]} aria-labelledby={`${id}-heading`}>
+	<article class:list={['tk', { 'tk-free': mode === 'free', 'is-closed': closed }]} aria-labelledby={`${id}-heading`}>
 		<div class="tk-body">
 			<p class="tk-top">
 				<span class="tk-no">{label}</span>
@@ -55,6 +59,14 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 					</span>
 				)}
 			</p>
+			{when && (
+				<p class="tk-day">
+					<time datetime={entry.date}>
+						<b>{when.big}</b>
+						<span>{when.rest}</span>
+					</time>
+				</p>
+			)}
 			<h3 class="tk-title" id={`${id}-heading`}>
 				{entry.title}
 			</h3>
@@ -70,6 +82,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 				</dl>
 			)}
 		</div>
+		<div class="tk-perf" aria-hidden="true"></div>
 
 		{registration ? (
 			<div class="tk-stub">
@@ -77,6 +90,9 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 					<p class="tk-seat-n" hidden={capacity === undefined}>
 						<span data-seat-num>{capacity}</span>
 						<small data-seat-label>{t(capacity === 1 ? 'ticket.seatOne' : 'ticket.seatMany')}</small>
+						<span class="tk-live" data-seat-live hidden>
+							{t('ticket.live')}
+						</span>
 					</p>
 					<div class="tk-meter" role="img" data-seat-meter data-seat-slot>
 						<i />
@@ -86,19 +102,8 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 				<p class="tk-state" data-ticket-state hidden={!closed}>
 					{closed && t('ticket.closed')}
 				</p>
-				{daysLeft && registration.deadline && (
-					<p class="tk-dl" data-reg-extra>
-						<span data-reg-closes>{t(daysLeft.key, daysLeft.vars)}</span>
-						<b>{formatDeadline(registration.deadline, locale)}</b>
-					</p>
-				)}
-				{!closed && !registration.deadline && (
-					<p class="tk-cap" data-reg-extra>
-						{t('ticket.noDeadline')}
-					</p>
-				)}
 				<a
-					class:list={['btn', 'btn-primary', 'btn-md', 'tk-action', { 'is-disabled': closed }]}
+					class:list={['btn', 'tk-action', { 'is-disabled': closed }]}
 					href={closed ? undefined : registration.href}
 					aria-disabled={closed ? 'true' : undefined}
 					data-reg-action
@@ -110,17 +115,34 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 						</span>
 					</span>
 				</a>
-				<p class="tk-hint" data-reg-extra hidden={closed}>
-					{t(mode === 'unl' ? 'ticket.hint.unl' : 'ticket.hint.open')}
-				</p>
-				<div class="tk-code" aria-hidden="true" />
+				<div class="tk-notes">
+					{daysLeft && registration.deadline && (
+						<p class="tk-dl" data-reg-extra>
+							<span data-reg-closes>{t(daysLeft.key, daysLeft.vars)}</span>
+							{' · '}
+							{formatDeadline(registration.deadline, locale)}
+						</p>
+					)}
+					{!closed && !registration.deadline && (
+						<p class="tk-dl" data-reg-extra>
+							{t('ticket.noDeadline')}
+						</p>
+					)}
+					<p class="tk-dl" data-reg-extra hidden={closed}>
+						{t(mode === 'unl' ? 'ticket.hint.unl' : 'ticket.hint.open')}
+					</p>
+				</div>
 			</div>
 		) : (
 			<div class="tk-stub">
 				<p class="tk-free-n">{t('ticket.freeEntry')}</p>
-				<p class="tk-hint">{t('ticket.freeHint')}</p>
+				<p class="tk-dl">{t('ticket.freeHint')}</p>
 				{calendarHref && (
-					<a class="reg-calendar" href={calendarHref}>
+					<a class="tk-cal" href={calendarHref}>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<rect x="3.5" y="5" width="17" height="15.5" stroke="currentColor" stroke-width="2" />
+							<path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" />
+						</svg>
 						{t('calendar.add')}
 						<span aria-hidden="true"> · .ics</span>
 					</a>

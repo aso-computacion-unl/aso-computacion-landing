@@ -323,8 +323,10 @@ test.describe('registration from the admin', () => {
 
 		test('shows the facts the admin gave and only those', async ({ page }) => {
 			await open(page, `${site.url}/`);
-			const facts = ticket(page, 'taller-abierto').locator('.tk-facts');
-			await expect(facts).toContainText('Fecha');
+			const item = ticket(page, 'taller-abierto');
+			// The date is the big numeral of the ticket; the rest are its facts.
+			await expect(item.locator('.tk-day time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
+			const facts = item.locator('.tk-facts');
 			await expect(facts).toContainText('Hora');
 			await expect(facts).toContainText('Lugar');
 			await expect(facts).toContainText('Laboratorio');
