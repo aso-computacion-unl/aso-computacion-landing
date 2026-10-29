@@ -9,6 +9,7 @@ import { adminOriginOf, forumUrl } from '../lib/admin-content/forum';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
+import { shouldRetryLoad } from '../lib/admin-content/refresh';
 import { seatsUrl } from '../lib/registration/seats';
 import { chooseTickets } from '../lib/registration/tickets';
 import fallback from './fallback.json';
@@ -30,9 +31,9 @@ const adminUrl = process.env.ADMIN_CONTENT_URL ?? import.meta.env.ADMIN_CONTENT_
 // the build, on anything short of a valid preview: it never falls back. Normal builds never read these variables' values.
 const preview = readPreviewConfig(process.env);
 // The gate reports the fallback itself, with the reason, so the loader's own one-line warning stays quiet.
-const loaded = preview
-	? await loadPreviewContent(preview)
-	: await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
+const loadFromAdmin = () => loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
+let loaded = preview ? await loadPreviewContent(preview) : await loadFromAdmin();
+let triedAt = Date.now();
 
 // The forum lives on the admin's origin: the one the content came from (the preview's, in a preview build). Unknown or
 // unsafe, there is no forum link (fail closed, like the registration links), and the tickets never ask for their seats.
@@ -90,6 +91,27 @@ function build(locale: Locale) {
 		testimonials: resolved.testimonials,
 		sponsors: resolved.sponsors,
 	};
+}
+
+// Dev only (a no-op in a build): a server that started while the admin was down asks it again, at most every few seconds,
+// on the next request (src/middleware.ts), and switches to the admin's content as soon as it answers. See refresh.ts.
+let refreshing: Promise<void> | undefined;
+export function refreshContent(): Promise<void> {
+	const state = { dev: import.meta.env.DEV, source: loaded.source, url: adminUrl, triedAt, now: Date.now() };
+	if (refreshing || preview || !shouldRetryLoad(state)) return refreshing ?? Promise.resolve();
+	refreshing = loadFromAdmin()
+		.then((again) => {
+			if (again.source !== 'api') return;
+			loaded = again;
+			memo.clear();
+			console.info('[content] the admin answered: the dev server now shows its content instead of the fallback');
+			for (const warning of again.warnings ?? []) console.warn(`[registration] ${warning}`);
+		})
+		.finally(() => {
+			triedAt = Date.now();
+			refreshing = undefined;
+		});
+	return refreshing;
 }
 
 // Runs the production content gate once per build, over every locale: throws to fail a production build that would
