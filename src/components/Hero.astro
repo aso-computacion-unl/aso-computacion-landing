@@ -18,12 +18,14 @@ const signUpsNote =
 const gates = [
 	navLinks.some((link) => link.href === '#inscripciones') && {
 		href: '#inscripciones',
+		name: 'inscripciones',
 		label: t('hero.quick.registrations'),
 		note: signUpsNote,
 	},
-	{ href: '#foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
+	{ href: '#foro', name: 'foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
 	latestNews.length > 0 && {
 		href: '#novedades',
+		name: 'novedades',
 		label: t('hero.quick.news'),
 		note: t('hero.gate.news', { date: latestNews[0].stamp }),
 	},
@@ -31,6 +33,11 @@ const gates = [
 ---
 
 <section id="top" class="hero" data-hero>
+	<div class="net" data-net aria-hidden="true">
+		<p class="net-say" data-net-say>
+			$ ping aso
+		</p>
+	</div>
 	<div class="wrap">
 		<h1 class="hero-title">
 			<span class="sr-only">{site.name}: </span>
@@ -43,7 +50,7 @@ const gates = [
 			<ul style={`--gates:${gates.length}`}>
 				{gates.map((gate) => (
 					<li>
-						<a href={gate.href} class="gate">
+						<a href={gate.href} class="gate" data-net-name={gate.name}>
 							<span class="gate-name">{gate.label}</span>
 							<span class="gate-note">{gate.note}</span>
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">

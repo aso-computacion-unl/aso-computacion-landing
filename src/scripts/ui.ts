@@ -257,3 +257,6 @@ if (faqStatic && faqTerm && faqMan && faqForm && faqInput && (faqEntries.length 
 	faqStatic.hidden = true;
 	faqTerm.hidden = false;
 }
+
+// The three moments from the degree (networks, languages, hacking) load only on a page that has one.
+if (document.querySelector('[data-net], [data-lang], [data-decrypt]')) void import('./moments');

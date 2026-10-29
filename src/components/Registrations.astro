@@ -7,6 +7,7 @@ import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
+import LanguagesMoment from './LanguagesMoment.astro';
 import SectionHead from './SectionHead.astro';
 import Ticket from './Ticket.astro';
 
@@ -27,13 +28,16 @@ const live = tickets.some((ticket) => ticket.mode !== 'free');
 				lead={t('ticket.lead')}
 				demo={tickets.some((ticket) => ticket.entry.demo)}
 			>
-				<ul slot="aside" class="tk-key" aria-label={t('ticket.key')}>
-					{modes.map((mode) => (
-						<li>
-							<b>{t(`ticket.key.${mode}`)}</b> · {t(`ticket.key.${mode}Text`)}
-						</li>
-					))}
-				</ul>
+				<div slot="aside" class="tk-aside">
+					<ul class="tk-key" aria-label={t('ticket.key')}>
+						{modes.map((mode) => (
+							<li>
+								<b>{t(`ticket.key.${mode}`)}</b> · {t(`ticket.key.${mode}Text`)}
+							</li>
+						))}
+					</ul>
+					<LanguagesMoment />
+				</div>
 			</SectionHead>
 			<ol class="tk-list" aria-label={t('ticket.list')}>
 				{tickets.map((ticket) => (

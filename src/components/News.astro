@@ -24,7 +24,7 @@ const items = latestNews.map((item) => {
 
 <section id="novedades" class="bg-navy py-section">
 	<div class="wrap">
-		<SectionHead eyebrow="$ git tag --sort=-creatordate" title={t('news.title')} lead={t('news.lead')}>
+		<SectionHead eyebrow="$ git tag --sort=-creatordate" title={t('news.title')} lead={t('news.lead')} decrypt>
 			<div slot="aside" class="flex lg:justify-end">
 				<Button href={localizedPath('/novedades', locale)} variant="ghost">
 					{news.length > count ? t('news.seeCount', { count: news.length }) : t('news.seeAll')}

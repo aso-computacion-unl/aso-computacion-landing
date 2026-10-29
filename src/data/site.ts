@@ -285,6 +285,72 @@ export interface ForumThread {
 	replies: number;
 }
 
+// The "languages" moment of Inscripciones: the association's own line (the message of the "Bienvenida" commit) written in
+// five syntaxes. Code is code, so it is the same on the English page. Each part says how to colour it: keyword, string
+// or plain punctuation.
+export const motto = 'aquí nadie empieza solo';
+
+export type CodeKind = 'k' | 's' | 'p';
+export interface Snippet {
+	file: string;
+	name: string;
+	parts: readonly (readonly [CodeKind, string])[];
+}
+
+export const snippets: readonly Snippet[] = [
+	{
+		file: 'hola.py',
+		name: 'Python',
+		parts: [
+			['k', 'print'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ')'],
+		],
+	},
+	{
+		file: 'hola.js',
+		name: 'JavaScript',
+		parts: [
+			['k', 'console'],
+			['p', '.'],
+			['k', 'log'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.c',
+		name: 'C',
+		parts: [
+			['k', 'printf'],
+			['p', '('],
+			['s', `"${motto}\\n"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.rs',
+		name: 'Rust',
+		parts: [
+			['k', 'println!'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.hs',
+		name: 'Haskell',
+		parts: [
+			['k', 'putStrLn'],
+			['p', ' '],
+			['s', `"${motto}"`],
+		],
+	},
+];
+
 // A line of the example activity feed: what is happening in the forum "right now". Invented, like the threads.
 export type ForumFeedKind = 'reply' | 'thanks' | 'open' | 'solved' | 'join';
 
