@@ -3435,7 +3435,7 @@ html.motion [data-member] {
 }
 
 /* Event registration (S8): the link and the calendar under an upcoming activity's card, and the Inscripciones section
-   (S2), whose tickets carry the seats, the deadline and the form. */
+   (S2), whose tickets carry the seats, the deadline and the link to the admin's event page. */
 @layer components {
 	/* A row of its own under the text, the details and the photo. */
 	.reg {
@@ -3452,14 +3452,6 @@ html.motion [data-member] {
 		.card-row.has-reg {
 			flex-wrap: wrap;
 		}
-	}
-
-	.reg-note {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.4;
-		color: var(--color-mist);
-		max-width: 60ch;
 	}
 
 	.reg-ticket,
@@ -3522,23 +3514,11 @@ html.motion [data-member] {
 		}
 	}
 
-	/* The ticket's bottom corners are flat while the form hangs under it (always without JS, where it is open). */
-	.tk-item {
-		--tk-foot: 0px;
-		--tk-foot-notch: none;
-	}
-
-	.tk-item:not(.has-form),
-	html.js .tk-item:not(.is-open) {
-		--tk-foot: 4px;
-		--tk-foot-notch: block;
-	}
-
 	.tk {
 		position: relative;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		border-radius: 4px 4px var(--tk-foot) var(--tk-foot);
+		border-radius: 4px;
 		background: var(--color-navy-lift);
 		box-shadow: inset 0 0 0 1px var(--tk-line);
 	}
@@ -3575,8 +3555,7 @@ html.motion [data-member] {
 		margin-left: 0;
 	}
 
-	.tk-no,
-	.tk-form-label {
+	.tk-no {
 		font-family: var(--font-mono);
 		font-size: var(--text-label);
 		font-weight: 500;
@@ -3664,7 +3643,7 @@ html.motion [data-member] {
 		min-width: 0;
 		padding: 1.25rem 1.25rem 1.375rem;
 		border-top: 2px dashed var(--tk-tear);
-		border-radius: 0 0 var(--tk-foot) var(--tk-foot);
+		border-radius: 0 0 4px 4px;
 		background: var(--tk-stub);
 	}
 
@@ -3699,7 +3678,7 @@ html.motion [data-member] {
 			padding: 1.875rem 2rem 2rem;
 			border-top: 0;
 			border-left: 2px dashed var(--tk-tear);
-			border-radius: 0 4px var(--tk-foot) 0;
+			border-radius: 0 4px 4px 0;
 		}
 
 		.tk-stub::before,
@@ -3715,7 +3694,6 @@ html.motion [data-member] {
 		.tk-stub::after {
 			top: auto;
 			bottom: -0.75rem;
-			display: var(--tk-foot-notch);
 		}
 	}
 
@@ -3851,11 +3829,6 @@ html.motion [data-member] {
 		transform: none;
 	}
 
-	/* What only works with JavaScript is not there without it (the form is then simply open). */
-	html:not(.js) .js-flow {
-		display: none;
-	}
-
 	.tk-hint {
 		font-size: var(--text-label);
 		line-height: 1.45;
@@ -3893,195 +3866,6 @@ html.motion [data-member] {
 		line-height: 1;
 		letter-spacing: -0.02em;
 		color: var(--color-ink);
-	}
-
-	/* The form under its ticket, joined to it by the same tear line. */
-	.tk-form {
-		padding: 1.75rem 1.25rem 2rem;
-		border-top: 2px dashed var(--tk-tear);
-		border-radius: 0 0 4px 4px;
-		background: var(--color-navy-lift);
-		box-shadow: inset 0 0 0 1px var(--tk-line);
-	}
-
-	@media (min-width: 40rem) {
-		.tk-form {
-			padding: 2.25rem 2.5rem 2.5rem;
-		}
-	}
-
-	html.js .tk-item:not(.is-open) .tk-form {
-		display: none;
-	}
-
-	.tk-form-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1.25rem;
-		margin-bottom: 1.375rem;
-	}
-
-	.tk-close {
-		display: inline-flex;
-		align-items: center;
-		height: 2.75rem;
-		padding: 0 1rem;
-		border: 1px solid color-mix(in srgb, var(--color-ink) 40%, transparent);
-		border-radius: 2px;
-		background: transparent;
-		color: var(--color-ink);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 500;
-		line-height: 1;
-		cursor: pointer;
-	}
-
-	.tk-close:hover {
-		background: color-mix(in srgb, var(--color-sky) 14%, transparent);
-	}
-
-	.reg-form {
-		--tk-field: color-mix(in oklab, var(--color-navy-deep) 70%, var(--color-shade));
-		display: grid;
-		gap: 1.125rem;
-		max-width: 51rem;
-	}
-
-	.reg-grid {
-		display: grid;
-		gap: 1.125rem 1.25rem;
-	}
-
-	@media (min-width: 40rem) {
-		.reg-grid {
-			grid-template-columns: 1fr 1fr;
-		}
-	}
-
-	.reg-form-title {
-		font-family: var(--font-display);
-		font-stretch: 112%;
-		font-weight: 750;
-		font-size: var(--text-lead);
-		line-height: 1.25;
-		color: var(--color-ink);
-	}
-
-	.reg-field {
-		display: grid;
-		gap: 0.5rem;
-		align-content: start;
-	}
-
-	.reg-field label {
-		font-size: var(--text-secondary);
-		font-weight: 600;
-		color: var(--color-ink);
-	}
-
-	.reg-field input {
-		width: 100%;
-		min-height: 3rem;
-		padding: 0 0.875rem;
-		border: 0;
-		border-radius: 4px;
-		background: var(--tk-field);
-		box-shadow: inset 0 0 0 2px var(--color-sky);
-		color: var(--color-ink);
-		font: inherit;
-	}
-
-	.reg-field input:hover {
-		box-shadow: inset 0 0 0 2px var(--color-ink);
-	}
-
-	.reg-field input[aria-invalid='true'] {
-		box-shadow: inset 0 0 0 2px var(--color-signal);
-	}
-
-	.reg-field-error,
-	.reg-message {
-		font-size: var(--text-label);
-		line-height: 1.4;
-	}
-
-	.reg-field-error {
-		color: var(--color-ink);
-		font-weight: 600;
-	}
-
-	.reg-field-error:not(:empty)::before {
-		content: '! ';
-		color: var(--color-signal);
-	}
-
-	.reg-field-error:empty,
-	.reg-message:empty {
-		display: none;
-	}
-
-	.reg-message {
-		padding: 0.625rem 0.75rem;
-		border-radius: 4px;
-		color: var(--color-ink);
-		font-weight: 600;
-	}
-
-	.reg-message-error {
-		box-shadow: inset 4px 0 0 var(--color-signal);
-		background: color-mix(in srgb, var(--color-signal) 18%, transparent);
-	}
-
-	.reg-message-ok {
-		box-shadow: inset 4px 0 0 var(--color-sky);
-		background: color-mix(in srgb, var(--color-sky) 18%, transparent);
-	}
-
-	.reg-submit {
-		justify-self: start;
-		min-height: 2.75rem;
-		padding: 0 1.25rem;
-		border-radius: 4px;
-		background: var(--color-sky);
-		color: var(--color-on-sky);
-		font-weight: 700;
-		cursor: pointer;
-	}
-
-	.reg-submit:hover {
-		background: color-mix(in srgb, var(--color-sky) 82%, var(--color-ink));
-	}
-
-	.reg-submit[aria-disabled='true'] {
-		opacity: 0.65;
-		cursor: progress;
-	}
-
-	/* Without the script the button cannot send anything, and says so. */
-	.reg-submit:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	/* Turnstile's widget is 300x65: its place is kept so the note and the button do not jump when it appears. It needs the
-	   script, so without it there is nothing to keep. */
-	.reg-captcha {
-		min-height: 4.0625rem;
-	}
-
-	html:not(.js) .reg-captcha {
-		display: none;
-	}
-
-	.tk-form > noscript .reg-note {
-		margin-bottom: 1.125rem;
-	}
-
-	/* Done (registered, full, closed): only the message stays. */
-	.reg-form.is-done > :not(.reg-message) {
-		display: none;
 	}
 }
 

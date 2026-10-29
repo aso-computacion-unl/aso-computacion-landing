@@ -2,8 +2,8 @@
 // The Inscripciones section (S1, S2): one ticket per upcoming activity, nearest date first, for any number of activities
 // and any dates. Which activities get one, and how each signs up, is decided in src/lib/registration/tickets.ts; the
 // section is left out when there is none. The seats left are painted by src/scripts/seats.ts when the admin's origin
-// is known (`data-seats-url`); the form that the `open` tickets unfold lives in EventRegistration.astro.
-import { getContent, turnstileSiteKey } from '../data/content';
+// is known (`data-seats-url`); signing up happens on the admin's event page, which each ticket links to.
+import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
@@ -13,7 +13,7 @@ import Ticket from './Ticket.astro';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { seatsUrl, timeline } = getContent(locale);
-const tickets = chooseTickets(timeline, turnstileSiteKey);
+const tickets = chooseTickets(timeline);
 const modes = (['unl', 'open', 'free'] as const).filter((mode) => tickets.some((ticket) => ticket.mode === mode));
 const live = tickets.some((ticket) => ticket.mode !== 'free');
 ---

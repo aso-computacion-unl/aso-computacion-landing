@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adminOriginOf, forumUrl } from './forum';
+import { adminOriginOf, eventUrl, forumUrl } from './forum';
 
 describe('adminOriginOf', () => {
 	it('reduces the content URL to its origin', () => {
@@ -31,5 +31,23 @@ describe('forumUrl', () => {
 
 	it('leaves the link out when the origin is unknown', () => {
 		expect(forumUrl(undefined)).toBeUndefined();
+	});
+});
+
+describe('eventUrl', () => {
+	it('puts the event page of a slug under the forum, on the admin origin', () => {
+		expect(eventUrl('https://admin.example.test', 'taller-de-git')).toBe(
+			'https://admin.example.test/foro/eventos/taller-de-git',
+		);
+	});
+
+	it('encodes the slug so it can never leave its path segment', () => {
+		expect(eventUrl('https://admin.example.test', '../admin?x=1#y')).toBe(
+			'https://admin.example.test/foro/eventos/..%2Fadmin%3Fx%3D1%23y',
+		);
+	});
+
+	it('leaves the link out when the origin is unknown', () => {
+		expect(eventUrl(undefined, 'taller-de-git')).toBeUndefined();
 	});
 });

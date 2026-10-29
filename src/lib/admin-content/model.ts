@@ -10,9 +10,9 @@ export type ActivityType = (typeof activityTypes)[number];
 
 export type TimelineKind = 'next' | 'upcoming' | 'head' | 'commit' | 'merge' | 'initial';
 
-// S8: how people sign up for an upcoming event. Only what the card needs. `href` is the admin's page for `unl` (the
-// student signs in there) and the endpoint the landing's form posts to for `open`. The seats left are not known (the
-// site is static): `capacity` is the total.
+// S8: how people sign up for an upcoming event. Only what the card needs. `href` is the admin's event page
+// (`/foro/eventos/<slug>`), for both modes: `unl` signs in there and `open` fills the form there. The seats left are not
+// known (the site is static): `capacity` is the total.
 export interface EntryRegistration {
 	mode: 'unl' | 'open';
 	href: string;
@@ -26,7 +26,7 @@ export interface EntrySchema {
 	startDate: string;
 	endDate?: string;
 	location?: string;
-	// The admin's page for `unl` registration; `open` uses the card on the home page.
+	// The admin's event page (the registration entry point).
 	registrationUrl?: string;
 }
 

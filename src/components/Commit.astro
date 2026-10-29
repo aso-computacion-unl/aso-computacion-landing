@@ -1,6 +1,6 @@
 ---
 import Photo from './Photo.astro';
-import { getContent, turnstileSiteKey } from '../data/content';
+import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { metaLabel, useTranslations } from '../i18n/ui';
 import type { TimelineKind } from '../lib/admin-content/model';
@@ -48,7 +48,7 @@ const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
 // The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity has no ticket to point to.
-const mode = entry.kind === 'upcoming' ? ticketMode(entry, turnstileSiteKey) : undefined;
+const mode = entry.kind === 'upcoming' ? ticketMode(entry) : undefined;
 const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
 const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 // The hash line is decoration (aria-hidden, derived from the id): a dense card leaves it out.

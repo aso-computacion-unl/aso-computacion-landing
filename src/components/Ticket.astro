@@ -1,14 +1,14 @@
 ---
 // One ticket of the Inscripciones section (S1, S2): the activity's body on the left, the perforated stub on the right
-// with the seats, the deadline and the single action. `unl` links to the admin's page, `open` unfolds the form under
-// the ticket (EventRegistration.astro), `free` has no registration. The page is built ahead of time, so what can change
-// afterwards carries a data hook: src/scripts/registration.ts closes the ticket when its deadline passes and keeps the
-// days left honest, src/scripts/seats.ts paints the live seats and src/scripts/ticket.ts is what both do to a closed one.
+// with the seats, the deadline and the single action. `unl` and `open` both link to the admin's event page, where the
+// student signs up (there is no form on the landing); `free` has no registration, only its calendar link. The page is
+// built ahead of time, so what can change afterwards carries a data hook: src/scripts/ticket-deadline.ts closes the
+// ticket when its deadline passes and keeps the days left honest, src/scripts/seats.ts paints the live seats and
+// src/scripts/ticket.ts is what both do to a closed one.
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { formatDeadline, registrationClosed } from '../lib/registration/rules';
 import { closesIn, closesInLabel, ticketAnchor, type Ticket } from '../lib/registration/tickets';
-import EventRegistration from './EventRegistration.astro';
 
 interface Props {
 	ticket: Ticket;
@@ -21,13 +21,11 @@ const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
 const id = `reg-${entry.id}`;
-const panelId = `${id}-panel`;
 const now = Date.now();
 const closed = registration ? registrationClosed(registration.deadline, now) : false;
 const left = registration && !closed ? closesIn(registration.deadline, now) : undefined;
 const daysLeft = left ? closesInLabel(left.days) : undefined;
 const capacity = registration?.capacity;
-const form = mode === 'open' && !closed;
 
 const facts = [
 	{ label: t('ticket.fact.date'), value: entry.stamp },
@@ -40,7 +38,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 ---
 
 <li
-	class:list={['tk-item', { 'has-form': form }]}
+	class="tk-item"
 	id={ticketAnchor(entry.id)}
 	data-ticket={mode === 'free' ? undefined : entry.id}
 	data-reg={registration ? '' : undefined}
@@ -99,45 +97,22 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 						{t('ticket.noDeadline')}
 					</p>
 				)}
-				{mode === 'unl' ? (
-					<a
-						class:list={['btn', 'btn-primary', 'btn-md', 'tk-action', { 'is-disabled': closed }]}
-						href={closed ? undefined : registration.href}
-						target={closed ? undefined : '_blank'}
-						rel={closed ? undefined : 'me noopener'}
-						aria-disabled={closed ? 'true' : undefined}
-						data-reg-action
-					>
-						<span class="btn-face">
-							<span>{t('registration.unl')}</span>
-							<span class="btn-glyph" aria-hidden="true">
-								→
-							</span>
+				<a
+					class:list={['btn', 'btn-primary', 'btn-md', 'tk-action', { 'is-disabled': closed }]}
+					href={closed ? undefined : registration.href}
+					aria-disabled={closed ? 'true' : undefined}
+					data-reg-action
+				>
+					<span class="btn-face">
+						<span>{t('ticket.enroll')}</span>
+						<span class="btn-glyph" aria-hidden="true">
+							→
 						</span>
-						{!closed && <span class="sr-only"> {t('newTab')}</span>}
-					</a>
-				) : (
-					<button
-						type="button"
-						class:list={['btn', 'btn-primary', 'btn-md', 'tk-action', { 'is-disabled': closed, 'js-flow': !closed }]}
-						disabled={closed}
-						aria-expanded={closed ? undefined : 'false'}
-						aria-controls={closed ? undefined : panelId}
-						data-reg-action
-					>
-						<span class="btn-face">
-							<span>{t('ticket.fill')}</span>
-							<span class="btn-glyph" aria-hidden="true">
-								→
-							</span>
-						</span>
-					</button>
-				)}
-				{mode === 'unl' && (
-					<p class="tk-hint" data-reg-extra hidden={closed}>
-						{t('registration.unlHint')}
-					</p>
-				)}
+					</span>
+				</a>
+				<p class="tk-hint" data-reg-extra hidden={closed}>
+					{t(mode === 'unl' ? 'ticket.hint.unl' : 'ticket.hint.open')}
+				</p>
 				<div class="tk-code" aria-hidden="true" />
 			</div>
 		) : (
@@ -153,10 +128,9 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 			</div>
 		)}
 	</article>
-	{form && <EventRegistration entry={entry} panelId={panelId} />}
 </li>
 
 <script>
 	// Pages with no ticket that takes registrations download nothing but this line.
-	if (document.querySelector('[data-reg]')) void import('../scripts/registration');
+	if (document.querySelector('[data-reg]')) void import('../scripts/ticket-deadline');
 </script>

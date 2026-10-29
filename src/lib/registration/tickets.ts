@@ -6,7 +6,8 @@ import { registrationClosed } from './rules';
 // Pure: Registrations.astro renders what this returns. The seats left are not known (the site is static), so a
 // ticket only ever shows the capacity.
 
-// unl: the admin's page, with the student's account. open: the landing's own form. free: no registration.
+// unl: the admin's event page, with the student's UNL account. open: the same page, with the open form. free: no
+// registration (the calendar link, if any).
 export type TicketMode = 'unl' | 'open' | 'free';
 
 export interface Ticket {
@@ -19,13 +20,7 @@ export interface Ticket {
 // The ticket's id on the home page. Prefixed so an activity called "faq" never takes the id of a section.
 export const ticketAnchor = (slug: string): string => `inscripciones-${slug}`;
 
-// The open form needs the public Turnstile site key; without it the form cannot be shown. That activity gets no ticket
-// at all: calling it "free" would promise an entrance that is not what the admin configured.
-export function ticketMode(entry: TimelineEntry, siteKey: string | undefined): TicketMode | undefined {
-	if (!entry.registration) return 'free';
-	if (entry.registration.mode === 'unl') return 'unl';
-	return siteKey?.trim() ? 'open' : undefined;
-}
+export const ticketMode = (entry: TimelineEntry): TicketMode => entry.registration?.mode ?? 'free';
 
 // Nearest date first (what is coming up soonest), undated last; ties keep the timeline's order.
 const byDate = (a: TimelineEntry, b: TimelineEntry): number => {
@@ -35,15 +30,14 @@ const byDate = (a: TimelineEntry, b: TimelineEntry): number => {
 	return a.date.localeCompare(b.date);
 };
 
-export function chooseTickets(entries: readonly TimelineEntry[], siteKey: string | undefined): Ticket[] {
+export function chooseTickets(entries: readonly TimelineEntry[]): Ticket[] {
 	let number = 0;
 	return entries
 		.filter((entry) => entry.kind === 'upcoming')
 		.sort(byDate)
-		.flatMap((entry) => {
-			const mode = ticketMode(entry, siteKey);
-			if (!mode) return [];
-			return [mode === 'free' ? { entry, mode } : { entry, mode, number: (number += 1) }];
+		.map((entry): Ticket => {
+			const mode = ticketMode(entry);
+			return mode === 'free' ? { entry, mode } : { entry, mode, number: (number += 1) };
 		});
 }
 

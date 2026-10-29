@@ -5,6 +5,7 @@
 const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
 
 export const FORUM_PATH = '/foro';
+export const EVENTS_PATH = `${FORUM_PATH}/eventos`;
 
 // The origin (`https://host[:port]`) of a configured admin URL, or undefined when it is unset, unparseable or unsafe.
 export function adminOriginOf(url: string | undefined): string | undefined {
@@ -24,3 +25,8 @@ export function adminOriginOf(url: string | undefined): string | undefined {
 // The forum's home on that origin; undefined (no link) when the origin is not known.
 export const forumUrl = (origin: string | undefined): string | undefined =>
 	origin ? `${origin}${FORUM_PATH}` : undefined;
+
+// The page of one event on that origin (`/foro/eventos/<slug>`): where both registration modes sign up, and the only
+// place the landing sends a visitor who wants a seat. The slug is encoded, so it can never leave its path segment.
+export const eventUrl = (origin: string | undefined, slug: string): string | undefined =>
+	origin ? `${origin}${EVENTS_PATH}/${encodeURIComponent(slug)}` : undefined;

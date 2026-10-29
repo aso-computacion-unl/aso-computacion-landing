@@ -9,7 +9,6 @@ import { adminOriginOf, forumUrl } from '../lib/admin-content/forum';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
-import { openFormWithoutSiteKey } from '../lib/registration/rules';
 import { seatsUrl } from '../lib/registration/seats';
 import { chooseTickets } from '../lib/registration/tickets';
 import fallback from './fallback.json';
@@ -41,8 +40,7 @@ const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
 const forumLink = forumUrl(adminOrigin);
 const seatsLink = seatsUrl(adminOrigin);
 
-// Public Cloudflare Turnstile site key (S8): the open registration form needs it to show its widget. Without it the form
-// is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
+/** @deprecated The registration form lives in the admin now: nothing reads this. Removed with Layout.astro by the parent. */
 export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
 // A registration link the payload put on another origin was left out (validate.ts): say which, once per build.
@@ -75,9 +73,9 @@ function build(locale: Locale) {
 		// True on a preview build: the layout adds the banner and noindex, and the site is never meant to be public.
 		preview: resolved.source === 'preview',
 		site: resolved.site,
-		// No ticket to show (nothing upcoming, or only open forms without the Turnstile key): no link to the section either.
+		// No ticket to show (nothing upcoming): no link to the section either.
 		navLinks: resolved.navLinks.filter(
-			(link) => link.href !== '#inscripciones' || chooseTickets(resolved.timeline, turnstileSiteKey).length > 0,
+			(link) => link.href !== '#inscripciones' || chooseTickets(resolved.timeline).length > 0,
 		),
 		timeline: resolved.timeline,
 		nextEvent: resolved.nextEvent,
@@ -127,11 +125,5 @@ export function getContent(locale: Locale = 'es') {
 }
 
 enforceContentGate();
-
-const noSiteKey = openFormWithoutSiteKey(getContent('es').timeline, turnstileSiteKey);
-if (noSiteKey.length > 0)
-	console.warn(
-		`[registration] PUBLIC_TURNSTILE_SITE_KEY is not set: the open registration form of ${noSiteKey.join(', ')} is not shown. See docs/DEPLOY.md.`,
-	);
 
 export type SiteData = ReturnType<typeof getContent>;
