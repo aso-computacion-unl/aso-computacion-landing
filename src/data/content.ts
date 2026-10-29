@@ -40,8 +40,6 @@ const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
 const forumLink = forumUrl(adminOrigin);
 const seatsLink = seatsUrl(adminOrigin);
 
-/** @deprecated The registration form lives in the admin now: nothing reads this. Removed with Layout.astro by the parent. */
-export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
 
 // A registration link the payload put on another origin was left out (validate.ts): say which, once per build.
 for (const warning of loaded.warnings ?? []) console.warn(`[registration] ${warning}`);

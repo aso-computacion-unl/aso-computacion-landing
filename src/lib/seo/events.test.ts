@@ -14,7 +14,6 @@ const page = {
 	inLanguage: 'es',
 	pageUrl: 'https://example.test/',
 	fallbackImage: 'https://example.test/og-default.png',
-	openFormShown: true,
 	now: Date.parse('2026-10-22T12:00:00Z'),
 };
 const entry = (overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
@@ -80,9 +79,9 @@ describe('eventsStructuredData', () => {
 		});
 	});
 
-	it('offers the registration whatever the legacy form flag says: the form no longer lives on the landing', () => {
+	it('offers an open registration, which now lives on the admin event page', () => {
 		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/foro/eventos/x' } });
-		expect(eventsStructuredData([open], { ...page, openFormShown: false })[0]).toHaveProperty('offers');
+		expect(eventsStructuredData([open], page)[0]).toHaveProperty('offers.url', 'https://admin.test/foro/eventos/x');
 	});
 
 	it('offers nothing once the deadline passed or when there is no registration', () => {

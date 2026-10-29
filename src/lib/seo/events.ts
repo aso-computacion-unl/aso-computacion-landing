@@ -14,8 +14,6 @@ export interface EventsPage {
 	pageUrl: string;
 	// Absolute share image, for an event that has no remote photo (a crawler cannot read a bundled one).
 	fallbackImage: string;
-	/** @deprecated The form no longer lives on the landing: ignored. Removed with Layout.astro by the parent. */
-	openFormShown?: boolean;
 	// `Date.now()` of the build: a registration whose deadline already passed is not offered.
 	now: number;
 }

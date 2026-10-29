@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { getContent, turnstileSiteKey } from '../data/content';
+import { getContent } from '../data/content';
 import { contactEmail } from '../data/site';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
 import { cloudflareBeacon } from '../lib/analytics';
@@ -83,7 +83,6 @@ const structuredData = [
 		inLanguage: htmlLang[locale],
 		pageUrl: meta.canonical,
 		fallbackImage: meta.image,
-		openFormShown: turnstileSiteKey !== undefined,
 		now: Date.now(),
 	}),
 ];
