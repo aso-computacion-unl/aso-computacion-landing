@@ -200,6 +200,58 @@ test.describe('hostile content', () => {
 		expect(await overflow(page)).toBe(0);
 	});
 
+	test.describe('live seats with hostile text', () => {
+		const SEATS = '**/api/public/events/seats';
+		const answer = (events: unknown[]) => ({
+			status: 200,
+			contentType: 'application/json',
+			headers: { 'access-control-allow-origin': '*' },
+			body: JSON.stringify({ events }),
+		});
+		const ticket = (page: Page) => page.locator('#inscripciones-titulo-sin-cortes');
+
+		test('a sold-out ticket with a very long title stays inside a 320px page and says it is full', async ({ page }) => {
+			await page.route(SEATS, (route) =>
+				route.fulfill(
+					answer([{ slug: 'titulo-sin-cortes', capacity: 10, registered: 10, seatsLeft: 0, status: 'full' }]),
+				),
+			);
+			await page.setViewportSize({ width: 320, height: 800 });
+			await open(page, `${site.url}/`);
+			await expect(ticket(page).locator('[data-ticket-state]')).toContainText('Sin cupos');
+			expect(await overflow(page)).toBe(0);
+			expect(await beyondTheEdge(page)).toEqual([]);
+		});
+
+		test('more registered than seats never shows a negative number or a meter past 100%', async ({ page }) => {
+			await page.route(SEATS, (route) =>
+				route.fulfill(
+					answer([{ slug: 'titulo-sin-cortes', capacity: 10, registered: 25, seatsLeft: 0, status: 'open' }]),
+				),
+			);
+			await open(page, `${site.url}/`);
+			await expect(ticket(page).locator('[data-seat-num]')).toHaveText('0');
+			await expect(ticket(page).locator('[data-seat-taken]')).not.toContainText('-');
+			const width = await ticket(page)
+				.locator('[data-seat-meter] i')
+				.evaluate((bar) => (bar as HTMLElement).style.width);
+			expect(width).toBe('100%');
+		});
+
+		test('a negative or fractional count is not believed: the ticket keeps what it was built with', async ({
+			page,
+		}) => {
+			await page.route(SEATS, (route) =>
+				route.fulfill(
+					answer([{ slug: 'titulo-sin-cortes', capacity: 10, registered: -3, seatsLeft: 13.5, status: 'open' }]),
+				),
+			);
+			await open(page, `${site.url}/`);
+			await expect(ticket(page).locator('[data-seat-num]')).toHaveText('10');
+			await expect(ticket(page).locator('[data-seat-meter]')).toBeHidden();
+		});
+	});
+
 	for (const theme of ['dark', 'light'] as const) {
 		test(`has no serious or critical axe violations (${theme} theme)`, async ({ page }) => {
 			await page.addInitScript((value) => localStorage.setItem('aso-theme', value), theme);

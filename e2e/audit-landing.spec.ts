@@ -41,6 +41,22 @@ for (const width of WIDTHS) {
 	});
 }
 
+for (const theme of ['dark', 'light'] as const) {
+	test(`a phone-sized home has no serious or critical axe violations (${theme} theme, 320px)`, async ({ browser }) => {
+		const context = await browser.newContext({ viewport: { width: 320, height: 700 }, reducedMotion: 'reduce' });
+		const page = await context.newPage();
+		await page.addInitScript((value) => localStorage.setItem('aso-theme', value), theme);
+		await page.goto('/', { waitUntil: 'networkidle' });
+		const { violations } = await new AxeBuilder({ page }).analyze();
+		await context.close();
+		expect(
+			violations
+				.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))
+				.map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(' | ')}`),
+		).toEqual([]);
+	});
+}
+
 test.describe('404', () => {
 	test('answers 404 with a page that says where to go, in both languages, and nothing overflows at 320px', async ({
 		page,
@@ -235,6 +251,77 @@ test.describe('reduced motion', () => {
 	});
 });
 
+test.describe('FAQ terminal', () => {
+	const run = async (page: Page, command: string) => {
+		await page.locator('[data-faq-input]').fill(command);
+		await page.keyboard.press('Enter');
+	};
+
+	test('an empty line, an unknown command and a very long line leave the page standing, with a hint', async ({
+		page,
+	}) => {
+		const problems = watch(page);
+		await page.setViewportSize({ width: 320, height: 800 });
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
+		await run(page, '');
+		await run(page, 'rm -rf /');
+		await expect(page.locator('[data-faq-man]')).toContainText(/no encontrado/i);
+		await run(page, 'x'.repeat(5000));
+		await expect(page.locator('[data-faq-man]')).toContainText(/no encontrado/i);
+		expect(await overflow(page)).toBe(0);
+		expect(problems).toEqual([]);
+	});
+
+	test('markup typed into the prompt is printed as text, never run', async ({ page }) => {
+		const dialogs: string[] = [];
+		page.on('dialog', (dialog) => {
+			dialogs.push(dialog.message());
+			void dialog.dismiss();
+		});
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
+		await run(page, '<img src=x onerror=alert(1)><b>negrita</b>');
+		await expect(page.locator('[data-faq-man]')).toContainText('<img src=x onerror=alert(1)>');
+		await expect(page.locator('[data-faq-man] img, [data-faq-man] b')).toHaveCount(0);
+		expect(dialogs).toEqual([]);
+	});
+
+	test('help, a topic and clear work from the keyboard alone, and the answer is announced', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
+		await expect(page.locator('[data-faq-man]')).toHaveAttribute('aria-live', 'polite');
+		await run(page, 'help');
+		await expect(page.locator('[data-faq-man]')).toBeVisible();
+		const topic = await page.locator('.faq-card[data-faq-run]').first().getAttribute('data-faq-run');
+		await run(page, topic ?? 'help');
+		await expect(page.locator('[data-faq-man]')).toBeVisible();
+		await run(page, 'clear');
+		await expect(page.locator('[data-faq-man]')).toBeHidden();
+	});
+});
+
+test.describe('language and the forum', () => {
+	test('the language switch goes to the other home and back', async ({ page }) => {
+		await page.goto('/');
+		await page.locator('header a[hreflang="en"]').first().click();
+		await expect(page).toHaveURL(/\/en\/$/);
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await page.locator('header a[hreflang="es"]').first().click();
+		await expect(page).toHaveURL(/\/$/);
+		await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+	});
+
+	test('the forum section links only to the admin forum, with a name that says where it goes', async ({ page }) => {
+		await page.goto('/');
+		const hrefs = await page
+			.locator('#foro a[href^="http"]')
+			.evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+		// With no admin origin (the committed fallback build) the section keeps its teaser and has no way in: nothing broken.
+		for (const href of hrefs) expect(new URL(href).pathname).toMatch(/^\/foro/);
+	});
+});
+
 // A running dev server or deploy, when one is given (`AUDIT_LIVE_URL=http://127.0.0.1:4323`): the page a person gets from a
 // cold start. Skipped otherwise, so the suite needs no stack besides the preview.
 test.describe('a running site', () => {
@@ -249,13 +336,14 @@ test.describe('a running site', () => {
 		const links = await page
 			.locator('[data-reg-action]')
 			.evaluateAll((items) => items.map((item) => item.getAttribute('href') ?? ''));
-		console.log(
-			JSON.stringify({
-				sections: await page.locator('main > section[id]').evaluateAll((n) => n.map((s) => s.id)),
-				links,
-			}),
-		);
+		// The committed fallback has no tickets: links here mean the admin's content, not the fallback, is on the page.
+		expect(links.length).toBeGreaterThan(0);
+		for (const href of links) expect(new URL(href).pathname).toMatch(/^\/foro\/eventos\//);
 		await expect(page.locator('#inscripciones')).toHaveAttribute('data-seats-settled', '');
+		for (const width of WIDTHS) {
+			await page.setViewportSize({ width, height: 800 });
+			expect(await overflow(page), `${width}px`).toBe(0);
+		}
 		expect(problems).toEqual([]);
 	});
 });
