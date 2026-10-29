@@ -1,106 +1,58 @@
 ---
+// The home's first screen: who we are and the three things a visitor most often came to do, as ticket-shaped shortcuts.
+// A shortcut is left out with its section (the tickets and the news only render when there is something to show; the
+// forum always does). The scroll animation that used to open the page lives at the start of Actividades now.
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
-import Button from './Button.astro';
-import Commit from './Commit.astro';
-import HeroMark from './HeroMark.astro';
+import { chooseTickets } from '../lib/registration/tickets';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { latestNews, navLinks, site, socials, timeline } = getContent(locale);
-const instagram = socials.find((social) => social.remote === 'instagram');
-// Shortcuts to what a visitor can do now. Each one is left out with its section: the tickets (nav link) and the news
-// only render when there is something to show; the forum always renders.
-const quickLinks = [
+const { latestNews, navLinks, site, timeline } = getContent(locale);
+const signUps = chooseTickets(timeline).filter((ticket) => ticket.mode !== 'free').length;
+const signUpsNote =
+	signUps === 0
+		? t('hero.gate.upcoming')
+		: t(signUps === 1 ? 'hero.gate.signupsOne' : 'hero.gate.signups', { count: signUps });
+const gates = [
 	navLinks.some((link) => link.href === '#inscripciones') && {
 		href: '#inscripciones',
 		label: t('hero.quick.registrations'),
+		note: signUpsNote,
 	},
-	{ href: '#foro', label: t('hero.quick.forum') },
-	latestNews.length > 0 && { href: '#novedades', label: t('hero.quick.news') },
-].filter((link) => link !== false);
-// Preview of the timeline, upcoming first: the two nearest upcoming entries (in log order) on the dashed
-// planned lane, then HEAD on the solid lane. The full list lives in the activity graph below.
-const head = timeline.find((entry) => entry.kind === 'head');
-const headIndex = head ? timeline.indexOf(head) : timeline.length;
-const planned = timeline
-	.slice(0, headIndex)
-	.filter((entry) => entry.kind === 'upcoming')
-	.slice(-2);
+	{ href: '#foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
+	latestNews.length > 0 && {
+		href: '#novedades',
+		label: t('hero.quick.news'),
+		note: t('hero.gate.news', { date: latestNews[0].stamp }),
+	},
+].filter((gate) => gate !== false);
 ---
 
-<section
-	id="top"
-	data-hero
-	class="relative isolate overflow-clip bg-navy lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(26rem,34%)]"
->
-	<div class="hero-run" data-hero-run>
-		<div class="hero-stage" data-hero-stage>
-			<div class="hero-mark" data-hero-mark aria-hidden="true">
-				<HeroMark />
-			</div>
-			<span class="hero-stem" data-hero-stem aria-hidden="true"></span>
-			<div class="hero-cue" data-hero-cue aria-hidden="true">
-				<p class="font-mono text-label text-sky">$ git log --graph main</p>
-				<p class="mt-3 font-display text-title leading-tight text-ink">{site.heroCue}</p>
-			</div>
-		</div>
-
-		<div class="hero-main relative z-10 px-5 pb-16 pt-[10rem] sm:px-[4vw] sm:pt-[12.5rem] lg:flex lg:flex-col lg:justify-end lg:pb-20 lg:pt-16 lg:pl-[max(4vw,calc((100vw-1600px)/2))] lg:pr-10">
-			<h1 class="hero-title">
-				<span class="sr-only">{site.name}: </span>
-				{site.headline.map((line, index) => (
-					<span class:list={['hero-line', { 'hero-accent': index === site.headlineAccent }]} data-hero-line>
-						{line}
-					</span>
+<section id="top" class="hero" data-hero>
+	<div class="wrap">
+		<h1 class="hero-title">
+			<span class="sr-only">{site.name}: </span>
+			{site.headline.map((line, index) => (
+				<span class:list={['hero-line', { 'hero-accent': index === site.headlineAccent }]}>{line}</span>
+			))}
+		</h1>
+		<p class="hero-lede">{site.description}</p>
+		<nav class="gates" aria-label={t('hero.quick')}>
+			<ul style={`--gates:${gates.length}`}>
+				{gates.map((gate) => (
+					<li>
+						<a href={gate.href} class="gate">
+							<span class="gate-name">{gate.label}</span>
+							<span class="gate-note">{gate.note}</span>
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+								<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" />
+							</svg>
+						</a>
+					</li>
 				))}
-			</h1>
-			<p class="hero-lede mt-7" data-hero-fade>
-				{site.description}
-			</p>
-			<div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-5" data-hero-fade>
-				<Button href="#actividades" size="xl">
-					{t('hero.activities')}
-				</Button>
-				{instagram && (
-					<Button href={instagram.href} variant="ghost" size="xl" external>
-						{t('hero.instagram')}
-					</Button>
-				)}
-			</div>
-			<nav class="quick mt-8" aria-label={t('hero.quick')} data-hero-fade>
-				<ul>
-					{quickLinks.map((link) => (
-						<li>
-							<a href={link.href} class="quick-link">
-								{link.label}
-								<span aria-hidden="true"> →</span>
-							</a>
-						</li>
-					))}
-				</ul>
-			</nav>
-		</div>
-	</div>
-
-	<div
-		data-hero-slab
-		class="deep relative z-10 flex flex-col bg-navy-deep px-5 pb-24 pt-10 sm:px-10 lg:pb-28 lg:pr-[max(2.5rem,calc((100vw-1600px)/2))] lg:pt-16"
-		aria-hidden="true"
-	>
-		<p class="tag tag-plan self-start">{t('soon')}</p>
-		<div class="graph log plan mt-5">
-			<span class="rail rail-main" data-rail></span>
-			<ol>
-				{planned.map((entry) => (
-					<Commit entry={entry} compact />
-				))}
-			</ol>
-		</div>
-		<div class="graph log flex-1">
-			<span class="rail rail-main" data-rail></span>
-			<ol>{head && <Commit entry={head} compact />}</ol>
-		</div>
+			</ul>
+		</nav>
 	</div>
 </section>

@@ -31,6 +31,16 @@
 	/* Actions (buttons, chips, the registration call): white on navy. Sky stays for the branch line and links. */
 	--color-action: #fff;
 	--color-on-action: #03224a;
+	/* Paper: the tickets and the hero shortcuts are white in both themes, with navy ink; their stub is the brand sky as a
+	   fill (the light theme's deeper sky is for text). `paper-soft` is the secondary text on paper (8:1), `paper-edge`
+	   the perforation and the base the paper rests on. */
+	--color-paper: #fff;
+	--color-on-paper: #03224a;
+	--color-paper-soft: #33507a;
+	--color-paper-edge: #9fb3cc;
+	--color-stub: #2bb2e4;
+	/* Exponential ease-out: how everything new arrives. */
+	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
 	/* Brand: the wordmark only. Display: titles, Mona Sans expanded. Body: long-form text. Mono: dates, branch names, short hashes. */
 	--font-brand: 'Audiowide', ui-sans-serif, system-ui, sans-serif;
@@ -82,6 +92,8 @@
 	--color-action: #0b2447;
 	--color-on-action: #ffffff;
 	color-scheme: light;
+	/* Paper on a pale page needs its own outline. */
+	--paper-ring: #c4d2e4;
 }
 
 /* Pieces drawn for one theme only (the white and the colour isotype). */
@@ -92,6 +104,7 @@
 
 @layer base {
 	html {
+		--paper-ring: transparent;
 		font-variant-ligatures: none;
 		color-scheme: dark;
 		background: var(--color-navy);
@@ -452,53 +465,6 @@
 		border-radius: 4px;
 	}
 
-	@media (min-width: 80rem) {
-		.card-row {
-			align-items: stretch;
-			flex-wrap: nowrap;
-			gap: 1.75rem;
-		}
-
-		.card-row .card-main {
-			flex: 1;
-		}
-
-		.card-meta {
-			order: 0;
-			flex: none;
-			flex-direction: column;
-			align-self: center;
-			gap: 0.25rem;
-			width: 15rem;
-			margin-top: 0;
-			padding-left: 1.5rem;
-			border-left: 1px solid color-mix(in srgb, var(--color-sky) 30%, transparent);
-		}
-
-		.thumb {
-			order: 0;
-			align-self: center;
-			width: 7rem;
-			height: 7rem;
-		}
-
-		.photo {
-			order: 0;
-			align-self: stretch;
-			flex: none;
-			width: 34%;
-			min-height: 13rem;
-			margin: -1.25rem -1.25rem -1.5rem 0;
-			border-radius: 0 4px 4px 0;
-		}
-
-		.photo img {
-			position: absolute;
-			inset: 0;
-			aspect-ratio: auto;
-		}
-	}
-
 	/* Dense card, for the activity graph: the same pieces with less air, so the section stays short. The stamp, the title
 	   and the commit message share a head line when they fit; the description, the details and the links follow. */
 	.card-dense {
@@ -572,19 +538,6 @@
 
 		.card-dense .photo {
 			margin: 0.25rem -1.25rem -0.875rem;
-		}
-	}
-
-	@media (min-width: 80rem) {
-		.card-dense .photo {
-			width: 28%;
-			min-height: 8rem;
-			margin: -0.875rem -1.25rem -0.875rem 0;
-		}
-
-		.card-dense .thumb {
-			width: 5rem;
-			height: 5rem;
 		}
 	}
 
@@ -1118,12 +1071,6 @@
 		background: var(--bg);
 	}
 
-	/* Hero preview: same graph on the deeper navy layer. */
-	.log {
-		--bg: var(--color-navy-deep);
-		--node-y: 3rem;
-	}
-
 	.deep {
 		--bg: var(--color-navy-deep);
 	}
@@ -1131,30 +1078,6 @@
 	/* The activity graph sits on either surface: its node rims and the rail end take the section's colour. */
 	.deep .graph {
 		--bg: var(--color-navy-deep);
-	}
-
-	/* Hero shortcuts: the three things a visitor most often came to do, one tap from the first screen. */
-	.quick ul {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0 1.75rem;
-	}
-
-	.quick-link {
-		display: inline-flex;
-		align-items: center;
-		min-height: 2.75rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-secondary);
-		font-weight: 600;
-		color: var(--color-sky);
-		text-decoration: underline;
-		text-decoration-thickness: 2px;
-		text-underline-offset: 6px;
-	}
-
-	.quick-link:hover {
-		color: var(--color-ink);
 	}
 
 	/* Flat file-tab panels (README.md, CONTRIBUTING.md, git remote -v). */
@@ -1174,8 +1097,21 @@
 		background: var(--color-navy-lift);
 	}
 
-	/* Hero: huge headline, one block per line so each line can leave on its own. */
+	/* Hero: a short, centred headline (one block per line) and the three ticket-shaped shortcuts. */
+	.hero {
+		--notch: var(--color-navy);
+		position: relative;
+		isolation: isolate;
+		overflow: clip;
+		padding-top: clamp(2.5rem, 1rem + 5vw, 5rem);
+		padding-bottom: 6rem;
+		background: var(--color-navy);
+		text-align: center;
+	}
+
 	.hero-title {
+		max-width: 13ch;
+		margin-inline: auto;
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 800;
@@ -1195,47 +1131,103 @@
 		text-underline-offset: 0.12em;
 	}
 
-	/* Lede: same measure as the headline block, no hard breaks. */
+	/* Lede: one short paragraph under the headline. */
 	.hero-lede {
-		max-width: 58ch;
+		max-width: 46ch;
+		margin: 1.5rem auto 0;
 		font-size: var(--text-lead);
 		font-stretch: 112%;
 		font-weight: 450;
-		line-height: 1.5;
+		line-height: 1.45;
 		color: var(--color-mist);
 		text-wrap: pretty;
 	}
 
-	/* The isotype mark: small beside the headline at rest, huge during the pinned scroll moment. */
-	.hero-mark {
-		position: absolute;
-		z-index: 10;
-		top: 1.5rem;
-		left: 1.25rem;
-		width: 6.5rem;
-		aspect-ratio: 186 / 209;
-		transform-origin: 0 0;
-		pointer-events: none;
-	}
-
-	@media (min-width: 40rem) {
-		.hero-mark {
-			top: 2.5rem;
-			left: 4vw;
-			right: auto;
-			width: 8rem;
-		}
+	/* Shortcuts: tickets with a notch on each side. Each one is the section it points to. */
+	.gates ul {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 1.75rem;
+		text-align: left;
 	}
 
 	@media (min-width: 64rem) {
-		.hero-mark {
-			top: 2.5rem;
-			left: max(4vw, calc((100vw - 1600px) / 2));
-			right: auto;
-			width: min(12vw, 15rem);
+		.gates ul {
+			grid-template-columns: repeat(var(--gates, 3), minmax(0, 1fr));
+			gap: 1.5rem;
+			margin-top: 3rem;
 		}
 	}
 
+	.gate {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.125rem 1rem;
+		min-height: 4.5rem;
+		padding: 0.75rem 2rem;
+		border-radius: 4px;
+		background-color: var(--color-paper);
+		background-image:
+			radial-gradient(circle at 0 50%, var(--notch) 0.75rem, transparent 0.78rem),
+			radial-gradient(circle at 100% 50%, var(--notch) 0.75rem, transparent 0.78rem);
+		box-shadow:
+			inset 0 0 0 1px var(--paper-ring),
+			0 4px 0 var(--color-paper-edge);
+		color: var(--color-on-paper);
+	}
+
+	@media (min-width: 64rem) {
+		.gate {
+			min-height: 6rem;
+			padding-block: 1.125rem;
+			padding-inline: 2.25rem;
+		}
+	}
+
+	.gate-name {
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: var(--text-lead);
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+
+	@media (min-width: 64rem) {
+		.gate-name {
+			font-size: var(--text-title);
+		}
+	}
+
+	.gate-note {
+		grid-column: 1;
+		font-size: var(--text-label);
+		line-height: 1.35;
+		color: var(--color-paper-soft);
+	}
+
+	.gate svg {
+		grid-column: 2;
+		grid-row: 1 / 3;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.gate {
+			transition:
+				transform 0.12s var(--ease-expo),
+				box-shadow 0.12s var(--ease-expo);
+		}
+
+		.gate:hover {
+			transform: translateY(-3px);
+			box-shadow:
+				inset 0 0 0 1px var(--paper-ring),
+				0 7px 0 var(--color-paper-edge);
+		}
+	}
+
+	/* The isotype, drawn as separate parts so the Actividades opener can animate them. */
 	.hero-mark-svg {
 		display: block;
 		width: 100%;
@@ -1262,27 +1254,6 @@
 		stroke-width: 1.5px;
 		vector-effect: non-scaling-stroke;
 		opacity: 0.55;
-	}
-
-	/* Scroll-moment parts: only exist when the pinned choreography can run. */
-	.hero-stem,
-	.hero-cue {
-		display: none;
-	}
-
-	.hero-stem {
-		position: absolute;
-		z-index: 9;
-		width: 3px;
-		background: var(--color-sky);
-		transform-origin: top;
-	}
-
-	.hero-cue {
-		position: absolute;
-		z-index: 11;
-		max-width: 34rem;
-		pointer-events: none;
 	}
 
 	/* Root commit: a ring terminator. The rail ends at its centre and the hollow face hides the end of the line. */
@@ -3169,12 +3140,22 @@
 		background: var(--color-ink);
 	}
 
-	/* Trunk: the hero stem continues into the Activities main branch (desktop only). */
+	/* Actividades. The opener (the isotype, its stem and the root commit) comes first; the trunk then splits into two
+	   sides. --land is where the stem and the trunk sit: the page's centre on a wide screen, the rails' edge otherwise. */
 	.lane-vars {
 		--s: 1;
 		--lane: calc(56px * var(--s));
 		--main-x: calc(14px * var(--s));
 		--line: calc(2px * var(--s));
+		--wrap-x: 1.25rem;
+		--land: calc(var(--wrap-x) + var(--main-x));
+		--trunk-x: var(--main-x);
+	}
+
+	@media (min-width: 40rem) {
+		.lane-vars {
+			--wrap-x: max(4%, calc((100% - 1600px) / 2));
+		}
 	}
 
 	@media (min-width: 48rem) {
@@ -3183,30 +3164,264 @@
 		}
 	}
 
-	.trunk {
-		display: none;
+	@media (min-width: 64rem) {
+		.lane-vars {
+			--land: 50%;
+			--trunk-x: 50%;
+		}
+	}
+
+	.op {
+		position: relative;
+		z-index: 2;
+	}
+
+	.op-stage {
+		position: relative;
+	}
+
+	.op-head {
+		padding-top: var(--spacing-section);
+		padding-bottom: 2.5rem;
+	}
+
+	.op-head .lead {
+		margin-top: 1.5rem;
 	}
 
 	@media (min-width: 64rem) {
-		.trunk-head {
-			position: relative;
-			padding-left: var(--lane);
-			padding-bottom: 1.5rem;
+		.op-head {
+			text-align: center;
 		}
 
-		.trunk {
+		.op-head .lead {
+			margin-inline: auto;
+		}
+	}
+
+	.op-mark {
+		display: none;
+		pointer-events: none;
+	}
+
+	.op-end {
+		position: relative;
+		min-height: 11rem;
+		padding-top: 4rem;
+	}
+
+	.op-stem {
+		position: absolute;
+		left: calc(var(--land) - 1.5px);
+		top: 4rem;
+		bottom: 0;
+		width: 3px;
+		background: var(--color-sky);
+		transform-origin: top;
+	}
+
+	.op-emblem {
+		position: absolute;
+		left: var(--land);
+		top: 0;
+		width: 2.25rem;
+		transform: translateX(-50%);
+	}
+
+	@media (min-width: 64rem) {
+		.op-emblem {
+			width: 3.5rem;
+		}
+	}
+
+	.op-emblem svg {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.op-cue {
+		position: relative;
+		max-width: 34rem;
+		margin-left: calc(var(--land) + 1.75rem);
+		padding: 0.5rem 1.25rem 1.75rem 0;
+	}
+
+	.op-cue-title {
+		margin-top: 0.75rem;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: var(--text-title);
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		color: var(--color-ink);
+	}
+
+	/* The spine. The trunk comes down from the opener, then splits into two lanes: what is coming (dotted) and what we
+	   already did (solid). On a wide screen they sit side by side around the trunk, the planned one mirrored; stacked
+	   with the trunk at the rails' edge below that. */
+	.sp-top {
+		position: relative;
+		padding-top: 2.5rem;
+		padding-bottom: 2.5rem;
+	}
+
+	.trunk {
+		position: absolute;
+		z-index: 0;
+		left: calc(var(--trunk-x) - var(--line) / 2);
+		top: -2px;
+		bottom: 0;
+		width: var(--line);
+		background: var(--color-sky);
+		transform-origin: top;
+	}
+
+	.sp-controls {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		gap: 1.25rem;
+		margin-left: var(--lane);
+	}
+
+	.sp-filters,
+	.sp-legend {
+		background: var(--color-navy-deep);
+	}
+
+	.sp-legend {
+		display: none;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.75rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-label);
+		line-height: 1.4;
+		color: var(--color-mist);
+	}
+
+	.sp-legend li {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.sp-cols {
+		position: relative;
+		display: grid;
+		gap: 2.5rem;
+	}
+
+	.sp-col {
+		position: relative;
+		min-width: 0;
+	}
+
+	.sp-label {
+		display: block;
+		width: fit-content;
+		margin: 0 0 0.5rem var(--lane);
+	}
+
+	.sp-pre {
+		position: absolute;
+		left: calc(var(--main-x) - var(--line) / 2);
+		top: 0;
+		height: calc(2.25rem + 1.875rem);
+		border-left: var(--line) solid var(--color-sky);
+	}
+
+	.sp-plan .sp-pre {
+		border-left-style: dashed;
+	}
+
+	.sp-bus {
+		display: none;
+	}
+
+	/* The planned lane ends on its last node (the dashed rail used to run into HEAD below it). */
+	.sp-cols .plan .rail-main {
+		bottom: 0;
+	}
+
+	@media (min-width: 64rem) {
+		.sp-controls {
+			justify-items: center;
+			margin-left: 0;
+			text-align: center;
+		}
+
+		.sp-filters,
+		.sp-legend {
+			padding: 0.75rem 1.5rem;
+		}
+
+		.sp-legend {
+			display: flex;
+			justify-content: center;
+		}
+
+		.sp-cols {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			column-gap: 2rem;
+			align-items: start;
+		}
+
+		.sp-bus {
 			display: block;
 			position: absolute;
-			left: calc(var(--main-x) - var(--line) / 2);
-			top: -6rem;
-			bottom: -5rem;
-			width: var(--line);
+			z-index: 0;
+			top: calc(var(--line) / -2);
+			left: calc(50% - 1rem - var(--main-x));
+			right: calc(50% - 1rem - var(--main-x));
+			height: var(--line);
 			background: var(--color-sky);
-			transform-origin: top;
 		}
 
-		.lane-tag {
-			margin-left: var(--lane);
+		.sp-plan .sp-pre {
+			left: auto;
+			right: calc(var(--main-x) - var(--line) / 2);
+		}
+
+		.sp-plan .sp-label {
+			margin: 0 var(--lane) 0.5rem auto;
+		}
+
+		/* The planned lane is the mirror image of the history lane: its rail is on the right, towards the trunk, and its
+		   cards hang to the left of it. */
+		.sp-plan .commit {
+			grid-template-columns: minmax(0, 1fr) var(--lane);
+		}
+
+		.sp-plan .card {
+			grid-column: 1;
+			grid-row: 1;
+		}
+
+		.sp-plan .node {
+			left: auto;
+			right: calc(var(--x) - var(--node) / 2);
+		}
+
+		.sp-plan .link {
+			left: auto;
+			right: var(--x);
+			transform-origin: right;
+		}
+
+		.sp-plan .rail {
+			left: auto;
+			right: calc(var(--x) - var(--line) / 2);
+		}
+
+		.sp-plan .rail-cursor {
+			left: auto;
+			right: calc(var(--main-x) - 0.5rem);
+		}
+
+		.sp-plan .stamp {
+			margin-left: 0;
 		}
 	}
 
@@ -3339,10 +3554,6 @@ html.motion [data-j-in] {
 	transform: translateY(105%);
 }
 
-html.motion .hero-mark-svg {
-	visibility: hidden;
-}
-
 /* Phones get the same entrances as desktop, with shorter travel so nothing leaves the narrow column. */
 html.motion .w {
 	opacity: 0.22;
@@ -3366,72 +3577,91 @@ html.motion [data-member] {
 	}
 }
 
-/* Hero scroll moment: parts exist only where the pinned choreography runs (matches the JS media query). */
-@media (min-width: 64rem) and (min-height: 800px) {
-	html.motion .hero-stem {
-		display: block;
-		transform: scaleY(0);
+/* The Actividades opener while motion is on (the page sets html.motion before first paint and removes it if the motion
+   script never starts): a tall run, a sticky stage the scroll moment plays over, and every part waiting for it. The
+   stage height is fixed in svh, so the browser bars showing or hiding cannot move it. Without motion none of this applies
+   and the opener is its static end state. */
+html.motion .op {
+	--header-h: 4.0625rem;
+	--stage-h: calc(100svh - var(--header-h));
+	height: calc(var(--stage-h) + 150svh);
+}
+
+html.motion .op-stage {
+	position: sticky;
+	top: var(--header-h);
+	height: var(--stage-h);
+	overflow: clip;
+}
+
+html.motion .op-head {
+	position: absolute;
+	inset-inline: 0;
+	top: 9%;
+	z-index: 4;
+	padding: 0;
+	will-change: transform, opacity;
+}
+
+html.motion .op-mark {
+	display: block;
+	position: absolute;
+	z-index: 3;
+	left: calc(50% - 5.625rem);
+	top: calc(50% - 0.625rem);
+	width: 11.25rem;
+	aspect-ratio: 186 / 209;
+	transform-origin: 0 0;
+}
+
+@media (min-width: 64rem) {
+	html.motion .op-head {
+		top: 12%;
 	}
 
-	html.motion .trunk {
-		transform: scaleY(0);
-	}
-
-	html.motion .hero-cue {
-		display: block;
-		opacity: 0;
+	html.motion .op-mark {
+		left: calc(50% - 8rem);
+		top: calc(50% - 2.5rem);
+		width: 16rem;
 	}
 }
 
-/* Hero scroll moment on phones (matches the JS media query). The stage sticks natively instead of being pinned by
-   JS, so touch scrolling stays native and nothing jumps when the address bar shows or hides; svh keeps its height
-   fixed while the browser bars move. The run is the scroll distance the moment plays over. Without motion both
-   wrappers are display: contents and the hero is the plain stacked layout. */
-.hero-run,
-.hero-stage {
-	display: contents;
+html.motion .op-end {
+	position: absolute;
+	inset: 0;
+	min-height: 0;
+	padding: 0;
 }
 
-@media (max-width: 47.99rem) {
-	html.motion .hero-run {
-		--header-h: 4.0625rem;
-		--stage-h: calc(100svh - var(--header-h));
-		display: grid;
-		min-height: calc(var(--stage-h) * 2.3);
-	}
+html.motion .op-stem {
+	z-index: 2;
+	bottom: auto;
+	transform: scaleY(0);
+}
 
-	html.motion .hero-run > * {
-		grid-area: 1 / 1;
-	}
+html.motion .op-cue {
+	position: absolute;
+	z-index: 5;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+}
 
-	html.motion .hero-main {
-		align-self: start;
-	}
+html.motion .op-emblem {
+	z-index: 5;
+	opacity: 0;
+}
 
-	html.motion .hero-stage {
-		display: block;
-		position: sticky;
-		top: var(--header-h);
-		z-index: 11;
-		align-self: start;
-		height: var(--stage-h);
-		pointer-events: none;
-	}
+html.motion .trunk {
+	transform: scaleY(0);
+}
 
-	html.motion .hero-stem {
-		display: block;
-		transform: scaleY(0);
-	}
+html.motion [data-fork] {
+	opacity: 0;
+}
 
-	html.motion .hero-cue {
-		display: block;
-		opacity: 0;
-	}
-
-	/* The stem comes down the left edge of the preview, so the tag steps aside to leave its line clear. */
-	html.motion [data-hero-slab] .tag-plan {
-		margin-left: 3rem;
-	}
+html.motion .hero-mark-svg {
+	visibility: hidden;
 }
 
 /* Event registration (S8): the link and the calendar under an upcoming activity's card, and the Inscripciones section
@@ -3445,13 +3675,6 @@ html.motion [data-member] {
 		gap: 0.75rem;
 		margin-top: 0.25rem;
 		justify-items: start;
-	}
-
-	/* On wide screens the card is one row (text, details, photo); the registration links get a row under it. */
-	@media (min-width: 80rem) {
-		.card-row.has-reg {
-			flex-wrap: wrap;
-		}
 	}
 
 	.reg-ticket,

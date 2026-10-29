@@ -67,7 +67,9 @@ test.describe('social proof from the admin', () => {
 		await Promise.all([site?.close(), admin?.close(), emptySite?.close(), emptyAdmin?.close()]);
 	});
 
-	test('renders the allies in Spanish and never the impact figures or testimonials the admin still sends', async ({ page }) => {
+	test('renders the allies in Spanish and never the impact figures or testimonials the admin still sends', async ({
+		page,
+	}) => {
 		await open(page, `${site.url}/`);
 
 		await expect(page.locator('#impacto')).toHaveCount(0);

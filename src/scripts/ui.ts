@@ -15,31 +15,8 @@ import { initNewsVisor } from './news-visor';
 const locale = toLocale(document.documentElement.lang);
 const t = useTranslations(locale);
 
-// Small interactions that work with or without motion: countdown, activity filters, board cards on touch, forum tabs.
+// Small interactions that work with or without motion: activity filters, board cards on touch, forum tabs.
 // Every one of them has a complete static fallback in the HTML.
-
-// Countdown: days until the next dated upcoming event, computed in the visitor's local time.
-const countdown = document.querySelector<HTMLElement>('[data-countdown]');
-if (countdown?.dataset.countdown) {
-	const [year, month, day] = countdown.dataset.countdown.split('-').map(Number);
-	const now = new Date();
-	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-	const days = Math.round((new Date(year, month - 1, day).getTime() - today.getTime()) / 86_400_000);
-	const staticView = countdown.querySelector<HTMLElement>('[data-static]');
-	const liveView = countdown.querySelector<HTMLElement>('[data-live]');
-	if (days >= 0 && staticView && liveView) {
-		const label = liveView.querySelector('[data-count-label]');
-		const num = liveView.querySelector('[data-count-num]');
-		const unit = liveView.querySelector('[data-count-unit]');
-		if (label && num && unit) {
-			label.textContent = days === 0 ? t('count.is') : days === 1 ? t('count.one') : t('count.many');
-			num.textContent = days === 0 ? t('count.today') : String(days);
-			unit.textContent = days === 0 ? '' : days === 1 ? t('count.dayOne') : t('count.dayMany');
-			staticView.hidden = true;
-			liveView.hidden = false;
-		}
-	}
-}
 
 // Filters: dim the entries that do not match; the rail stays intact. Entries without a type are never dimmed.
 const filters = document.querySelector<HTMLElement>('[data-filters]');

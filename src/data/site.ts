@@ -23,13 +23,13 @@ export type { ActivityType, TimelineKind } from '../lib/admin-content/model';
 export const site: SiteCopy = {
 	name: 'ASO Computación',
 	tagline: 'Asociación Estudiantil de la carrera de Computación',
-	// The hero headline, one entry per line so each line can move on its own. `headlineAccent` is the line drawn in sky.
+	// The hero headline, one entry per line. `headlineAccent` is the line drawn with the red underline.
 	headline: ['Entérate de', 'lo que pasa en', 'Computación.'],
 	headlineAccent: 2,
-	// Caption that appears at the end of the hero scroll moment, beside the branch.
+	// Caption that appears at the end of the Actividades opener, beside the branch.
 	heroCue: 'Baja por la rama: este es nuestro historial.',
 	description:
-		'ASO Computación es la asociación estudiantil de la carrera. Aquí está nuestro historial, actividad por actividad.',
+		'Somos la asociación de estudiantes de Computación de la UNL: talleres, charlas y eventos, y tu voz ante la facultad.',
 	// Verbatim from the ASO's own LinkedIn page.
 	about:
 		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
@@ -452,7 +452,7 @@ const enCopy: LandingCopy = {
 		headlineAccent: 2,
 		heroCue: 'Scroll down the branch: this is our history.',
 		description:
-			'ASO Computación is the student association of the program. Here is our history, activity by activity.',
+			'We are the Computer Science student association at the UNL: workshops, talks and events, and your voice before the faculty.',
 		about:
 			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
 	},
