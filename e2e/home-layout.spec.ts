@@ -166,3 +166,48 @@ test.describe('activities history', () => {
 		await expect(fold.locator('summary')).toHaveText(/^Show history \(\d+ more\)$/, { useInnerText: true });
 	});
 });
+
+// WCAG 1.4.10 asks for no sideways scrolling at 320 px, and the touch bar of the page is 44 px.
+test.describe('small screens', () => {
+	test.use({ viewport: { width: 320, height: 640 } });
+
+	for (const path of ['/', '/en/']) {
+		test(`${path} does not scroll sideways at 320px`, async ({ page }) => {
+			await page.goto(path);
+			await page.evaluate(() => document.fonts.ready);
+			const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+			expect(overflow).toBeLessThanOrEqual(0);
+		});
+	}
+});
+
+for (const width of [390, 1440]) {
+	test.describe(`controls at ${width}px`, () => {
+		test.use({ viewport: { width, height: 900 } });
+
+		test('every visible link and button is a 44 px target, except the ones inside a line of text', async ({ page }) => {
+			await page.goto('/');
+			await page.evaluate(() => document.fonts.ready);
+			const small = await page.evaluate(() =>
+				[
+					...document.querySelectorAll<HTMLElement>(
+						'header a, header button, main a, main button, main summary, footer a',
+					),
+				]
+					.filter((node) => {
+						const style = getComputedStyle(node);
+						const box = node.getBoundingClientRect();
+						// The skip link is 1 px until it takes focus; a link that is part of a sentence is inline.
+						return box.width > 1 && style.display !== 'inline' && style.visibility !== 'hidden';
+					})
+					.map((node) => ({
+						control: `${node.tagName.toLowerCase()}.${String(node.className).split(' ')[0]} "${(node.textContent ?? '').trim().slice(0, 24)}"`,
+						width: Math.round(node.getBoundingClientRect().width),
+						height: Math.round(node.getBoundingClientRect().height),
+					}))
+					.filter((control) => control.width < 44 || control.height < 44),
+			);
+			expect(small).toEqual([]);
+		});
+	});
+}

@@ -96,8 +96,8 @@ const showRef = !dense && Boolean(hash || deco);
 				<a
 					href={entry.href}
 					class:list={[
-						'inline-block text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
-						{ 'mt-3': !dense },
+						'inline-flex min-h-11 items-center text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
+						{ 'mt-1': !dense },
 					]}
 					target={external ? '_blank' : undefined}
 					rel={external ? 'me noopener' : undefined}

@@ -25,7 +25,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 	<nav aria-label={t('nav.label')} class="wrap flex h-16 items-center justify-between gap-2 sm:gap-3">
 		<a
 			href={onHome ? '#top' : homePath}
-			class="hidden shrink-0 items-center gap-3 min-[340px]:flex"
+			class="hidden min-h-11 min-w-11 shrink-0 items-center gap-3 min-[340px]:flex"
 			aria-label={t('nav.home', { name: site.name })}
 		>
 			<IsotypeWhite class="theme-dark-only h-6 w-auto sm:h-8" aria-hidden="true" />
@@ -38,7 +38,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 					<a
 						href={hrefFor(link.href)}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
-						class="group flex items-center gap-2 py-3 text-mist hover:text-ink aria-[current=page]:text-ink sm:px-1"
+						class="group flex min-h-11 min-w-11 items-center justify-center gap-2 text-mist hover:text-ink aria-[current=page]:text-ink sm:px-1"
 					>
 						<span class="hidden size-2 rounded-full bg-sky group-hover:bg-ink sm:block" aria-hidden="true" />
 						{link.label.toLowerCase()}
@@ -52,7 +52,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 				hreflang={other}
 				lang={other}
 				aria-label={`${t('lang.switchText')}, ${t('lang.switchLabel')}`}
-				class="flex min-h-9 min-w-7 items-center justify-center px-1 text-mist hover:text-ink sm:min-w-9 sm:px-1.5"
+				class="flex min-h-11 min-w-11 items-center justify-center px-1 text-mist hover:text-ink sm:px-1.5"
 			>
 				{t('lang.switchText')}
 			</a>
@@ -61,7 +61,7 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 				data-theme-toggle
 				aria-pressed="true"
 				aria-label={t('theme.toggle')}
-				class="flex h-9 w-7 items-center justify-center text-mist hover:text-ink sm:w-9"
+				class="flex h-11 w-11 items-center justify-center text-mist hover:text-ink"
 			>
 				<!-- The icon is the theme the button switches to: sun while dark, moon while light. -->
 				<svg

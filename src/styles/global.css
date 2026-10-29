@@ -2330,6 +2330,7 @@
 	}
 
 	.faq-man-clear {
+		min-height: 2.75rem;
 		padding: 0.25rem 0.625rem;
 		border-radius: 2px;
 		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 50%, transparent);
