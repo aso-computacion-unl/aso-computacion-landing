@@ -46,6 +46,20 @@ test.describe('the hero', () => {
 });
 
 test.describe('the Actividades opener', () => {
+	test('every control of the section is a 44 px target', async ({ page }) => {
+		await page.goto('/');
+		const small = await page
+			.locator('#actividades')
+			.locator('button:visible, summary:visible, a:visible')
+			.evaluateAll((nodes) =>
+				nodes
+					.map((node) => ({ node: node.className || node.tagName, height: node.getBoundingClientRect().height }))
+					.filter((control) => control.height < 44),
+			);
+		// Links inside a card's text are inline, so only the controls the section draws count.
+		expect(small.filter((control) => /chip|history-toggle|reg-/.test(String(control.node)))).toEqual([]);
+	});
+
 	test.describe('on a wide screen', () => {
 		test.use({ viewport: { width: 1440, height: 900 } });
 
