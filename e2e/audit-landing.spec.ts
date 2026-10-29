@@ -234,3 +234,28 @@ test.describe('reduced motion', () => {
 		expect(running).toEqual([]);
 	});
 });
+
+// A running dev server or deploy, when one is given (`AUDIT_LIVE_URL=http://127.0.0.1:4323`): the page a person gets from a
+// cold start. Skipped otherwise, so the suite needs no stack besides the preview.
+test.describe('a running site', () => {
+	const live = process.env.AUDIT_LIVE_URL;
+	test.skip(!live, 'AUDIT_LIVE_URL is not set');
+
+	test('renders the home with its sections, seats and links to the admin, and logs no errors', async ({ page }) => {
+		const problems = watch(page);
+		await page.goto(`${live}/`, { waitUntil: 'networkidle' });
+		await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+		await expect(page.locator('main > section[id]')).not.toHaveCount(0);
+		const links = await page
+			.locator('[data-reg-action]')
+			.evaluateAll((items) => items.map((item) => item.getAttribute('href') ?? ''));
+		console.log(
+			JSON.stringify({
+				sections: await page.locator('main > section[id]').evaluateAll((n) => n.map((s) => s.id)),
+				links,
+			}),
+		);
+		await expect(page.locator('#inscripciones')).toHaveAttribute('data-seats-settled', '');
+		expect(problems).toEqual([]);
+	});
+});
