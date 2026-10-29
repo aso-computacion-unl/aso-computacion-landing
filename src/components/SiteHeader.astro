@@ -96,8 +96,9 @@ const { homePath, onHome, hrefFor, isCurrent } = navRouting(Astro.url.pathname, 
 </header>
 
 <style>
-	/* Phones: the links scroll sideways; a fade on the right edge says there is more. */
-	@media (max-width: 39.99rem) {
+	/* Whenever the links do not fit (up to about 1280 px in Spanish) they scroll sideways; a fade on the right edge says
+	   there is more. */
+	@media (max-width: 79.99rem) {
 		.nav-scroll {
 			mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
 			padding-right: 1.5rem;

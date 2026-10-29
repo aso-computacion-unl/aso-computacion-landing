@@ -1303,6 +1303,7 @@
 	/* Languages (Inscripciones): the association's line typed in five syntaxes, in a small code window. */
 	.tk-aside {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 1.5rem;
 		justify-items: start;
 	}
@@ -1318,6 +1319,7 @@
 
 	.lang-stack {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.lg {
@@ -1963,8 +1965,11 @@
 		font-weight: 520;
 	}
 
+	/* One shrinkable column: an aside with an unbreakable line (the code window of Inscripciones) must not widen it past a
+	   320 px viewport. */
 	.section-head {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: var(--spacing-head);
 	}
 
