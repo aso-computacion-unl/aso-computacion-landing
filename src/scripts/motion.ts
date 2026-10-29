@@ -126,22 +126,39 @@ async function init(plan: MotionPlan) {
 		});
 	}
 
-	/* ---------- Ribbon: speed follows scroll velocity ---------- */
+	/* ---------- Ribbon: speed follows scroll velocity, and it only runs while it is on screen ---------- */
 	const track = q<HTMLElement>('.ribbon-track');
-	if (track) {
-		const drift = gsap.to(track, { xPercent: -50, ease: 'none', duration: 48, repeat: -1 });
+	const ribbon = q<HTMLElement>('.ribbon');
+	if (track && ribbon) {
+		const drift = gsap.to(track, { xPercent: -50, ease: 'none', duration: 48, repeat: -1, paused: true });
 		let target = 1;
 		let current = 1;
+		const follow = () => {
+			target += (1 - target) * 0.04;
+			current += (target - current) * 0.1;
+			drift.timeScale(current);
+		};
 		ScrollTrigger.create({
 			onUpdate: (self) => {
 				target = 1 + Math.min(Math.abs(self.getVelocity()) / 180, 18);
 			},
 		});
-		gsap.ticker.add(() => {
-			target += (1 - target) * 0.04;
-			current += (target - current) * 0.1;
-			drift.timeScale(current);
+		const run = (on: boolean) => {
+			if (on) {
+				drift.play();
+				gsap.ticker.add(follow);
+			} else {
+				drift.pause();
+				gsap.ticker.remove(follow);
+			}
+		};
+		const onScreen = ScrollTrigger.create({
+			trigger: ribbon,
+			start: 'top bottom',
+			end: 'bottom top',
+			onToggle: (self) => run(self.isActive),
 		});
+		run(onScreen.isActive);
 	}
 
 	const mm = gsap.matchMedia();

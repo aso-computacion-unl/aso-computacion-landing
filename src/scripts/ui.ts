@@ -8,6 +8,7 @@ import {
 	type ManualPage,
 	type ManualSection,
 } from './faq-shell';
+import './idle-motion';
 import { initForumFeed } from './forum-feed';
 import { initForumTabs } from './forum-tabs';
 import { initNewsVisor } from './news-visor';

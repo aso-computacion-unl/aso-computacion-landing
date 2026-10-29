@@ -3159,6 +3159,14 @@
 		}
 	}
 
+	/* src/scripts/idle-motion.ts marks a block that is off screen: its loops wait there. */
+	[data-idle],
+	[data-idle] *,
+	[data-idle] *::before,
+	[data-idle] *::after {
+		animation-play-state: paused !important;
+	}
+
 	/* The steps: a strip under the panel, each with its big numeral. */
 	.forum-steps {
 		display: grid;
@@ -3815,7 +3823,7 @@
 		pointer-events: none;
 	}
 
-	/* Diagonal ribbon: sky band, navy mono text. Scrolls only when motion is allowed. */
+	/* Diagonal ribbon: a signal-red band with white mono text. Scrolls only when motion is allowed. */
 	.ribbon {
 		position: relative;
 		z-index: 5;
