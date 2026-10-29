@@ -5,8 +5,9 @@ import { useTranslations } from '../i18n/ui';
 // Flat two-layer button: a face that presses down onto an offset darker base layer.
 interface Props {
 	href: string;
-	// primary: sky face (for navy surfaces). ghost: outlined (navy surfaces). inverse: navy face (for sky surfaces).
-	variant?: 'primary' | 'ghost' | 'inverse';
+	// primary: white face (for navy surfaces). ghost: outlined (navy surfaces). inverse: navy face (for sky surfaces).
+	// paper: navy face in both themes, for the sky stubs of the paper tickets.
+	variant?: 'primary' | 'ghost' | 'inverse' | 'paper';
 	size?: 'md' | 'xl';
 	external?: boolean;
 }

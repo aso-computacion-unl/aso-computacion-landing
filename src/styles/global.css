@@ -1302,6 +1302,13 @@
 		--base: var(--color-navy-deep);
 	}
 
+	/* Paper: navy face with white text in both themes, for the sky stubs of the paper tickets. */
+	.btn-paper {
+		--face: var(--color-on-paper);
+		--ink: #fff;
+		--base: #021a36;
+	}
+
 	.btn-xl {
 		--lift: 8px;
 	}
@@ -1990,9 +1997,8 @@
 		display: none;
 	}
 
-	/* The darker well the prompt, the cards of the forum and the free commands sit in (follows the theme's surfaces). */
-	.faq-prompt,
-	.forum-card {
+	/* The darker well the prompt and the free commands sit in (follows the theme's surfaces). */
+	.faq-prompt {
 		--well: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
 	}
 
@@ -2456,18 +2462,26 @@
 	}
 
 	/* Forum: one terminal with the category tabs over example threads and the way in beside them, then three steps. */
+	/* The forum: one lifted panel of example threads, the door card and the live feed beside it, the steps as a strip below. */
 	.forum-grid {
+		--term-line: color-mix(in oklab, var(--color-sky) 24%, transparent);
 		display: grid;
+		gap: 1.25rem;
 	}
 
 	@media (min-width: 64rem) {
 		.forum-grid {
-			grid-template-columns: minmax(0, 1fr) 25rem;
+			grid-template-columns: minmax(0, 1fr) 23.75rem;
+			gap: 1.75rem;
+			align-items: stretch;
 		}
 	}
 
-	.forum-main {
+	.forum-panel {
 		min-width: 0;
+		overflow: hidden;
+		border-radius: 6px;
+		background: var(--color-navy-lift);
 	}
 
 	.forum-bar {
@@ -2486,7 +2500,7 @@
 		color: var(--color-sky);
 	}
 
-	/* Without JS the tabs stay hidden, and so does the command that names them. */
+	/* Without JS the chips stay hidden, and so does the command that names them. */
 	.forum-grep:has(+ .forum-tabs[hidden]) {
 		display: none;
 	}
@@ -2542,6 +2556,7 @@
 		border-radius: 2px;
 		font-family: var(--font-mono);
 		font-size: var(--text-small);
+		font-weight: 500;
 		line-height: 1.4;
 		color: var(--color-mist);
 	}
@@ -2556,7 +2571,7 @@
 	}
 
 	.forum-row:hover {
-		background: var(--color-navy-lift);
+		background: color-mix(in srgb, var(--color-sky) 10%, var(--color-navy-lift));
 	}
 
 	.forum-row[hidden] {
@@ -2647,7 +2662,7 @@
 	.forum-chip {
 		padding: 0.1875rem 0.625rem;
 		border-radius: 2px;
-		background: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
+		background: var(--color-navy-deep);
 		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 28%, transparent);
 		font-family: var(--font-mono);
 		font-size: var(--text-label);
@@ -2672,63 +2687,119 @@
 	.forum-side {
 		display: flex;
 		flex-direction: column;
+		gap: 1.25rem;
 		min-width: 0;
-		border-top: 1px solid var(--term-line);
 	}
 
 	@media (min-width: 64rem) {
 		.forum-side {
-			border-top: 0;
-			border-left: 1px solid var(--term-line);
+			gap: 1.75rem;
 		}
 	}
 
-	.forum-card + .forum-card {
-		border-top: 1px solid var(--term-line);
+	/* The door is a paper ticket like the ones in Inscripciones: the way in is the only action, on a sky stub. */
+	.forum-door {
+		--tk-notch: var(--color-navy);
+		display: flex;
+		flex: none;
+		flex-direction: column;
+		color: var(--color-on-paper);
+		border-radius: 6px;
+		box-shadow: 0 4px 0 var(--color-paper-edge);
 	}
 
-	.forum-card-title {
-		padding: 1.75rem 1.75rem 0;
-		font-size: var(--text-title);
+	.forum-door-top {
+		display: grid;
+		gap: 0.75rem;
+		padding: 1.5rem 1.25rem;
+		border-radius: 6px 6px 0 0;
+		background: var(--color-paper);
+		box-shadow: inset 0 0 0 1px var(--paper-ring);
+	}
+
+	@media (min-width: 40rem) {
+		.forum-door-top {
+			padding: 1.75rem 1.75rem 1.5rem;
+		}
+	}
+
+	.forum-door-title {
+		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 800;
-		line-height: 1.15;
+		font-size: var(--text-title);
+		line-height: 1.1;
 		letter-spacing: -0.02em;
-		color: var(--color-ink);
 		text-wrap: balance;
 	}
 
-	.forum-card-body {
+	.forum-door-text {
+		font-size: var(--text-secondary);
+		line-height: 1.45;
+		color: var(--color-paper-soft);
+	}
+
+	.forum-door-perf {
+		position: relative;
+		height: 0;
+		border-top: 2px dashed var(--color-paper-edge);
+		background: var(--color-paper);
+	}
+
+	.forum-door-perf::before,
+	.forum-door-perf::after {
+		content: '';
+		position: absolute;
+		top: -0.8125rem;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 50%;
+		background: var(--tk-notch);
+	}
+
+	.forum-door-perf::before {
+		left: -0.75rem;
+	}
+
+	.forum-door-perf::after {
+		right: -0.75rem;
+	}
+
+	.forum-door-stub {
 		display: grid;
-		justify-items: start;
 		gap: 1rem;
-		padding: 0.75rem 1.75rem 1.75rem;
+		padding: 1.25rem 1.25rem 1.5rem;
+		border-radius: 0 0 6px 6px;
+		background: var(--color-stub);
 	}
 
-	.forum-card-big {
-		font-size: var(--text-body);
-		line-height: 1.5;
-		color: var(--color-mist);
+	@media (min-width: 40rem) {
+		.forum-door-stub {
+			padding: 1.5rem 1.75rem 1.75rem;
+		}
 	}
 
-	.forum-cats-title {
-		padding: 1.5rem 1.75rem 0.75rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 500;
-		line-height: 1.4;
-		color: var(--color-sky);
+	.forum-door-stub .btn {
+		display: block;
+		width: 100%;
+	}
+
+	.forum-door-stub .btn-face {
+		justify-content: space-between;
+	}
+
+	.forum-door-stub .btn:focus-visible {
+		outline-color: var(--color-on-paper);
 	}
 
 	.forum-note {
-		font-size: var(--text-secondary);
+		font-family: var(--font-mono);
+		font-size: var(--text-label);
 		line-height: 1.5;
-		color: var(--color-mist);
 	}
 
 	.forum-note strong {
 		font-weight: 650;
-		color: var(--color-ink);
 	}
 
 	.forum-google {
@@ -2747,35 +2818,127 @@
 		background: #fff;
 	}
 
-	.forum-cat {
-		display: grid;
-		gap: 0.25rem;
-		margin-inline: 1.75rem;
-		padding: 0.75rem 0;
-		border-top: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+	/* The feed: example lines in the style of `tail -f`, anchored to the bottom so the newest one always shows. */
+	.forum-live {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-height: 15rem;
+		overflow: hidden;
+		border-radius: 6px;
+		background: var(--color-navy-deep);
+		box-shadow: inset 0 0 0 1px var(--term-line);
 	}
 
-	.forum-cat:last-child {
-		margin-bottom: 1.25rem;
+	.forum-live-head {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		padding: 0.875rem 1.25rem;
+		border-bottom: 1px solid var(--term-line);
+		font-family: var(--font-mono);
+		font-size: var(--text-label);
+		font-weight: 400;
+		line-height: 1;
+		color: var(--color-sky);
 	}
 
-	.forum-cat strong {
-		font-size: var(--text-body);
-		font-weight: 650;
-		line-height: 1.3;
-		color: var(--color-ink);
+	.forum-live-head .forum-example {
+		margin-left: auto;
 	}
 
-	.forum-cat span {
-		font-size: var(--text-secondary);
+	.forum-live-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--color-signal);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.forum-live-dot {
+			animation: forum-pulse 1.6s ease-in-out infinite;
+		}
+	}
+
+	@keyframes forum-pulse {
+		50% {
+			opacity: 0.35;
+		}
+	}
+
+	.forum-feed {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 0.75rem;
+		min-height: 0;
+		padding: 1rem 1.25rem 1.125rem;
+		overflow: hidden;
+		font-family: var(--font-mono);
+		font-size: var(--text-small);
 		line-height: 1.5;
 		color: var(--color-mist);
 	}
 
+	.forum-feed li {
+		display: grid;
+		flex: none;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0 0.625rem;
+	}
+
+	.forum-feed b {
+		font-weight: 500;
+		color: var(--color-ink);
+	}
+
+	.forum-feed em {
+		font-style: normal;
+		color: var(--color-sky);
+	}
+
+	/* The cursor sits at the end of the newest line. */
+	.forum-feed li:last-child span::after {
+		content: '';
+		display: inline-block;
+		width: 0.6em;
+		height: 1em;
+		margin-left: 0.375rem;
+		vertical-align: -0.15em;
+		background: var(--color-sky);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.forum-feed li:last-child span::after {
+			animation: forum-blink 1s steps(1) infinite;
+		}
+
+		.forum-feed li.is-new {
+			animation: forum-feed-in 0.45s var(--ease-expo) both;
+		}
+	}
+
+	@keyframes forum-feed-in {
+		from {
+			opacity: 0;
+			transform: translateY(0.625rem);
+		}
+	}
+
+	@keyframes forum-blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	/* The steps: a strip under the panel, each with its big numeral. */
 	.forum-steps {
 		display: grid;
 		gap: 1.5rem;
 		margin-top: var(--spacing-head);
+		padding-top: 2rem;
+		border-top: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
 	}
 
 	@media (min-width: 48rem) {
@@ -2787,29 +2950,32 @@
 
 	.forum-step {
 		display: grid;
-		align-content: start;
-		gap: 0.375rem;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: baseline;
+		gap: 0.25rem 1rem;
 	}
 
 	.forum-step-n {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 500;
-		line-height: 1.2;
+		grid-row: span 2;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: var(--text-title);
+		line-height: 1;
 		color: var(--color-sky);
 	}
 
 	.forum-step strong {
-		font-size: var(--text-lead);
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.25;
+		font-size: var(--text-body);
+		font-stretch: 108%;
+		font-weight: 700;
+		line-height: 1.3;
 		color: var(--color-ink);
 	}
 
-	.forum-step span:not(.forum-step-n) {
+	.forum-step p {
 		font-size: var(--text-secondary);
-		line-height: 1.5;
+		line-height: 1.45;
 		color: var(--color-mist);
 	}
 
@@ -2818,10 +2984,14 @@
 			padding: 0.75rem;
 		}
 
-		/* The example tag shares the command's line, so the tabs get a row of their own under both. */
+		/* The example tag shares the command's line, so the chips get a row of their own under both. */
 		.forum-example {
 			order: -1;
 			margin-left: auto;
+		}
+
+		.forum-live-head .forum-example {
+			order: 0;
 		}
 
 		.forum-tabs {
@@ -2840,30 +3010,9 @@
 			padding: 0.5rem 1rem;
 		}
 
-		.forum-card-title {
-			padding: 1.25rem 1.25rem 0;
-		}
-
-		.forum-card-body {
-			gap: 0.75rem;
-			padding: 0.5rem 1.25rem 1.25rem;
-		}
-
-		.forum-cats-title {
-			padding: 1rem 1.25rem 0.5rem;
-		}
-
-		.forum-cat {
-			margin-inline: 1.25rem;
-			padding-block: 0.5rem;
-		}
-
-		.forum-cat:last-child {
-			margin-bottom: 0.75rem;
-		}
-
 		.forum-steps {
 			gap: 1rem;
+			padding-top: 1.5rem;
 		}
 	}
 
@@ -4087,9 +4236,6 @@ html.motion .hero-mark-svg {
 
 	/* The action is the Button's face and base, navy on the sky stub, full width. */
 	.tk-action {
-		--face: var(--color-on-paper);
-		--ink: #fff;
-		--base: #021a36;
 		display: block;
 		width: 100%;
 	}

@@ -74,8 +74,32 @@ test.describe('forum terminal', () => {
 		expect(shownCount).toBeLessThan(total);
 		for (const thread of await shown.all()) await expect(thread).toHaveAttribute('data-category', 'materias');
 
-		await expect(forum.getByRole('heading', { name: 'De qué se habla' })).toBeAttached();
+		await expect(forum.getByRole('heading', { name: 'Entra con tu correo UNL' })).toBeAttached();
 		await expect(forum.locator('[data-step]').first()).toContainText('paso 1');
+		await expect(forum.locator('[data-step]').first().locator('.forum-step-n')).toHaveText('01');
+	});
+
+	test('has a live feed of example activity that is marked as an example and scrolls while it is on screen', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		const forum = page.locator('#foro');
+		await expect(forum.getByRole('heading', { name: /Actividad reciente del foro \(ejemplo\)/ })).toBeAttached();
+		await expect(forum.locator('.forum-live .forum-example')).toHaveText('ejemplo');
+		const feed = forum.locator('[data-forum-feed]');
+		await feed.scrollIntoViewIfNeeded();
+		const last = () => feed.locator('li').last().locator('time').textContent();
+		const before = await last();
+		await expect.poll(last, { timeout: 8000 }).not.toBe(before);
+		// Reduced motion keeps the lines it was drawn with.
+		const quiet = await page.context().browser()!.newContext({ reducedMotion: 'reduce' });
+		const still = await quiet.newPage();
+		await still.goto('/');
+		const first = await still.locator('[data-forum-feed] li').last().locator('time').textContent();
+		await still.locator('[data-forum-feed]').scrollIntoViewIfNeeded();
+		await still.waitForTimeout(3000);
+		expect(await still.locator('[data-forum-feed] li').last().locator('time').textContent()).toBe(first);
+		await quiet.close();
 	});
 
 	test.describe('without JS', () => {

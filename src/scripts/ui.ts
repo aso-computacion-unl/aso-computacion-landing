@@ -8,6 +8,7 @@ import {
 	type ManualPage,
 	type ManualSection,
 } from './faq-shell';
+import { initForumFeed } from './forum-feed';
 import { initForumTabs } from './forum-tabs';
 import { initNewsVisor } from './news-visor';
 
@@ -84,6 +85,10 @@ history
 // Forum tabs: pick a category and the example threads filter to it (the bar stays hidden without JS, which shows them all).
 const forum = document.querySelector<HTMLElement>('[data-forum]');
 if (forum) initForumTabs(forum, t);
+
+// The forum's example feed scrolls in line by line, except under reduced motion, where it keeps the lines it was drawn with.
+const feed = document.querySelector<HTMLElement>('[data-forum-feed]');
+if (feed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) initForumFeed(feed);
 
 // News terminal: the row under the pointer or focus shows its post in the pane beside it.
 const newsVisor = document.querySelector<HTMLElement>('[data-news-visor]');

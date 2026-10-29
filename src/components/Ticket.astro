@@ -103,7 +103,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 					{closed && t('ticket.closed')}
 				</p>
 				<a
-					class:list={['btn', 'tk-action', { 'is-disabled': closed }]}
+					class:list={['btn', 'btn-paper', 'tk-action', { 'is-disabled': closed }]}
 					href={closed ? undefined : registration.href}
 					aria-disabled={closed ? 'true' : undefined}
 					data-reg-action

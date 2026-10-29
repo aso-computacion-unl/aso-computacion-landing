@@ -363,6 +363,13 @@ test.describe('registration from the admin', () => {
 			await expect(page.locator('#evento-viejo')).toHaveCount(0);
 		});
 
+		test('the forum door is the only way in: one link, to the admin forum', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			const links = page.locator(`#foro a[href^="${admin.url}"]`);
+			await expect(links).toHaveCount(1);
+			await expect(links).toHaveAttribute('href', `${admin.url}/foro`);
+		});
+
 		test('the landing ships no registration form, script or Turnstile reference', async () => {
 			for (const file of ['index.html', 'en/index.html']) {
 				const html = await readBuilt(mainDir, file);

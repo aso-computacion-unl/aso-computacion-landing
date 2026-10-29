@@ -285,6 +285,19 @@ export interface ForumThread {
 	replies: number;
 }
 
+// A line of the example activity feed: what is happening in the forum "right now". Invented, like the threads.
+export type ForumFeedKind = 'reply' | 'thanks' | 'open' | 'solved' | 'join';
+
+export interface ForumFeedLine {
+	// "14:02": fixed text, since the page is built ahead of time.
+	time: string;
+	kind: ForumFeedKind;
+	// The thread it is about, in the forum's own (Spanish) words.
+	topic: string;
+	who?: string;
+	count?: number;
+}
+
 // DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
 // public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
 // feed, or with the board's own words, then drop `demo`.
@@ -349,6 +362,16 @@ export const forum = {
 			replies: 4,
 		},
 	] as ForumThread[],
+	// The feed that scrolls beside the threads: made-up lines in the style of `tail -f`.
+	feed: [
+		{ time: '14:02', kind: 'reply', who: 'María', topic: 'Estructuras de Datos' },
+		{ time: '14:03', kind: 'thanks', count: 1, topic: 'Postgres desde Docker' },
+		{ time: '14:05', kind: 'open', who: 'Diego', topic: '¿Alguien tiene apuntes de Redes?' },
+		{ time: '14:06', kind: 'solved', topic: '¿Qué electivas para 7.º ciclo?' },
+		{ time: '14:08', kind: 'join', who: 'Ana', topic: 'hackathon' },
+		{ time: '14:09', kind: 'thanks', count: 3, topic: 'Taller de Docker' },
+		{ time: '14:11', kind: 'reply', who: 'Luis', topic: 'Busco equipo (Node)' },
+	] as ForumFeedLine[],
 	steps: [
 		{
 			title: 'Pregunta o responde',
