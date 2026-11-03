@@ -12,17 +12,20 @@ export interface LoadOptions {
 }
 
 export type LoadedContent =
-	{ source: 'api'; content: PublicContent } | { source: 'fallback'; content: PublicContent; reason: string };
+	| { source: 'api'; content: PublicContent }
+	| { source: 'fallback'; content: PublicContent; reason: string }
+	// A preview build (see preview.ts): drafts and scheduled content, never public, never a fallback.
+	| { source: 'preview'; content: PublicContent };
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 
-class Unavailable extends Error {}
+export class Unavailable extends Error {}
 
 const describe = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 // Runs `task` with an abort signal and a hard deadline. The race guarantees the deadline even when a fetch
 // implementation ignores the signal.
-async function withDeadline<T>(task: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
+export async function withDeadline<T>(task: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
 	const controller = new AbortController();
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const deadline = new Promise<never>((_, reject) => {

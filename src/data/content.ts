@@ -7,6 +7,7 @@ import { locales, type Locale } from '../i18n/locales';
 import { composeSiteContent } from '../lib/admin-content/compose';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
+import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
 import fallback from './fallback.json';
 import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
 
@@ -20,8 +21,13 @@ const bundled = import.meta.glob<ImageMetadata>('/src/assets/**/*.{jpg,jpeg,png,
 });
 
 const adminUrl = process.env.ADMIN_CONTENT_URL ?? import.meta.env.ADMIN_CONTENT_URL;
+// A preview build (PREVIEW_BUILD=1, see docs/DEPLOY.md) reads drafts and scheduled content instead, and throws, failing
+// the build, on anything short of a valid preview: it never falls back. Normal builds never read these variables' values.
+const preview = readPreviewConfig(process.env);
 // The gate reports the fallback itself, with the reason, so the loader's own one-line warning stays quiet.
-const loaded = await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
+const loaded = preview
+	? await loadPreviewContent(preview)
+	: await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
 
 const memo = new Map<Locale, ReturnType<typeof build>>();
 
@@ -47,6 +53,8 @@ function build(locale: Locale) {
 	});
 	return {
 		contentSource: resolved.source,
+		// True on a preview build: the layout adds the banner and noindex, and the site is never meant to be public.
+		preview: resolved.source === 'preview',
 		site: resolved.site,
 		navLinks: resolved.navLinks,
 		timeline: resolved.timeline,
@@ -58,6 +66,9 @@ function build(locale: Locale) {
 		collagePhotos: resolved.collage,
 		news: resolved.news,
 		latestNews: resolved.latestNews,
+		impact: resolved.impact,
+		testimonials: resolved.testimonials,
+		sponsors: resolved.sponsors,
 	};
 }
 
@@ -67,7 +78,8 @@ function enforceContentGate() {
 	const result = evaluateContentGate({
 		env: process.env,
 		url: adminUrl,
-		source: loaded.source,
+		// A preview cannot fall back, so the fallback check has nothing to say about it.
+		source: loaded.source === 'fallback' ? 'fallback' : 'api',
 		reason: loaded.source === 'fallback' ? loaded.reason : undefined,
 		demo: detectDemoContent(locales.map(getContent)),
 		joinDemo: locales.some((locale) => copy[locale].join.demo),

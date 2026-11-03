@@ -2,17 +2,32 @@
 // on the fallback path only, the demo placeholders. Pure: `now` and the bundled-image lookup are passed in.
 import type { Locale } from '../../i18n/locales';
 import type { LoadedContent } from './load';
-import { countWord, toBoard, toFaqItems, toFreeCommands, toPillars, toSite, toSocials, type MapContext } from './map';
+import {
+	countWord,
+	toBoard,
+	toFaqItems,
+	toFreeCommands,
+	toImpact,
+	toPillars,
+	toSite,
+	toSocials,
+	toSponsors,
+	toTestimonials,
+	type MapContext,
+} from './map';
 import type {
 	BoardFun,
 	FaqCommand,
 	FaqItem,
+	ImpactStat,
 	NewsItem,
 	Photo,
 	Pillar,
 	SiteCopy,
 	Social,
+	Sponsor,
 	TeamMember,
+	Testimonial,
 	TimelineEntry,
 } from './model';
 import { NEWS_PATH, latestNews, toNews } from './news';
@@ -53,6 +68,10 @@ export interface SiteContent {
 	// Every news item, newest first, and the few the home shows.
 	news: NewsItem[];
 	latestNews: NewsItem[];
+	// Social proof (S9). There is no demo set for these: an empty list hides its section.
+	impact: ImpactStat[];
+	testimonials: Testimonial[];
+	sponsors: Sponsor[];
 }
 
 export const COLLAGE_EVENT_PHOTOS = 12;
@@ -157,5 +176,8 @@ export function composeSiteContent(options: {
 		collage,
 		news,
 		latestNews: latestNews(news),
+		impact: toImpact(content.impact),
+		testimonials: toTestimonials(content.testimonials, ctx),
+		sponsors: toSponsors(content.sponsors, ctx),
 	};
 }

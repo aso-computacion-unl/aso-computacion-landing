@@ -120,6 +120,20 @@ section with nothing to show is left out.
 - **FAQ** `topic` (`git help <topic>`) is the question as a slug, cut at 28 characters.
 - **Socials** `platform` picks a Simple Icons glyph; an unknown platform gets a generic one.
 - **Pillars** without an image show the isotype tile.
+- **Impact, testimonials and sponsors** (`impact`, `testimonials`, `sponsors`, S9) become three
+  sections of the home: *Impacto* (big numbers: `value` shown as written, `label` under it),
+  *Testimonios* (quote cards: quote, name, role and an optional photo) and *Aliados* (logos on a
+  white tile, wrapped in an external link only when the sponsor has an https `url`). The keys are
+  additive to `version` 1: a payload without them (an admin from before S9) reads as three empty
+  lists, and **each section is left out when its list is empty**. Text is plain text and is escaped
+  on render. A testimonial photo and every logo must have alt text and be Cloudinary images, a
+  sponsor link must be https, and each list holds at most 50 entries; anything else makes the whole
+  payload invalid. Only the documented keys are copied, so nothing else about a person can reach the
+  page. There is **no demo set** for these sections: the fallback snapshot has none, so the fallback
+  build (and CI's axe and Lighthouse runs) never show them; `e2e/built-from-admin.spec.ts` builds
+  against a mock admin to cover them. The sections are static (no scroll animation), so reduced
+  motion needs nothing; only the hover lift of a linked logo sits behind `prefers-reduced-motion`.
+  They have no header link yet.
 - **Settings** `tagline`, `description` and `about` replace the landing copy when present.
 - **Photos**: admin images are plain `<img>` tags served by Cloudinary. The build inserts a
   delivery transformation after `/image/upload/` (`f_auto,q_auto,c_limit,w_<n>`, see
@@ -129,6 +143,46 @@ section with nothing to show is left out.
   fallback snapshot and the demo placeholders) still go through Astro's image pipeline. Both
   paths render through `src/components/Photo.astro`. Board photos appear only in the Directiva
   section.
+
+### Preview builds
+
+A preview build shows what the admin has not published yet (drafts and scheduled items) so an editor can check it
+before it goes live. It is **opt-in** and never the production site. The admin filters publish windows itself
+(`/api/public/content` already hides scheduled and expired items), so the landing computes no window: a normal build
+changes nothing, and a preview build just reads another endpoint, `GET /api/public/preview`.
+
+| Variable | What |
+| --- | --- |
+| `PREVIEW_BUILD` | `1` (or `true`) turns the preview mode on. Without it every other variable here is ignored, even `PREVIEW_TOKEN`. |
+| `PREVIEW_TOKEN` | The code from the admin's `/admin/vista-previa` (valid 1 hour, 24 hours or 7 days). Secret: a build secret, never in the page or the URL. |
+| `ADMIN_PREVIEW_URL` | Full URL of the admin's `GET /api/public/preview`. Must be https (http only for `localhost`/`127.0.0.1`), because the token travels with it. |
+| `PUBLIC_PAGES_PROJECT` | Name of the public Cloudflare Pages project. Required for a preview build on Cloudflare Pages (`CF_PAGES=1`): the build fails if it runs on that project, or if this is unset. Not needed locally. |
+
+The build sends the token in the `X-Preview-Token` header only, uncached and without following redirects, from the
+server side of the build. It **stops** (exit code 1, no site produced) when the token is missing, the admin answers
+`401` (invalid or expired token), answers anything but `200`, the response lacks `preview: true`, its `schemaVersion`
+is not 1, or the payload fails the same validation as the public one. It never falls back to normal content. Error
+messages never contain the token or the URL.
+
+What a preview build adds, and removes:
+
+- A fixed bar at the bottom of every page: **«Vista previa — no publicar»** (English: "Preview — do not publish").
+- `noindex, nofollow` in a meta tag, `robots.txt` with `Disallow: /` and no sitemap, and an `X-Robots-Tag: noindex, nofollow`
+  rule appended to `_headers` (so images, RSS and other files carry it too).
+- No Cloudflare Web Analytics beacon, so previews do not count as visits.
+
+Run it locally (nothing is deployed):
+
+```sh
+PREVIEW_BUILD=1 \
+PREVIEW_TOKEN=<code from /admin/vista-previa> \
+ADMIN_PREVIEW_URL=https://your-admin.vercel.app/api/public/preview \
+pnpm build && pnpm preview
+```
+
+The token expires, so a `401` just means "mint another one". Use `--outDir` if you want to keep `dist/` as it is.
+Never copy a preview build into the production project. See [DEPLOY.md](DEPLOY.md#preview-builds) for a separate,
+non-public Cloudflare Pages project.
 
 ### News
 
@@ -176,16 +230,22 @@ in that payload must be Cloudinary ones.
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback, mapping, Markdown, share links, related posts, motion plan
+pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, Markdown, share links, related posts, motion plan
 pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
 
-`pnpm test:e2e` (CI job `e2e`) runs two suites in `e2e/`, on the fallback build so it needs no secrets:
+`pnpm test:e2e` (CI job `e2e`) runs the suites in `e2e/`; the first two use the fallback build, so they need no secrets:
 
 - `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/` (and the first news post
   when the fallback has one), in the dark and the light theme with motion reduced. Any **serious or critical**
   violation fails, and the failure prints the rule and the offending elements.
 - `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download.
+- `built-from-admin.spec.ts`: real builds against a mock admin (`e2e/support/admin-site.ts`, into
+  `node_modules/.cache/aso-e2e/`, never `dist/`). It covers what the fallback build cannot show: the impact,
+  testimonials and sponsors sections (rendering, alt text and links, both languages, hidden when the admin sends none,
+  axe in both themes, nothing animated under reduced motion) and the preview mode (token header, banner, noindex,
+  a draft shows up, the token is in no file, a normal build ignores it, a 401 or a missing `preview: true` fails the
+  build). It runs seven builds, so it adds roughly 40 seconds.
 
 Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
 pages three times each on the fallback build, mobile profile, and asserts the median run. Budgets:
@@ -296,7 +356,7 @@ src/
 │   ├── content.ts        # resolves the content once per build (API or fallback)
 │   ├── fallback.json     # committed snapshot of the real content, API shape (news: [])
 │   └── site.ts           # landing-owned copy and demo placeholders
-├── lib/admin-content/    # validate, load (fetch + fallback), map, news, markdown, compose (+ tests)
+├── lib/admin-content/    # validate, load (fetch + fallback), preview (build mode), map, news, markdown, compose (+ tests)
 ├── i18n/                 # locales, localized paths, UI dictionary (es/en)
 ├── lib/seo/              # canonical URL, social meta, JSON-LD, robots.txt, RSS items (+ tests)
 ├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta

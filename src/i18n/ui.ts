@@ -14,6 +14,8 @@ const es = {
 	'demo.title': 'Contenido de ejemplo',
 	'demo.detail': 'Dato de ejemplo',
 	soon: 'próximamente',
+	'preview.banner': 'Vista previa — no publicar',
+	'preview.detail': 'Muestra borradores y contenido programado.',
 
 	'hero.activities': 'Ver actividades',
 	'hero.instagram': 'Síguenos en Instagram',
@@ -84,6 +86,18 @@ const es = {
 	'board.more': 'pasa el cursor o toca para ver más',
 	'board.language': 'lenguaje favorito',
 
+	'impact.title': 'Impacto',
+	'impact.lead': 'Lo que hemos logrado juntos, en números.',
+	'impact.list': 'Cifras de impacto',
+
+	'testimonials.title': 'Testimonios',
+	'testimonials.lead': 'Lo que cuentan quienes han pasado por nuestras actividades.',
+	'testimonials.list': 'Testimonios de estudiantes',
+
+	'sponsors.title': 'Aliados',
+	'sponsors.lead': 'Organizaciones y personas que hacen posible lo que hacemos. Gracias.',
+	'sponsors.list': 'Aliados y auspiciantes',
+
 	'join.hello': 'HOLA',
 
 	'faq.termTitle': 'faq — temas',
@@ -114,6 +128,8 @@ const en: Record<keyof typeof es, string> = {
 	'demo.title': 'Sample content',
 	'demo.detail': 'Sample detail',
 	soon: 'coming soon',
+	'preview.banner': 'Preview — do not publish',
+	'preview.detail': 'Shows drafts and scheduled content.',
 
 	'hero.activities': 'See activities',
 	'hero.instagram': 'Follow us on Instagram',
@@ -181,6 +197,18 @@ const en: Record<keyof typeof es, string> = {
 	'board.hint': 'who is it?',
 	'board.more': 'hover or tap to see more',
 	'board.language': 'favorite language',
+
+	'impact.title': 'Impact',
+	'impact.lead': 'What we have achieved together, in numbers.',
+	'impact.list': 'Impact figures',
+
+	'testimonials.title': 'Testimonials',
+	'testimonials.lead': 'What people who took part in our activities say.',
+	'testimonials.list': 'Student testimonials',
+
+	'sponsors.title': 'Allies',
+	'sponsors.lead': 'The organizations and people who make what we do possible. Thank you.',
+	'sponsors.list': 'Allies and sponsors',
 
 	'join.hello': 'HELLO',
 

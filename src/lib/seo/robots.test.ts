@@ -14,4 +14,10 @@ describe('buildRobotsTxt', () => {
 			`Sitemap: https://aso.example.org${SITEMAP_PATH}`,
 		);
 	});
+
+	it('shuts every crawler out of a preview build and names no sitemap', () => {
+		const txt = buildRobotsTxt(new URL('https://example.test'), { preview: true });
+		expect(txt).toBe('User-agent: *\nDisallow: /\n');
+		expect(txt).not.toContain('Sitemap');
+	});
 });

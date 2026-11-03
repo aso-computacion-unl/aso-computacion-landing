@@ -102,6 +102,30 @@ export interface PublicNewsCover extends PublicImage {
 	alt: string;
 }
 
+// S9: a headline number. `value` is free text meant to be shown big ("120+", "3 años"); `label` says what it counts.
+export interface PublicImpactStat {
+	value: string;
+	label: string;
+}
+
+// S9: a quote, who said it and, optionally, their photo. Plain text only; nothing else about the person reaches the page.
+export interface PublicTestimonial {
+	quote: string;
+	name: string;
+	// Role or affiliation.
+	role: string;
+	// Always has alt text when present; null renders the card without a photo.
+	photo: PublicNewsCover | null;
+}
+
+// S9: an ally. A sponsor is never published without its logo, which always has alt text.
+export interface PublicSponsor {
+	name: string;
+	logo: PublicNewsCover;
+	// Absolute https URL to wrap the logo in; null renders the logo without a link.
+	url: string | null;
+}
+
 export interface PublicContent {
 	version: typeof PUBLIC_CONTENT_VERSION;
 	generatedAt: string;
@@ -116,4 +140,8 @@ export interface PublicContent {
 	news: PublicNewsItem[];
 	// In display order. Added after version 1 shipped: a payload without it is read as [].
 	commands: PublicCommand[];
+	// In admin order. Added after version 1 shipped (S9): a payload without any of the three is read as [].
+	impact: PublicImpactStat[];
+	testimonials: PublicTestimonial[];
+	sponsors: PublicSponsor[];
 }

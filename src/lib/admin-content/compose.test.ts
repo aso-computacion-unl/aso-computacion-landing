@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { composeSiteContent, type Baseline } from './compose';
 import type { LoadedContent } from './load';
 import type { Photo } from './model';
-import { image, newsItem, payload } from './test-fixtures';
+import { image, impactStat, newsItem, payload, sponsor, testimonial } from './test-fixtures';
 
 const NOW = new Date('2026-10-22T15:00:00Z');
 const local = (path: string) => ({ src: path, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
@@ -318,5 +318,34 @@ describe('composeSiteContent: fallback path', () => {
 	it('appends the stock collage photos after the event photos', () => {
 		const result = compose(fallback());
 		expect(result.collage.map((p) => p.alt)).toEqual(['future.jpg', 'past.jpg', 'stock.jpg']);
+	});
+});
+
+describe('composeSiteContent: social proof', () => {
+	const compose = (loaded: LoadedContent) => composeSiteContent({ loaded, baseline, now: NOW, resolveLocal });
+
+	it('maps the three lists in admin order', () => {
+		const site = compose(
+			api(
+				payload({
+					impact: [impactStat(), impactStat({ value: '3 años', label: 'de trayectoria' })],
+					testimonials: [testimonial()],
+					sponsors: [sponsor(), sponsor({ name: 'Otro', url: null })],
+				}),
+			),
+		);
+		expect(site.impact.map((stat) => stat.value)).toEqual(['120+', '3 años']);
+		expect(site.testimonials.map((item) => item.name)).toEqual(['Luis Torres']);
+		expect(site.sponsors.map((item) => item.name)).toEqual(['Ejemplo S.A.', 'Otro']);
+	});
+
+	it('leaves every list empty (so each section hides) when the admin has none', () => {
+		const site = compose(api());
+		expect([site.impact, site.testimonials, site.sponsors]).toEqual([[], [], []]);
+	});
+
+	it('never invents demo social proof on the fallback path', () => {
+		const site = compose({ source: 'fallback', content: payload(), reason: 'test' });
+		expect([site.impact, site.testimonials, site.sponsors]).toEqual([[], [], []]);
 	});
 });

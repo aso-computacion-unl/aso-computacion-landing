@@ -7,6 +7,7 @@ import { cloudflareBeacon } from '../lib/analytics';
 import { buildNewsArticle, buildOrganization, serializeJsonLd } from '../lib/seo/jsonld';
 import { buildSocialMeta } from '../lib/seo/meta';
 import { newsFeedPath } from '../lib/seo/rss';
+import { useTranslations } from '../i18n/ui';
 
 interface Props {
 	title: string;
@@ -30,6 +31,9 @@ const locale = toLocale(Astro.currentLocale);
 const site = Astro.site ?? new URL(Astro.url.origin);
 const beacon = cloudflareBeacon(import.meta.env.PUBLIC_CF_BEACON_TOKEN);
 const content = getContent(locale);
+const t = useTranslations(locale);
+// A preview build shows drafts: it is never indexed, never counted, and always says so.
+const { preview } = content;
 const meta = buildSocialMeta({
 	site,
 	pathname: Astro.url.pathname,
@@ -74,7 +78,7 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
 		<meta name="theme-color" content="#053066" />
-		{noindex && <meta name="robots" content="noindex" />}
+		{preview ? <meta name="robots" content="noindex, nofollow" /> : noindex && <meta name="robots" content="noindex" />}
 		{!standalone && <link rel="canonical" href={meta.canonical} />}
 		<meta property="og:type" content={meta.type} />
 		{!standalone && <meta property="og:url" content={meta.url} />}
@@ -145,8 +149,14 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 			})();
 		</script>
 	</head>
-	<body class="bg-navy font-sans text-ink antialiased">
+	<body class:list={['bg-navy font-sans text-ink antialiased', { 'has-preview-banner': preview }]}>
 		<slot />
+		{preview && (
+			<div class="preview-banner" role="note" data-preview-banner>
+				<strong>{t('preview.banner')}</strong>
+				<span>{t('preview.detail')}</span>
+			</div>
+		)}
 		<script>
 			import { initThemeToggle } from '../scripts/theme';
 			import '../scripts/ui';
@@ -154,6 +164,6 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 			initThemeToggle();
 			import '../scripts/motion';
 		</script>
-		{beacon && <script is:inline defer src={beacon.src} data-cf-beacon={beacon.config} />}
+		{beacon && !preview && <script is:inline defer src={beacon.src} data-cf-beacon={beacon.config} />}
 	</body>
 </html>

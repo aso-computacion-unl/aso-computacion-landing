@@ -118,6 +118,48 @@ rebuilding daily, open the Actions tab and re-enable the workflow.
 The workflow fails with a clear error when the secret is missing, and it never prints the URL.
 If the URL leaks, delete the hook in Cloudflare and create a new one.
 
+## Preview builds
+
+An editor can look at drafts and scheduled content on the real design before publishing, with a **preview build**
+(variables and behavior: [reference](REFERENCIA.md#preview-builds)). It must never be reachable by the public.
+
+- **Locally (simplest, nothing is deployed):** `PREVIEW_BUILD=1 PREVIEW_TOKEN=... ADMIN_PREVIEW_URL=https://<admin>/api/public/preview pnpm build && pnpm preview`.
+  Mint the token in the admin at `/admin/vista-previa`.
+- **A separate Cloudflare Pages project (for sharing a link):** create a second project from this repo, named
+  for what it is (for example `aso-computacion-preview`), and **put it behind Cloudflare Access** (Zero Trust →
+  Access → Applications, restricted to the editors' emails) before sharing the URL. Set `PREVIEW_BUILD=1`,
+  `PREVIEW_TOKEN` (as an encrypted variable), `ADMIN_PREVIEW_URL` and `PUBLIC_PAGES_PROJECT` (the **public**
+  project's name, for example `aso-computacion-landing`) there, never `PREVIEW_BUILD` in the public project. Its
+  builds are always preview builds; the page carries the banner and `noindex`, but Access is what keeps people out.
+  Retry the deployment to refresh the content. Do **not** point the admin's `CLOUDFLARE_DEPLOY_HOOK_URL` at it,
+  and do not point the public project's custom domain at it.
+- **Never** set `PREVIEW_BUILD` or `PREVIEW_TOKEN` in the public project. `PREVIEW_TOKEN` alone does nothing (the
+  switch is `PREVIEW_BUILD`), but a leftover `PREVIEW_BUILD=1` would build the public site from drafts.
+
+**Guard.** The build enforces that rule instead of trusting it. With `PREVIEW_BUILD` on, a Cloudflare Pages build
+(`CF_PAGES=1`) **fails** before building anything when:
+
+- `PUBLIC_PAGES_PROJECT` is unset or blank (it fails closed: without the name it cannot tell the projects apart), or
+- the project it runs on is the one named by `PUBLIC_PAGES_PROJECT`, or
+- `CF_PAGES_URL` does not name a `*.pages.dev` project, so the current project is unknown.
+
+Cloudflare has no project-name build variable, so the current project is read from `CF_PAGES_URL`
+(`https://<deployment-or-branch>.<project>.pages.dev`; a project name has no dots, so it is the label before
+`pages.dev`). Local builds (no `CF_PAGES`) and normal builds are never affected. Because the guard compares names, set
+`PUBLIC_PAGES_PROJECT` to the public project's exact name, and keep a preview project's name different from it.
+
+The token expires (1 hour, 24 hours or 7 days, chosen when it is minted) and cannot be revoked early: the admin
+rotates `PREVIEW_TOKEN_SECRET` to invalidate every token. When it expires the next preview build **fails** with
+`HTTP 401` and the previous deployment of the preview project stays up: mint a new token, update `PREVIEW_TOKEN`
+and retry.
+
+### Scheduled content
+
+The landing computes no publish window. The admin hides a scheduled (not yet open) or expired item from
+`/api/public/content`, so it appears or disappears on the first build after its time. The admin's own rebuild
+cron and the daily rebuild above are what trigger that build; on the Vercel Hobby plan the admin cron runs once a
+day, so a scheduled item can show up to about a day late unless a rebuild is triggered by hand.
+
 ## Refreshing `fallback.json`
 
 `src/data/fallback.json` is a hand-maintained snapshot with the same shape as the admin API. Update
@@ -145,4 +187,5 @@ Instagram.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
 - [ ] Daily rebuild run once by hand (Actions → Daily rebuild) and a build appears in Cloudflare.
+- [ ] Optional, preview: the preview project (if any) is behind Cloudflare Access, and a build with an expired token fails with `HTTP 401` instead of publishing.
 - [ ] Break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the `[content-gate] WARNING`. On the production branch the same break fails the build and the previous deployment stays live.
