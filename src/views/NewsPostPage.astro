@@ -40,7 +40,7 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 >
 	<SiteHeader />
 	<main id="contenido" class="bg-navy py-section">
-		<div class="wrap grid gap-8 lg:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)] lg:gap-16">
+		<div class="wrap grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(12rem,16rem)_minmax(0,1fr)] lg:gap-16">
 			<aside class="lg:sticky lg:top-24 lg:self-start" aria-label={t('news.postAside')}>
 				<a href={newsHref} class="back">
 					{t('news.backAll')}
@@ -55,7 +55,7 @@ const shareImage = cover && isRemote(cover) ? deliveryUrl(cover.src, 1200) : und
 				</p>
 			</aside>
 
-			<article class="min-w-0">
+			<article class="min-w-0 break-words">
 				<h1 class="title">{item.title}</h1>
 				<p class="lead">{item.summary}</p>
 
