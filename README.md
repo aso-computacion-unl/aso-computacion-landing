@@ -65,7 +65,7 @@ pnpm lint     # ESLint; pnpm check (tipos) y pnpm format:check completan lo que 
 pnpm build    # genera ./dist
 ```
 
-Sin la variable `ADMIN_CONTENT_URL`, el sitio usa la copia del contenido incluida en el repositorio, así que funciona sin configurar nada.
+Sin la variable `ADMIN_CONTENT_URL`, el sitio usa la copia del contenido incluida en el repositorio, así que funciona sin configurar nada. En producción (la rama `main` en Cloudflare Pages) un build que caería a esa copia falla a propósito y el sitio anterior sigue publicado; ver [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Cómo colaborar
 

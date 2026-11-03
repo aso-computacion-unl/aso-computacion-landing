@@ -26,6 +26,8 @@ previews should read the admin too):
 | --- | --- |
 | `NODE_VERSION` | `22.23.4` or a newer 22.x. `package.json` requires `>=22.23.4`. |
 | `ADMIN_CONTENT_URL` | Full URL of the admin's `GET /api/public/content`, for example `https://your-admin.vercel.app/api/public/content`. |
+| `PRODUCTION_BRANCH` | Optional. The branch whose builds are production builds (default `main`). Set it only if production deploys from another branch. |
+| `ALLOW_CONTENT_FALLBACK` | Emergency only. `1` lets a production build ship the fallback/demo content with a warning instead of failing. Leave unset. |
 | `PUBLIC_CF_BEACON_TOKEN` | Optional. Token of the site in Cloudflare Web Analytics (Analytics & Logs → Web Analytics → the site's snippet). The build then adds the cookie-free beacon; unset, it adds nothing. |
 
 Instead of the variable you can switch on Web Analytics in the Pages project settings, which injects the beacon
@@ -37,19 +39,50 @@ Package manager: the repo is **pnpm only**. Cloudflare picks pnpm because of `pn
 
 ## When the admin is down
 
-The build never fails because of the admin. If `ADMIN_CONTENT_URL` is unset or invalid, the admin
-times out (10 s), answers with something other than 200, or returns a payload that does not pass
-validation, the build logs **one** warning:
+A **production build refuses to ship the fallback**. Production means the branch Cloudflare is
+building (`CF_PAGES_BRANCH`) equals `PRODUCTION_BRANCH` (default `main`). If on that branch
+`ADMIN_CONTENT_URL` is unset or invalid, the admin times out (10 s), answers with something other
+than 200, or returns a payload that does not pass validation, the build **fails** with one line:
 
 ```text
-[admin-content] Using src/data/fallback.json: <reason>
+[content-gate] Production build aborted: content fell back to src/data/fallback.json (<reason>; admin host <host>); demo content (...) would be rendered. The previous deployment stays live. Fix the admin or ADMIN_CONTENT_URL and redeploy, or set ALLOW_CONTENT_FALLBACK=1 for an emergency deploy.
 ```
 
-and uses the committed `src/data/fallback.json`. The site deploys with the last snapshot of the
-real content (plus the demo placeholders, which only show on this path). Look for that line in
-the Cloudflare build log to know a deploy used the fallback. Once the admin is back, the next
-build (hook or daily) restores the live content. Details: the "Content from the
-admin" section of the [reference](REFERENCIA.md#content-from-the-admin).
+A failed build deploys nothing: Cloudflare keeps serving the last good deployment, so the site
+never goes stale-with-demo-content, it just stops updating until the admin is back. The message
+only prints the admin's host, never the path or query of the URL.
+
+Runbook, when a production build fails like this:
+
+1. Read the reason in the Cloudflare build log (`HTTP 503`, `timed out`, `rejected (...)`,
+   `ADMIN_CONTENT_URL is not set`).
+2. Fix the cause: bring the admin back, correct `ADMIN_CONTENT_URL`, or fix the payload the
+   validation rejected.
+3. Rebuild: retry the deployment in Cloudflare, use the admin's deploy hook, or wait for the daily
+   rebuild. The site keeps serving the previous deployment meanwhile.
+4. Only if the site must be rebuilt while the admin is down (an emergency deploy), set
+   `ALLOW_CONTENT_FALLBACK=1` in the Production environment variables and retry. The build then
+   ships the snapshot plus the demo placeholders and prints a loud `[content-gate] WARNING`. Remove
+   the variable afterwards, or the gate stays off.
+
+Every other build keeps the old behavior: local builds, GitHub CI (which builds with no
+`ADMIN_CONTENT_URL` on purpose) and Pages preview branches use `src/data/fallback.json` and
+continue, but print a multi-line warning:
+
+```text
+[content-gate] WARNING: this build does not use real admin content.
+  - content fell back to src/data/fallback.json (<reason>)
+  - demo content (events, pillars, faq, board) would be rendered
+  - ...
+  - Not a production build, so it continues. Production would fail here.
+```
+
+The join section copy is still marked `demo` in `src/data/site.ts`, pending the board's approval,
+so it renders a "demo" tag on every build. It is reported as a separate note in the build log
+and does not fail production yet. Once the copy is approved, drop its `demo` flag and set
+`STRICT_JOIN` to `true` in `src/data/content.ts`. Once the admin is back, the next build (hook
+or daily) restores the live content. Details: the "Content from the admin" section of the
+[reference](REFERENCIA.md#content-from-the-admin).
 
 ## How a build gets triggered
 
@@ -107,9 +140,9 @@ Instagram.
 - [ ] Admin deployed and healthy: `GET <admin>/api/public/content` answers 200 with `"version": 1`.
 - [ ] `pnpm build` works locally without any env (fallback path) and with `ADMIN_CONTENT_URL` set.
 - [ ] Cloudflare Pages project created with the settings above (`pnpm build`, `dist`, `NODE_VERSION`).
-- [ ] `ADMIN_CONTENT_URL` set in Cloudflare; the first build log has **no** `[admin-content] Using src/data/fallback.json` line.
+- [ ] `ADMIN_CONTENT_URL` set in Cloudflare; the first build log has **no** `[content-gate]` line other than the join copy note.
 - [ ] Landing origin added to the admin's `PUBLIC_CORS_ORIGINS` if anything fetches it from the browser.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
 - [ ] Daily rebuild run once by hand (Actions → Daily rebuild) and a build appears in Cloudflare.
-- [ ] Stop or break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the single fallback warning.
+- [ ] Break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the `[content-gate] WARNING`. On the production branch the same break fails the build and the previous deployment stays live.
