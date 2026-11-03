@@ -33,5 +33,10 @@ jobs:
           check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Production dependencies only; fails on high or critical advisories.
+      - run: pnpm audit --prod --audit-level high
+      - run: pnpm lint
+      - run: pnpm check
+      - run: pnpm format:check
       - run: pnpm test
       - run: pnpm build

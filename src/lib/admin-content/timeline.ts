@@ -7,7 +7,9 @@ import type { Locale } from '../../i18n/locales';
 const TIME_ZONE = 'America/Guayaquil';
 
 export const todayInEcuador = (now: Date): string =>
-	new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+	new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(
+		now,
+	);
 
 const MONTHS: Record<Locale, string[]> = {
 	es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
@@ -23,7 +25,9 @@ export const formatStamp = (date: string, precision: DatePrecision = 'day', loca
 };
 
 // What orders and classifies an event: its date, or the first of the month when only the month is confirmed.
-const orderingDate = <T extends { date?: string | null; datePrecision?: DatePrecision }>(item: T): string | null | undefined =>
+const orderingDate = <T extends { date?: string | null; datePrecision?: DatePrecision }>(
+	item: T,
+): string | null | undefined =>
 	item.date && item.datePrecision === 'month' ? `${item.date.slice(0, 7)}-01` : item.date;
 
 // upcoming: dated today or later. merge: a past event that lists highlights (drawn as a feature branch).
@@ -35,7 +39,9 @@ export const eventKind = (event: PublicEvent, today: string): TimelineKind => {
 };
 
 // `git log` order: newest first, undated last. Stable, so ties keep the API order.
-export const sortEvents = <T extends { date?: string | null; datePrecision?: DatePrecision }>(events: readonly T[]): T[] =>
+export const sortEvents = <T extends { date?: string | null; datePrecision?: DatePrecision }>(
+	events: readonly T[],
+): T[] =>
 	[...events].sort((a, b) => {
 		const [dateA, dateB] = [orderingDate(a), orderingDate(b)];
 		if (!dateA && !dateB) return 0;
@@ -69,7 +75,11 @@ export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEn
 		featured: event.featured,
 		...(event.date
 			? event.datePrecision === 'month'
-				? { stamp: formatStamp(event.date, 'month', ctx.locale), date: orderingDate(event) ?? event.date, datePrecision: 'month' as const }
+				? {
+						stamp: formatStamp(event.date, 'month', ctx.locale),
+						date: orderingDate(event) ?? event.date,
+						datePrecision: 'month' as const,
+					}
 				: { stamp: formatStamp(event.date, 'day', ctx.locale), date: event.date }
 			: {}),
 		...(event.description ? { description: event.description } : {}),

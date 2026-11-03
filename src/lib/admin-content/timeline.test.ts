@@ -5,7 +5,8 @@ import { image, payload } from './test-fixtures';
 import type { PublicEvent } from './types';
 
 const TODAY = '2026-10-22';
-const local = (path: string) => ({ src: `/@fs${path}`, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
+const local = (path: string) =>
+	({ src: `/@fs${path}`, width: 10, height: 10, format: 'jpg' }) as unknown as ImageMetadata;
 const ctx = { today: TODAY, resolveLocal: (path: string) => (path.includes('missing') ? undefined : local(path)) };
 
 const event = (overrides: Partial<PublicEvent> = {}): PublicEvent => ({ ...payload().events[0], ...overrides });
@@ -57,7 +58,12 @@ describe('eventKind', () => {
 
 describe('sortEvents', () => {
 	it('orders by date descending with undated last, keeping ties stable', () => {
-		const list = [event({ slug: 'a', date: null }), event({ slug: 'b', date: '2026-01-01' }), event({ slug: 'c', date: '2026-06-01' }), event({ slug: 'd', date: '2026-06-01' })];
+		const list = [
+			event({ slug: 'a', date: null }),
+			event({ slug: 'b', date: '2026-01-01' }),
+			event({ slug: 'c', date: '2026-06-01' }),
+			event({ slug: 'd', date: '2026-06-01' }),
+		];
 		expect(sortEvents(list).map((e) => e.slug)).toEqual(['c', 'd', 'b', 'a']);
 	});
 
@@ -101,12 +107,30 @@ describe('toTimelineEntry', () => {
 		const entry = toTimelineEntry(event({ date: '2026-02-20', datePrecision: 'month', highlights: ['FLISOL'] }), ctx);
 		expect(entry).toMatchObject({ stamp: 'feb 2026', date: '2026-02-01', datePrecision: 'month', kind: 'merge' });
 		expect(JSON.stringify(entry)).not.toMatch(/20 feb|2026-02-20/);
-		expect(toTimelineEntry(event({ date: '2026-02-20' }), ctx)).toMatchObject({ stamp: '20 feb 2026', date: '2026-02-20' });
+		expect(toTimelineEntry(event({ date: '2026-02-20' }), ctx)).toMatchObject({
+			stamp: '20 feb 2026',
+			date: '2026-02-20',
+		});
 		expect(toTimelineEntry(event({ date: '2026-02-20' }), ctx).datePrecision).toBeUndefined();
 	});
 
 	it('drops null optionals instead of rendering them', () => {
-		const entry = toTimelineEntry(event({ description: null, date: null, type: null, commitMessage: null, hora: null, lugar: null, para: null, linkUrl: null, linkLabel: null, featured: false, photos: [] }), ctx);
+		const entry = toTimelineEntry(
+			event({
+				description: null,
+				date: null,
+				type: null,
+				commitMessage: null,
+				hora: null,
+				lugar: null,
+				para: null,
+				linkUrl: null,
+				linkLabel: null,
+				featured: false,
+				photos: [],
+			}),
+			ctx,
+		);
 		expect(entry.stamp).toBeUndefined();
 		expect(entry.date).toBeUndefined();
 		expect(entry.meta).toBeUndefined();
@@ -116,7 +140,10 @@ describe('toTimelineEntry', () => {
 	});
 
 	it('keeps only the known meta keys, in hora, lugar, para order', () => {
-		expect(Object.keys(toTimelineEntry(event({ hora: null, lugar: 'Aula', para: 'todos' }), ctx).meta ?? {})).toEqual(['lugar', 'para']);
+		expect(Object.keys(toTimelineEntry(event({ hora: null, lugar: 'Aula', para: 'todos' }), ctx).meta ?? {})).toEqual([
+			'lugar',
+			'para',
+		]);
 	});
 
 	it('gives a link without label a readable default', () => {
@@ -124,10 +151,21 @@ describe('toTimelineEntry', () => {
 	});
 
 	it('turns highlights into a branch named after the slug', () => {
-		const entry = toTimelineEntry(event({ slug: 'semana', date: '2026-02-10', highlights: ['FLISOL', 'Ponencias sobre las últimas tendencias', 'FLISOL'] }), ctx);
+		const entry = toTimelineEntry(
+			event({
+				slug: 'semana',
+				date: '2026-02-10',
+				highlights: ['FLISOL', 'Ponencias sobre las últimas tendencias', 'FLISOL'],
+			}),
+			ctx,
+		);
 		expect(entry.kind).toBe('merge');
 		expect(entry.branch?.name).toBe('semana');
-		expect(entry.branch?.commits.map((c) => c.title)).toEqual(['FLISOL', 'Ponencias sobre las últimas tendencias', 'FLISOL']);
+		expect(entry.branch?.commits.map((c) => c.title)).toEqual([
+			'FLISOL',
+			'Ponencias sobre las últimas tendencias',
+			'FLISOL',
+		]);
 		const ids = entry.branch?.commits.map((c) => c.id) ?? [];
 		expect(ids[0]).toBe('flisol');
 		expect(ids[1]).toBe('ponencias-sobre-las-ultimas-tendencias');
@@ -139,9 +177,17 @@ describe('toTimelineEntry', () => {
 	});
 
 	it('shows the first photo and keeps the whole gallery', () => {
-		const photos = [image({ url: 'https://res.cloudinary.com/x/1.jpg', alt: 'uno' }), image({ url: 'https://res.cloudinary.com/x/2.jpg', alt: 'dos' })];
+		const photos = [
+			image({ url: 'https://res.cloudinary.com/x/1.jpg', alt: 'uno' }),
+			image({ url: 'https://res.cloudinary.com/x/2.jpg', alt: 'dos' }),
+		];
 		const entry = toTimelineEntry(event({ photos }), ctx);
-		expect(entry.image).toMatchObject({ src: 'https://res.cloudinary.com/x/1.jpg', alt: 'uno', width: 1200, height: 800 });
+		expect(entry.image).toMatchObject({
+			src: 'https://res.cloudinary.com/x/1.jpg',
+			alt: 'uno',
+			width: 1200,
+			height: 800,
+		});
 		expect(entry.gallery).toHaveLength(2);
 	});
 });

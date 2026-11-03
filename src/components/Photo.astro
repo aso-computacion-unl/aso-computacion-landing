@@ -26,28 +26,26 @@ interface Props {
 const { photo, box, widths, sizes, alt = photo.alt, fit, position, class: className, loading = 'lazy' } = Astro.props;
 ---
 
-{
-	isRemote(photo) ? (
-		<img
-			{...remoteImageAttrs(photo, widths ?? [box.width])}
-			sizes={sizes}
-			alt={alt}
-			loading={loading}
-			decoding={loading === 'lazy' ? 'async' : undefined}
-			class={className}
-		/>
-	) : (
-		<Image
-			src={photo.src}
-			alt={alt}
-			width={box.width}
-			height={box.height}
-			widths={widths}
-			sizes={sizes}
-			fit={fit}
-			position={position}
-			loading={loading}
-			class={className}
-		/>
-	)
-}
+{isRemote(photo) ? (
+	<img
+		{...remoteImageAttrs(photo, widths ?? [box.width])}
+		sizes={sizes}
+		alt={alt}
+		loading={loading}
+		decoding={loading === 'lazy' ? 'async' : undefined}
+		class={className}
+	/>
+) : (
+	<Image
+		src={photo.src}
+		alt={alt}
+		width={box.width}
+		height={box.height}
+		widths={widths}
+		sizes={sizes}
+		fit={fit}
+		position={position}
+		loading={loading}
+		class={className}
+	/>
+)}

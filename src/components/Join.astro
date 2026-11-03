@@ -22,75 +22,98 @@ const photos = collagePhotos;
 		<div>
 			<p class="eyebrow" aria-hidden="true">
 				<span>{join.eyebrow}</span>
-				{join.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
+				{join.demo && (
+					<span class="demo-tag" title={t('demo.title')}>
+						demo
+					</span>
+				)}
 			</p>
 			<h2 class="join-title">
 				<span class="sr-only">{join.headline.join(' ')}</span>
-				{
-					join.headline.map((line) => (
-						<span class="m-line" aria-hidden="true">
-							<span class="m-in" data-j-in>{line}</span>
+				{join.headline.map((line) => (
+					<span class="m-line" aria-hidden="true">
+						<span class="m-in" data-j-in>
+							{line}
 						</span>
-					))
-				}
+					</span>
+				))}
 			</h2>
 			<p class="lead mt-6 max-w-[40ch]">{join.lead}</p>
-			{
-				instagram && (
-					<div class="mt-8">
-						<Button href={instagram.href} variant="inverse" size="xl" external>
-							{join.cta}
-						</Button>
-					</div>
-				)
-			}
+			{instagram && (
+				<div class="mt-8">
+					<Button href={instagram.href} variant="inverse" size="xl" external>
+						{join.cta}
+					</Button>
+				</div>
+			)}
 		</div>
 
 		<ol class="reasons">
-			{
-				join.reasons.map((reason, index) => (
-					<li class="reason" data-reason>
-						<span class="reason-num" aria-hidden="true">{index + 1}</span>
-						<div>
-							<h3 class="reason-title">{reason.title}</h3>
-							<p class="reason-text">{reason.text}</p>
-						</div>
-					</li>
-				))
-			}
+			{join.reasons.map((reason, index) => (
+				<li class="reason" data-reason>
+					<span class="reason-num" aria-hidden="true">
+						{index + 1}
+					</span>
+					<div>
+						<h3 class="reason-title">{reason.title}</h3>
+						<p class="reason-text">{reason.text}</p>
+					</div>
+				</li>
+			))}
 		</ol>
 	</div>
 
 	<div class="collage mt-14 lg:mt-20" data-collage aria-hidden="true">
-		<span class="stk" style="--r:-7deg;left:5%;top:-0.25rem"><span class="stk-face stk-white" data-pop>{join.stickers[0]}</span></span>
-		<span class="stk" style="--r:5deg;right:6%;bottom:-0.25rem"><span class="stk-face stk-navy" data-pop>{join.stickers[1]}</span></span>
-		{
-			photos.length > 0 && (
-				<div class="c-row c-row-a" data-c-row="left">
-					{photos.map((photo) => (
-						<div class="duo c-tile c-wide">
-							<Photo photo={photo} box={{ width: 480, height: 340 }} alt="" widths={[320, 480]} sizes="17rem" loading="lazy" />
-						</div>
-					))}
-				</div>
-			)
-		}
+		<span class="stk" style="--r:-7deg;left:5%;top:-0.25rem">
+			<span class="stk-face stk-white" data-pop>
+				{join.stickers[0]}
+			</span>
+		</span>
+		<span class="stk" style="--r:5deg;right:6%;bottom:-0.25rem">
+			<span class="stk-face stk-navy" data-pop>
+				{join.stickers[1]}
+			</span>
+		</span>
+		{photos.length > 0 && (
+			<div class="c-row c-row-a" data-c-row="left">
+				{photos.map((photo) => (
+					<div class="duo c-tile c-wide">
+						<Photo
+							photo={photo}
+							box={{ width: 480, height: 340 }}
+							alt=""
+							widths={[320, 480]}
+							sizes="17rem"
+							loading="lazy"
+						/>
+					</div>
+				))}
+			</div>
+		)}
 		<div class="c-row c-row-b" data-c-row="right">
-			{join.tags.map((tag) => <span class="c-tag">{tag}</span>)}
+			{join.tags.map((tag) => (
+				<span class="c-tag">{tag}</span>
+			))}
 		</div>
 	</div>
 
 	<div class="wrap">
 		<div class="newcomer relative mt-14 lg:mt-20">
 			<span class="stk stk-iso" style="--r:-9deg" aria-hidden="true">
-				<span class="stk-face stk-white" data-pop><IsotypeColor class="h-full w-auto" /></span>
+				<span class="stk-face stk-white" data-pop>
+					<IsotypeColor class="h-full w-auto" />
+				</span>
 			</span>
 			<div class="grid items-end gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
 				<div>
-					<p class="eyebrow eyebrow-light" aria-hidden="true"><span>{join.newcomer.title}</span></p>
+					<p class="eyebrow eyebrow-light" aria-hidden="true">
+						<span>{join.newcomer.title}</span>
+					</p>
 					<h3 class="newcomer-title">{join.newcomer.lead}</h3>
 					<div class="mt-6 grid gap-4 text-lg text-mist">
-						{join.newcomer.steps.map((step) => <p>{step}</p>)}
+						{join.newcomer.steps.map((step) => (
+							<p>{step}</p>
+						))}
 					</div>
 				</div>
 				<div class="newcomer-hola" aria-hidden="true">

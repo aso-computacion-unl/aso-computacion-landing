@@ -20,23 +20,27 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 
 <section id="nosotros" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
 	<div class="wrap">
-		<p class="file-tab" aria-hidden="true">README.md</p>
+		<p class="file-tab" aria-hidden="true">
+			README.md
+		</p>
 
 		<div class="mt-8 grid items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
 			<h2 class="manifesto" data-manifesto>
 				<span class="sr-only">{manifesto.sr}</span>
 				<span aria-hidden="true">
-					{
-						manifesto.lines.map((line) => (
-							<span class="m-line">
-								<span class="m-in" data-m-in>{line}</span>
+					{manifesto.lines.map((line) => (
+						<span class="m-line">
+							<span class="m-in" data-m-in>
+								{line}
 							</span>
-						))
-					}
+						</span>
+					))}
 					<span class="m-line">
 						<span class="m-in" data-m-in>
 							<span class="rotor" data-rotor>
-								{manifesto.rotor.map((word) => <span class="rotor-word">{word}</span>)}
+								{manifesto.rotor.map((word) => (
+									<span class="rotor-word">{word}</span>
+								))}
 							</span>
 						</span>
 					</span>
@@ -44,10 +48,11 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 			</h2>
 
 			<div class="about-block">
-			<p class="eyebrow" aria-hidden="true"><span>$ cat README.md</span></p>
-			<p class="about-text" data-statement>
-				{
-					parts.map((part) =>
+				<p class="eyebrow" aria-hidden="true">
+					<span>$ cat README.md</span>
+				</p>
+				<p class="about-text" data-statement>
+					{parts.map((part) =>
 						aboutHighlights.includes(part) ? (
 							<span class="text-sky">
 								{words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))}
@@ -55,40 +60,41 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 						) : (
 							words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))
 						),
-					)
-				}
-			</p>
+					)}
+				</p>
 			</div>
 		</div>
 
 		{pillars.length > 0 && (
 			<ul class="bento mt-14 lg:mt-20">
-				{
-					pillars.map((pillar, index) => (
-						<li class:list={['tile', `tile-${index}`]} data-tile>
-							{
-								pillar.image && (
-									<div class="duo tile-photo">
-										<Photo
-											photo={pillar.image}
-											box={{ width: 720, height: 540 }}
-											widths={[480, 720]}
-											sizes="(min-width: 1024px) 40rem, 90vw"
-											loading="lazy"
-										/>
-									</div>
-								)
-							}
-							{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
-							<div class="tile-body">
-								<span class="outline-word" aria-hidden="true" data-outline>{pillar.word}</span>
-								<h3 class="tile-title">{pillar.title}</h3>
-								<p class="tile-text">{pillar.text}</p>
-								{pillar.demo && <span class="demo-tag" style="margin-left:0" title={t('demo.title')}>demo</span>}
+				{pillars.map((pillar, index) => (
+					<li class:list={['tile', `tile-${index}`]} data-tile>
+						{pillar.image && (
+							<div class="duo tile-photo">
+								<Photo
+									photo={pillar.image}
+									box={{ width: 720, height: 540 }}
+									widths={[480, 720]}
+									sizes="(min-width: 1024px) 40rem, 90vw"
+									loading="lazy"
+								/>
 							</div>
-						</li>
-					))
-				}
+						)}
+						{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
+						<div class="tile-body">
+							<span class="outline-word" aria-hidden="true" data-outline>
+								{pillar.word}
+							</span>
+							<h3 class="tile-title">{pillar.title}</h3>
+							<p class="tile-text">{pillar.text}</p>
+							{pillar.demo && (
+								<span class="demo-tag" style="margin-left:0" title={t('demo.title')}>
+									demo
+								</span>
+							)}
+						</div>
+					</li>
+				))}
 			</ul>
 		)}
 	</div>

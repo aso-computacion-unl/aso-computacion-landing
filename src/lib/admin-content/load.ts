@@ -12,8 +12,7 @@ export interface LoadOptions {
 }
 
 export type LoadedContent =
-	| { source: 'api'; content: PublicContent }
-	| { source: 'fallback'; content: PublicContent; reason: string };
+	{ source: 'api'; content: PublicContent } | { source: 'fallback'; content: PublicContent; reason: string };
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 

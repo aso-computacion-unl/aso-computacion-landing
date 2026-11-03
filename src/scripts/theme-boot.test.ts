@@ -20,7 +20,9 @@ function runBoot(stored: string | null, prefersLight: boolean, storageThrows = f
 			return stored;
 		},
 	};
-	const window = { matchMedia: (query: string) => ({ matches: prefersLight && query === '(prefers-color-scheme: light)' }) };
+	const window = {
+		matchMedia: (query: string) => ({ matches: prefersLight && query === '(prefers-color-scheme: light)' }),
+	};
 	new Function('document', 'window', 'localStorage', bootScript!)(document, window, localStorage);
 	return { theme: document.documentElement.dataset.theme, themeColor: meta.content, keys };
 }
@@ -33,7 +35,9 @@ describe('inline theme boot script', () => {
 	it('picks the same theme as resolveTheme for every stored value and system preference', () => {
 		for (const stored of [null, 'light', 'dark', 'sepia']) {
 			for (const prefersLight of [true, false]) {
-				expect(runBoot(stored, prefersLight).theme, `${stored} / ${prefersLight}`).toBe(resolveTheme(stored, prefersLight));
+				expect(runBoot(stored, prefersLight).theme, `${stored} / ${prefersLight}`).toBe(
+					resolveTheme(stored, prefersLight),
+				);
 			}
 		}
 	});

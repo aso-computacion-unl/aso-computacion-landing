@@ -45,7 +45,11 @@ interface MomentParts {
 // The part of the moment both layouts share, from the isotype growing to the cue appearing (timeline units).
 const momentSequence = (tl: gsap.core.Timeline, p: MomentParts, g: MomentGeo) => {
 	const clear = () => (g.vw * 1.15) / (g.S * g.k);
-	tl.to(p.mark, { x: () => g.tx - g.L0, y: () => g.ty - g.T0, scale: () => g.S, ease: 'power2.inOut', duration: 0.46 }, 0.1)
+	tl.to(
+		p.mark,
+		{ x: () => g.tx - g.L0, y: () => g.ty - g.T0, scale: () => g.S, ease: 'power2.inOut', duration: 0.46 },
+		0.1,
+	)
 		.to(p.markOutline, { opacity: 0, duration: 0.08 }, 0.5)
 		.to(p.markChev, { opacity: 0, duration: 0.06 }, 0.58)
 		.to(p.markLeft, { x: () => -clear(), ease: 'power3.in', duration: 0.22 }, 0.6)
@@ -234,14 +238,23 @@ async function init() {
 							const done = self.progress > 0.995;
 							if (done !== trunkOn) {
 								trunkOn = done;
-								gsap.to(trunk, { scaleY: done ? 1 : 0, duration: done ? 0.7 : 0.25, ease: done ? 'expo.out' : 'power2.in', overwrite: true });
+								gsap.to(trunk, {
+									scaleY: done ? 1 : 0,
+									duration: done ? 0.7 : 0.25,
+									ease: done ? 'expo.out' : 'power2.in',
+									overwrite: true,
+								});
 							}
 						},
 					},
 				});
 				let trunkOn = false;
 				gsap.set(trunk, { scaleY: 0 });
-				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power2.in', duration: 0.3, stagger: 0.06 }, 0)
+				tl.to(
+					qa('[data-hero-line]'),
+					{ xPercent: -140, opacity: 0, ease: 'power2.in', duration: 0.3, stagger: 0.06 },
+					0,
+				)
 					.to(qa('[data-hero-fade]'), { y: -30, opacity: 0, duration: 0.16 }, 0)
 					.to(q('[data-hero-slab]'), { xPercent: 12, opacity: 0, duration: 0.28 }, 0.02);
 				momentSequence(tl, { mark, cursor, markLeft, markRight, markChev, markOutline, stem, cue }, geo);
@@ -298,11 +311,11 @@ async function init() {
 					},
 				});
 				// The headline clears quickly: it scrolls up under the isotype, so it must be gone before they overlap.
-				tl.to(qa('[data-hero-line]'), { xPercent: -140, opacity: 0, ease: 'power1.in', duration: 0.1, stagger: 0.03 }, 0).to(
-					qa('[data-hero-fade]'),
-					{ y: -30, autoAlpha: 0, duration: 0.1 },
+				tl.to(
+					qa('[data-hero-line]'),
+					{ xPercent: -140, opacity: 0, ease: 'power1.in', duration: 0.1, stagger: 0.03 },
 					0,
-				);
+				).to(qa('[data-hero-fade]'), { y: -30, autoAlpha: 0, duration: 0.1 }, 0);
 				momentSequence(tl, { mark, cursor, markLeft, markRight, markChev, markOutline, stem, cue }, geo);
 			}
 
@@ -437,7 +450,11 @@ async function init() {
 				gsap.fromTo(
 					word,
 					{ x: drift },
-					{ x: -drift, ease: 'none', scrollTrigger: { trigger: word, start: 'top bottom', end: 'bottom top', scrub: true } },
+					{
+						x: -drift,
+						ease: 'none',
+						scrollTrigger: { trigger: word, start: 'top bottom', end: 'bottom top', scrub: true },
+					},
 				);
 			});
 

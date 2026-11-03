@@ -33,14 +33,17 @@ const safeHttps = (url: string): string | null => {
 	if (!HTTPS_URL.test(url)) return null;
 	try {
 		const parsed = new URL(url);
-		return parsed.protocol === 'https:' && parsed.hostname !== '' && !parsed.username && !parsed.password ? parsed.href : null;
+		return parsed.protocol === 'https:' && parsed.hostname !== '' && !parsed.username && !parsed.password
+			? parsed.href
+			: null;
 	} catch {
 		return null;
 	}
 };
 
 // A closing marker is valid when it ends non-empty content that neither starts nor ends with whitespace.
-const closes = (source: string, from: number, at: number) => at > from && !isSpace(source[from]) && !isSpace(source[at - 1]);
+const closes = (source: string, from: number, at: number) =>
+	at > from && !isSpace(source[from]) && !isSpace(source[at - 1]);
 
 // Index of the `*` or `**` that closes a span whose content starts at `from`, or -1.
 function findClose(source: string, from: number, marker: '*' | '**', budget: Budget): number {
@@ -146,7 +149,8 @@ export function renderMarkdown(body: string): string {
 		paragraph = [];
 	};
 	const endList = () => {
-		if (items.length > 0) html.push(`<ul>${items.map((item) => `<li>${inline(item, false, 0, budget)}</li>`).join('')}</ul>`);
+		if (items.length > 0)
+			html.push(`<ul>${items.map((item) => `<li>${inline(item, false, 0, budget)}</li>`).join('')}</ul>`);
 		items = [];
 	};
 

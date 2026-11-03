@@ -1,6 +1,6 @@
 name: Proponer una idea
 description: Una mejora, una sección nueva o un cambio en el sitio.
-labels: ["idea"]
+labels: ['idea']
 body:
   - type: textarea
     id: problem

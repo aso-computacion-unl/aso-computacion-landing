@@ -14,6 +14,9 @@ pnpm dev       # http://localhost:4321
 pnpm build     # output in ./dist
 pnpm test
 pnpm preview
+pnpm lint          # ESLint
+pnpm check         # astro check (types)
+pnpm format        # Prettier (format:check in CI)
 ```
 
 ## Content from the admin

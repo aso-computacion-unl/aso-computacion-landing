@@ -22,60 +22,94 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
 			aria-label={t('activities.aside')}
 		>
-			<p class="max-w-[34ch] text-lg text-mist">
-				{t('activities.intro')}
+			<p class="max-w-[34ch] text-lg text-mist">{t('activities.intro')}</p>
+			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">
+				$ git log --graph main
 			</p>
-			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">$ git log --graph main</p>
 
-			{
-				nextEvent && (
-					<div class="panel mt-8 p-4 sm:p-6" data-countdown={nextEvent.date}>
-						<p class="leading-none">
-							<span class="stamp" style="margin-left:0">{t('activities.next')}</span>
-							{nextEvent.demo && <span class="demo-tag" title={t('demo.title')}>demo</span>}
+			{nextEvent && (
+				<div class="panel mt-8 p-4 sm:p-6" data-countdown={nextEvent.date}>
+					<p class="leading-none">
+						<span class="stamp" style="margin-left:0">
+							{t('activities.next')}
+						</span>
+						{nextEvent.demo && (
+							<span class="demo-tag" title={t('demo.title')}>
+								demo
+							</span>
+						)}
+					</p>
+					<div data-static>
+						<p class="mt-5 font-mono text-[0.8125rem] text-mist">{t('activities.date')}</p>
+						<p class="font-display text-4xl leading-none text-ink sm:text-5xl">{nextEvent.stamp}</p>
+					</div>
+					<div data-live hidden>
+						<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>
+							{t('count.many')}
 						</p>
-						<div data-static>
-							<p class="mt-5 font-mono text-[0.8125rem] text-mist">{t('activities.date')}</p>
-							<p class="font-display text-4xl leading-none text-ink sm:text-5xl">{nextEvent.stamp}</p>
-						</div>
-						<div data-live hidden>
-							<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>{t('count.many')}</p>
-							<p class="flex items-baseline gap-3 leading-none">
-								<span class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-ink sm:text-[7rem]" data-count-num>00</span>
-								<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>{t('count.dayMany')}</span>
-							</p>
-						</div>
-						<p class="mt-4 text-lg font-semibold leading-snug text-ink">{nextEvent.title}</p>
-						<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
-							{nextEvent.stamp}
-							{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
-							{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
+						<p class="flex items-baseline gap-3 leading-none">
+							<span
+								class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-ink sm:text-[7rem]"
+								data-count-num
+							>
+								00
+							</span>
+							<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>
+								{t('count.dayMany')}
+							</span>
 						</p>
 					</div>
-				)
-			}
+					<p class="mt-4 text-lg font-semibold leading-snug text-ink">{nextEvent.title}</p>
+					<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
+						{nextEvent.stamp}
+						{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
+						{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
+					</p>
+				</div>
+			)}
 
 			<div class="js-only mt-8" data-filters>
-				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">git log --grep=</p>
+				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">
+					git log --grep=
+				</p>
 				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('filters.label')}>
-					<button type="button" class="chip" data-filter="all" aria-pressed="true">{t('filters.all')}</button>
-					{
-						activityTypes.map((type) => (
-							<button type="button" class="chip" data-filter={type} aria-pressed="false">
-								{typeLabel(locale, type)}<span class="chip-count">{typedCount(type)}</span>
-							</button>
-						))
-					}
+					<button type="button" class="chip" data-filter="all" aria-pressed="true">
+						{t('filters.all')}
+					</button>
+					{activityTypes.map((type) => (
+						<button type="button" class="chip" data-filter={type} aria-pressed="false">
+							{typeLabel(locale, type)}
+							<span class="chip-count">{typedCount(type)}</span>
+						</button>
+					))}
 				</div>
 				<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
 			</div>
 
-			<ul class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block" aria-label={t('legend.label')}>
-				<li class="flex items-center gap-3"><span class="swatch bg-signal" aria-hidden="true"></span>{t('legend.next')}</li>
-				<li class="flex items-center gap-3"><span class="swatch swatch-dash" aria-hidden="true"></span>{t('legend.planned')}</li>
-				<li class="flex items-center gap-3"><span class="swatch" aria-hidden="true"></span>{t('legend.past')}</li>
-				<li class="flex items-center gap-3"><span class="swatch bg-ink" aria-hidden="true"></span>{t('legend.branch')}</li>
-				<li class="flex items-center gap-3"><span class="swatch size-4" aria-hidden="true"></span>{t('legend.head')}</li>
+			<ul
+				class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block"
+				aria-label={t('legend.label')}
+			>
+				<li class="flex items-center gap-3">
+					<span class="swatch bg-signal" aria-hidden="true"></span>
+					{t('legend.next')}
+				</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch swatch-dash" aria-hidden="true"></span>
+					{t('legend.planned')}
+				</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch" aria-hidden="true"></span>
+					{t('legend.past')}
+				</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch bg-ink" aria-hidden="true"></span>
+					{t('legend.branch')}
+				</li>
+				<li class="flex items-center gap-3">
+					<span class="swatch size-4" aria-hidden="true"></span>
+					{t('legend.head')}
+				</li>
 			</ul>
 		</aside>
 
@@ -90,49 +124,51 @@ const typedCount = (type: string) => timeline.filter((entry) => entry.type === t
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
-						{planned.map((entry) => <Commit entry={entry} />)}
+						{planned.map((entry) => (
+							<Commit entry={entry} />
+						))}
 					</ol>
 				</div>
 				<div class="graph" data-history>
 					<span class="rail rail-main" data-rail data-rail-scrub></span>
 					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
 					<ol>
-						{
-							history.map((entry, index) => (
-								<Commit entry={entry} last={index === last}>
-									{entry.branch && (
-										<div class="branch">
-											<div class="bend">
-												<svg viewBox="0 0 56 48" aria-hidden="true">
-													<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
-												</svg>
-												<p class="px-3">
-													<span class="tag">{entry.branch.name}</span>
-												</p>
-											</div>
-											<span class="rail rail-feat" data-rail data-rail-scrub></span>
-											<ol aria-label={t('activities.branch', { title: entry.title })}>
-												{entry.branch.commits.map((sub) => (
-													<li class="commit">
-														<span class="node" data-node aria-hidden="true" />
-														<span class="link" data-link aria-hidden="true" />
-														<div class="card" data-card>
-															<h4 class="font-semibold leading-6 text-ink">{sub.title}</h4>
-															<p class="ref" aria-hidden="true">{shortHash(`${entry.id}/${sub.id}`)}</p>
-														</div>
-													</li>
-												))}
-											</ol>
-											<div class="bend">
-												<svg viewBox="0 0 56 48" aria-hidden="true">
-													<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
-												</svg>
-											</div>
+						{history.map((entry, index) => (
+							<Commit entry={entry} last={index === last}>
+								{entry.branch && (
+									<div class="branch">
+										<div class="bend">
+											<svg viewBox="0 0 56 48" aria-hidden="true">
+												<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
+											</svg>
+											<p class="px-3">
+												<span class="tag">{entry.branch.name}</span>
+											</p>
 										</div>
-									)}
-								</Commit>
-							))
-						}
+										<span class="rail rail-feat" data-rail data-rail-scrub></span>
+										<ol aria-label={t('activities.branch', { title: entry.title })}>
+											{entry.branch.commits.map((sub) => (
+												<li class="commit">
+													<span class="node" data-node aria-hidden="true" />
+													<span class="link" data-link aria-hidden="true" />
+													<div class="card" data-card>
+														<h4 class="font-semibold leading-6 text-ink">{sub.title}</h4>
+														<p class="ref" aria-hidden="true">
+															{shortHash(`${entry.id}/${sub.id}`)}
+														</p>
+													</div>
+												</li>
+											))}
+										</ol>
+										<div class="bend">
+											<svg viewBox="0 0 56 48" aria-hidden="true">
+												<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
+											</svg>
+										</div>
+									</div>
+								)}
+							</Commit>
+						))}
 					</ol>
 				</div>
 			</div>

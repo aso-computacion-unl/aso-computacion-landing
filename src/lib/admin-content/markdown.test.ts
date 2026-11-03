@@ -5,7 +5,8 @@ const LINK = 'target="_blank" rel="noopener noreferrer"';
 const NOTICE = '<span class="sr-only"> (se abre en otra pestaña)</span>';
 
 // Everything the renderer is allowed to emit.
-const ALLOWED_TAGS = /<\/?(?:p|ul|li|strong|em)>|<a href="https:\/\/[^"<>\s]*" target="_blank" rel="noopener noreferrer">|<\/a>|<span class="sr-only">|<\/span>/g;
+const ALLOWED_TAGS =
+	/<\/?(?:p|ul|li|strong|em)>|<a href="https:\/\/[^"<>\s]*" target="_blank" rel="noopener noreferrer">|<\/a>|<span class="sr-only">|<\/span>/g;
 
 describe('renderMarkdown: blocks', () => {
 	it('renders paragraphs separated by blank lines', () => {
@@ -17,7 +18,9 @@ describe('renderMarkdown: blocks', () => {
 	});
 
 	it('renders `- ` lists, and a list may follow a paragraph without a blank line', () => {
-		expect(renderMarkdown('Antes:\n- uno\n- **dos**\n\nDespués.')).toBe('<p>Antes:</p><ul><li>uno</li><li><strong>dos</strong></li></ul><p>Después.</p>');
+		expect(renderMarkdown('Antes:\n- uno\n- **dos**\n\nDespués.')).toBe(
+			'<p>Antes:</p><ul><li>uno</li><li><strong>dos</strong></li></ul><p>Después.</p>',
+		);
 	});
 
 	it('ends a list at the first line that is not an item', () => {
@@ -68,15 +71,31 @@ describe('renderMarkdown: emphasis', () => {
 
 describe('renderMarkdown: links', () => {
 	it('renders https links that open in a new tab with rel noopener noreferrer', () => {
-		expect(renderMarkdown('[ASO](https://aso.example/inscripcion)')).toBe(`<p><a href="https://aso.example/inscripcion" ${LINK}>ASO${NOTICE}</a></p>`);
+		expect(renderMarkdown('[ASO](https://aso.example/inscripcion)')).toBe(
+			`<p><a href="https://aso.example/inscripcion" ${LINK}>ASO${NOTICE}</a></p>`,
+		);
 	});
 
 	it('allows emphasis in the link text', () => {
-		expect(renderMarkdown('[**ASO**](https://aso.example/)')).toBe(`<p><a href="https://aso.example/" ${LINK}><strong>ASO</strong>${NOTICE}</a></p>`);
+		expect(renderMarkdown('[**ASO**](https://aso.example/)')).toBe(
+			`<p><a href="https://aso.example/" ${LINK}><strong>ASO</strong>${NOTICE}</a></p>`,
+		);
 	});
 
 	it('rejects every scheme but https, leaving the Markdown as plain text', () => {
-		for (const url of ['http://aso.example', 'javascript:alert(1)', 'JavaScript:alert(1)', 'data:text/html,<b>x</b>', 'mailto:a@b.c', 'ftp://x.y', '//aso.example', '/relativo', 'aso.example', 'vbscript:x', ' javascript:x']) {
+		for (const url of [
+			'http://aso.example',
+			'javascript:alert(1)',
+			'JavaScript:alert(1)',
+			'data:text/html,<b>x</b>',
+			'mailto:a@b.c',
+			'ftp://x.y',
+			'//aso.example',
+			'/relativo',
+			'aso.example',
+			'vbscript:x',
+			' javascript:x',
+		]) {
 			const html = renderMarkdown(`[clic](${url})`);
 			expect(html, url).not.toContain('<a');
 			expect(html, url).not.toContain('href');
@@ -85,7 +104,13 @@ describe('renderMarkdown: links', () => {
 	});
 
 	it('rejects https URLs with credentials, whitespace or an empty host', () => {
-		for (const url of ['https://user:pw@aso.example', 'https://google.com@evil.example', 'https://', 'https:///x', 'https://a b.example']) {
+		for (const url of [
+			'https://user:pw@aso.example',
+			'https://google.com@evil.example',
+			'https://',
+			'https:///x',
+			'https://a b.example',
+		]) {
 			expect(renderMarkdown(`[x](${url})`), url).not.toContain('<a');
 		}
 	});
@@ -123,7 +148,9 @@ describe('renderMarkdown: no raw HTML, ever', () => {
 	});
 
 	it('escapes a literal copy of the link notice instead of trusting it', () => {
-		expect(renderMarkdown('<span class="sr-only">x</span>')).toBe('<p>&lt;span class=&quot;sr-only&quot;&gt;x&lt;/span&gt;</p>');
+		expect(renderMarkdown('<span class="sr-only">x</span>')).toBe(
+			'<p>&lt;span class=&quot;sr-only&quot;&gt;x&lt;/span&gt;</p>',
+		);
 	});
 
 	it('emits only the allowed tags for any input', () => {
@@ -135,14 +162,23 @@ describe('renderMarkdown: no raw HTML, ever', () => {
 
 	it('never puts a quote or angle bracket in an href', () => {
 		for (const input of hostile) {
-			for (const [, href] of renderMarkdown(input).matchAll(/href="([^"]*)"/g)) expect(href, input).toMatch(/^https:\/\/[^"<>\s]+$/);
+			for (const [, href] of renderMarkdown(input).matchAll(/href="([^"]*)"/g))
+				expect(href, input).toMatch(/^https:\/\/[^"<>\s]+$/);
 		}
 	});
 });
 
 describe('renderMarkdown: hostile size', () => {
 	it('stays fast and bounded on pathological 10 000-character bodies', () => {
-		const bodies = ['*'.repeat(10_000), '**a '.repeat(2_500), '['.repeat(10_000), '[a]('.repeat(2_000), '\\'.repeat(10_000), '*a '.repeat(3_333), '*'.repeat(5_000) + 'x' + '*'.repeat(4_999)];
+		const bodies = [
+			'*'.repeat(10_000),
+			'**a '.repeat(2_500),
+			'['.repeat(10_000),
+			'[a]('.repeat(2_000),
+			'\\'.repeat(10_000),
+			'*a '.repeat(3_333),
+			'*'.repeat(5_000) + 'x' + '*'.repeat(4_999),
+		];
 		for (const body of bodies) {
 			const started = performance.now();
 			const html = renderMarkdown(body);

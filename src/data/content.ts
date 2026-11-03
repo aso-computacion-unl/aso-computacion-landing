@@ -6,17 +6,13 @@ import type { Locale } from '../i18n/locales';
 import { composeSiteContent } from '../lib/admin-content/compose';
 import { loadPublicContent } from '../lib/admin-content/load';
 import fallback from './fallback.json';
-import {
-	demoBoardFun,
-	demoCollage,
-	demoEvents,
-	demoFaqItems,
-	demoPillars,
-	copy,
-} from './site';
+import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
 
 // Bundled images the fallback snapshot can point at (`/src/assets/...`), as Astro image metadata.
-const bundled = import.meta.glob<ImageMetadata>('/src/assets/**/*.{jpg,jpeg,png,webp,avif}', { eager: true, import: 'default' });
+const bundled = import.meta.glob<ImageMetadata>('/src/assets/**/*.{jpg,jpeg,png,webp,avif}', {
+	eager: true,
+	import: 'default',
+});
 
 const loaded = await loadPublicContent({
 	url: process.env.ADMIN_CONTENT_URL ?? import.meta.env.ADMIN_CONTENT_URL,
@@ -36,7 +32,13 @@ function build(locale: Locale) {
 			site: landing.site,
 			navLinks: landing.navLinks,
 			anchors: landing.timelineAnchors,
-			demo: { events: demoEvents, pillars: demoPillars, faqItems: demoFaqItems, boardFun: demoBoardFun, collage: demoCollage },
+			demo: {
+				events: demoEvents,
+				pillars: demoPillars,
+				faqItems: demoFaqItems,
+				boardFun: demoBoardFun,
+				collage: demoCollage,
+			},
 		},
 	});
 	return {

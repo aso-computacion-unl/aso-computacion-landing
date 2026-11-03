@@ -3,7 +3,18 @@
 import type { Locale } from '../../i18n/locales';
 import type { LoadedContent } from './load';
 import { countWord, toBoard, toFaqItems, toFreeCommands, toPillars, toSite, toSocials, type MapContext } from './map';
-import type { BoardFun, FaqCommand, FaqItem, NewsItem, Photo, Pillar, SiteCopy, Social, TeamMember, TimelineEntry } from './model';
+import type {
+	BoardFun,
+	FaqCommand,
+	FaqItem,
+	NewsItem,
+	Photo,
+	Pillar,
+	SiteCopy,
+	Social,
+	TeamMember,
+	TimelineEntry,
+} from './model';
 import { NEWS_PATH, latestNews, toNews } from './news';
 import { sortEvents, toTimelineEntry, todayInEcuador } from './timeline';
 
@@ -76,22 +87,42 @@ export function composeSiteContent(options: {
 	const ctx: MapContext = { today: todayInEcuador(now), resolveLocal, locale };
 
 	const demoEntries: TimelineEntry[] = withDemo
-		? baseline.demo.events.map((entry) => ({ ...entry, kind: entry.date && entry.date >= ctx.today ? 'upcoming' : 'commit' }))
+		? baseline.demo.events.map((entry) => ({
+				...entry,
+				kind: entry.date && entry.date >= ctx.today ? 'upcoming' : 'commit',
+			}))
 		: [];
-	const entries = sortEvents([...sortEvents(content.events).map((event) => toTimelineEntry(event, ctx)), ...demoEntries]);
+	const entries = sortEvents([
+		...sortEvents(content.events).map((event) => toTimelineEntry(event, ctx)),
+		...demoEntries,
+	]);
 	const upcoming = entries.filter((entry) => entry.kind === 'upcoming');
 	const history = entries.filter((entry) => entry.kind !== 'upcoming');
 
 	const team = toBoard(content.board, ctx, withDemo ? baseline.demo.boardFun : {});
-	const timeline = [baseline.anchors.next, ...upcoming, headEntry(baseline.anchors.head, team.length, locale), ...history, baseline.anchors.initial];
+	const timeline = [
+		baseline.anchors.next,
+		...upcoming,
+		headEntry(baseline.anchors.head, team.length, locale),
+		...history,
+		baseline.anchors.initial,
+	];
 
 	// Nearest upcoming entry with a confirmed day: feeds the countdown panel and the "¡nuevo!" sticker. A month-only entry never claims a day.
-	const nextEvent = upcoming.filter((entry) => entry.date && entry.datePrecision !== 'month').reduce<TimelineEntry | undefined>((nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest), undefined);
+	const nextEvent = upcoming
+		.filter((entry) => entry.date && entry.datePrecision !== 'month')
+		.reduce<TimelineEntry | undefined>(
+			(nearest, entry) => (!nearest || (entry.date ?? '') < (nearest.date ?? '') ? entry : nearest),
+			undefined,
+		);
 
 	const pillars = content.pillars.length > 0 || !withDemo ? toPillars(content.pillars, ctx) : baseline.demo.pillars;
 	const faqIsDemo = withDemo && content.faqs.length === 0 && baseline.demo.faqItems.length > 0;
 	const faqItems = faqIsDemo ? baseline.demo.faqItems : toFaqItems(content.faqs);
-	const faqCommands = toFreeCommands(content.commands, faqItems.map((item) => item.topic));
+	const faqCommands = toFreeCommands(
+		content.commands,
+		faqItems.map((item) => item.topic),
+	);
 	const socials = toSocials(content.socials);
 
 	const seen = new Set<Photo['src']>();
@@ -103,9 +134,28 @@ export function composeSiteContent(options: {
 
 	const news = toNews(content.news, ctx);
 
-	const hasContent: Record<string, boolean> = { [NEWS_PATH]: news.length > 0, '#faq': faqItems.length > 0 || faqCommands.length > 0, '#directiva': team.length > 0, '#redes': socials.length > 0 };
+	const hasContent: Record<string, boolean> = {
+		[NEWS_PATH]: news.length > 0,
+		'#faq': faqItems.length > 0 || faqCommands.length > 0,
+		'#directiva': team.length > 0,
+		'#redes': socials.length > 0,
+	};
 	const navLinks = baseline.navLinks.filter((link) => hasContent[link.href] ?? true);
 
-	return { source, site: toSite(baseline.site, content.settings), navLinks, timeline, nextEvent, pillars, faqItems, faqIsDemo, faqCommands, team, socials, collage, news, latestNews: latestNews(news) };
+	return {
+		source,
+		site: toSite(baseline.site, content.settings),
+		navLinks,
+		timeline,
+		nextEvent,
+		pillars,
+		faqItems,
+		faqIsDemo,
+		faqCommands,
+		team,
+		socials,
+		collage,
+		news,
+		latestNews: latestNews(news),
+	};
 }
-

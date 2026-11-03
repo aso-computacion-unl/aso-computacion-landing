@@ -56,9 +56,16 @@ const distance = (a: string, b: string): number => {
 };
 
 // The nearest FAQ topic or free command within the typo distance; the first of them wins a tie.
-const closestName = (word: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[]): { name: string; free: boolean } | undefined => {
+const closestName = (
+	word: string,
+	items: readonly FaqEntry[],
+	commands: readonly FaqCommandEntry[],
+): { name: string; free: boolean } | undefined => {
 	let best: { name: string; free: boolean; score: number } | undefined;
-	const candidates = [...items.map(({ topic }) => ({ name: topic, free: false })), ...commands.map(({ name }) => ({ name, free: true }))];
+	const candidates = [
+		...items.map(({ topic }) => ({ name: topic, free: false })),
+		...commands.map(({ name }) => ({ name, free: true })),
+	];
 	for (const candidate of candidates) {
 		const score = distance(word, candidate.name);
 		if (score <= MAX_TYPO_DISTANCE && (!best || score < best.score)) best = { ...candidate, score };
@@ -66,13 +73,22 @@ const closestName = (word: string, items: readonly FaqEntry[], commands: readonl
 	return best;
 };
 
-export const helpLines = (items: readonly FaqEntry[], locale: FaqLocale = 'es', commands: readonly FaqCommandEntry[] = []): FaqLine[] => [
+export const helpLines = (
+	items: readonly FaqEntry[],
+	locale: FaqLocale = 'es',
+	commands: readonly FaqCommandEntry[] = [],
+): FaqLine[] => [
 	{ tone: 'out', text: MESSAGES[locale].help },
 	...items.map((item) => ({ tone: 'topic' as const, text: `git help ${item.topic}`, note: item.q })),
 	...commands.map((command) => ({ tone: 'topic' as const, text: command.name, note: command.description })),
 ];
 
-export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale: FaqLocale = 'es', commands: readonly FaqCommandEntry[] = []): FaqResult => {
+export const runFaqCommand = (
+	input: string,
+	items: readonly FaqEntry[],
+	locale: FaqLocale = 'es',
+	commands: readonly FaqCommandEntry[] = [],
+): FaqResult => {
 	const m = MESSAGES[locale];
 	const command = normalize(input);
 	if (command === '') return { kind: 'lines', lines: [] };
@@ -96,22 +112,42 @@ export const runFaqCommand = (input: string, items: readonly FaqEntry[], locale:
 
 	const suggestion = closestName(asked, items, commands);
 	const head = command.startsWith('git help ') ? m.noTopic(asked) : m.notFound(input.trim());
-	const hint = suggestion ? (suggestion.free ? m.didYouMeanCommand(suggestion.name) : m.didYouMean(suggestion.name)) : m.typeHelp;
+	const hint = suggestion
+		? suggestion.free
+			? m.didYouMeanCommand(suggestion.name)
+			: m.didYouMean(suggestion.name)
+		: m.typeHelp;
 	const text = head + hint;
 	return { kind: 'lines', lines: [{ tone: 'error', text }] };
 };
 
-export const completeFaqCommand = (input: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[] = []): string[] => {
+export const completeFaqCommand = (
+	input: string,
+	items: readonly FaqEntry[],
+	commands: readonly FaqCommandEntry[] = [],
+): string[] => {
 	const prefix = input.replace(/^\s+/, '').replace(/\s+/g, ' ').toLowerCase();
 	if (prefix === '') return [];
 	// Every form runFaqCommand accepts: the help aliases, clear, bare topics, `git help <topic>` and the free commands.
-	const candidates = ['help', 'ayuda', 'ls', 'clear', ...items.map((item) => item.topic), ...commands.map((command) => command.name), ...items.map((item) => `git help ${item.topic}`)];
+	const candidates = [
+		'help',
+		'ayuda',
+		'ls',
+		'clear',
+		...items.map((item) => item.topic),
+		...commands.map((command) => command.name),
+		...items.map((item) => `git help ${item.topic}`),
+	];
 	return candidates.filter((candidate) => candidate.startsWith(prefix) && candidate !== prefix);
 };
 
 // What Tab does, as in a shell: one match completes in place; several first extend the input to what they all share,
 // and only list themselves once there is nothing more to extend. Null means no match, so Tab can leave the shell.
-export const tabFaqCommand = (input: string, items: readonly FaqEntry[], commands: readonly FaqCommandEntry[] = []): { value: string; options: string[] } | null => {
+export const tabFaqCommand = (
+	input: string,
+	items: readonly FaqEntry[],
+	commands: readonly FaqCommandEntry[] = [],
+): { value: string; options: string[] } | null => {
 	const matches = completeFaqCommand(input, items, commands);
 	if (matches.length === 0) return null;
 	if (matches.length === 1) return { value: matches[0], options: [] };

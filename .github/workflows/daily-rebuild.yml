@@ -6,7 +6,7 @@ name: Daily rebuild
 # it is still the previous day in Ecuador.
 on:
   schedule:
-    - cron: "15 5 * * *"
+    - cron: '15 5 * * *'
   workflow_dispatch:
 
 permissions: {}

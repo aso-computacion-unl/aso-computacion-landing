@@ -22,8 +22,12 @@ const { href, variant = 'primary', size = 'md', external = false } = Astro.props
 	rel={external ? 'me noopener' : undefined}
 >
 	<span class="btn-face">
-		<span><slot /></span>
-		<span class="btn-glyph" aria-hidden="true">→</span>
+		<span>
+			<slot />
+		</span>
+		<span class="btn-glyph" aria-hidden="true">
+			→
+		</span>
 	</span>
 	{external && <span class="sr-only"> {t('newTab')}</span>}
 </a>

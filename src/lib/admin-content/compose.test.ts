@@ -11,7 +11,15 @@ const resolveLocal = (path: string) => local(path);
 const photo = (name: string): Photo => ({ src: local(name), alt: name });
 
 const baseline: Baseline = {
-	site: { name: 'ASO', tagline: 'base tagline', headline: ['a'], headlineAccent: 0, heroCue: 'cue', description: 'base desc', about: 'base about' },
+	site: {
+		name: 'ASO',
+		tagline: 'base tagline',
+		headline: ['a'],
+		headlineAccent: 0,
+		heroCue: 'cue',
+		description: 'base desc',
+		about: 'base about',
+	},
 	navLinks: [
 		{ label: 'Actividades', href: '#actividades' },
 		{ label: 'Novedades', href: '/novedades' },
@@ -22,13 +30,35 @@ const baseline: Baseline = {
 	],
 	anchors: {
 		next: { id: 'proxima-actividad', kind: 'next', stamp: 'Lo que sigue', title: 'next' },
-		head: { id: 'directiva-actual', kind: 'head', stamp: 'HEAD', title: 'Directiva actual', description: 'old', href: '#directiva', hrefLabel: 'Conocer' },
+		head: {
+			id: 'directiva-actual',
+			kind: 'head',
+			stamp: 'HEAD',
+			title: 'Directiva actual',
+			description: 'old',
+			href: '#directiva',
+			hrefLabel: 'Conocer',
+		},
 		initial: { id: 'fundacion', kind: 'initial', stamp: '2020', title: 'Nace' },
 	},
 	demo: {
 		events: [
-			{ id: 'demo-future', date: '2026-12-11', stamp: '11 dic 2026', title: 'Demo future', demo: true, image: photo('future.jpg') },
-			{ id: 'demo-past', date: '2026-05-20', stamp: '20 may 2026', title: 'Demo past', demo: true, image: photo('past.jpg') },
+			{
+				id: 'demo-future',
+				date: '2026-12-11',
+				stamp: '11 dic 2026',
+				title: 'Demo future',
+				demo: true,
+				image: photo('future.jpg'),
+			},
+			{
+				id: 'demo-past',
+				date: '2026-05-20',
+				stamp: '20 may 2026',
+				title: 'Demo past',
+				demo: true,
+				image: photo('past.jpg'),
+			},
 		],
 		pillars: [{ id: 'demo-pillar', word: 'VOZ', title: 'Demo pillar', text: 't', demo: true }],
 		faqItems: [{ topic: 'costo', q: 'Demo?', a: 'Sí.' }],
@@ -38,7 +68,11 @@ const baseline: Baseline = {
 };
 
 const api = (content = payload()): LoadedContent => ({ source: 'api', content });
-const fallback = (content = payload({ events: [], faqs: [], pillars: [] })): LoadedContent => ({ source: 'fallback', content, reason: 'test' });
+const fallback = (content = payload({ events: [], faqs: [], pillars: [] })): LoadedContent => ({
+	source: 'fallback',
+	content,
+	reason: 'test',
+});
 const compose = (loaded: LoadedContent, now = NOW) => composeSiteContent({ loaded, baseline, now, resolveLocal });
 
 describe('composeSiteContent: month-only dates', () => {
@@ -52,7 +86,10 @@ describe('composeSiteContent: month-only dates', () => {
 		const timeline = compose(api(payload({ events }))).timeline;
 		const month = timeline.find((entry) => entry.id === 'month');
 		expect(month?.stamp).toBe('feb 2026');
-		expect(timeline.map((entry) => entry.id).filter((id) => id === 'dated' || id === 'month')).toEqual(['dated', 'month']);
+		expect(timeline.map((entry) => entry.id).filter((id) => id === 'dated' || id === 'month')).toEqual([
+			'dated',
+			'month',
+		]);
 	});
 
 	it('never feeds the countdown with a month-only event, even when it is the nearest upcoming one', () => {
@@ -100,15 +137,28 @@ describe('composeSiteContent: API path', () => {
 
 	it('feeds the countdown with the nearest upcoming dated event', () => {
 		const e = payload().events[0];
-		const result = compose(api(payload({ events: [{ ...e, slug: 'later', date: '2026-12-01' }, { ...e, slug: 'sooner', date: '2026-11-01' }] })));
+		const result = compose(
+			api(
+				payload({
+					events: [
+						{ ...e, slug: 'later', date: '2026-12-01' },
+						{ ...e, slug: 'sooner', date: '2026-11-01' },
+					],
+				}),
+			),
+		);
 		expect(result.nextEvent?.id).toBe('sooner');
 		expect(compose(api(payload({ events: [] }))).nextEvent).toBeUndefined();
 	});
 
 	it('moves an event from upcoming to history as the build date passes it', () => {
 		const e = { ...payload().events[0], slug: 'x', date: '2026-10-25' };
-		expect(compose(api(payload({ events: [e] })), new Date('2026-10-25T12:00:00Z')).timeline.find((t) => t.id === 'x')?.kind).toBe('upcoming');
-		expect(compose(api(payload({ events: [e] })), new Date('2026-10-27T12:00:00Z')).timeline.find((t) => t.id === 'x')?.kind).toBe('commit');
+		expect(
+			compose(api(payload({ events: [e] })), new Date('2026-10-25T12:00:00Z')).timeline.find((t) => t.id === 'x')?.kind,
+		).toBe('upcoming');
+		expect(
+			compose(api(payload({ events: [e] })), new Date('2026-10-27T12:00:00Z')).timeline.find((t) => t.id === 'x')?.kind,
+		).toBe('commit');
 	});
 
 	it('uses the settings when present and the landing copy when null', () => {
@@ -123,14 +173,20 @@ describe('composeSiteContent: API path', () => {
 		expect(result.pillars).toHaveLength(content.pillars.length);
 		expect(result.socials).toHaveLength(content.socials.length);
 		expect(result.team).toHaveLength(content.board.length);
-		expect(result.timeline.filter((t) => !['next', 'head', 'initial'].includes(t.kind))).toHaveLength(content.events.length);
+		expect(result.timeline.filter((t) => !['next', 'head', 'initial'].includes(t.kind))).toHaveLength(
+			content.events.length,
+		);
 	});
 
 	it('describes the board in the HEAD entry from the real count', () => {
 		const member = payload().board[0];
 		const seven = Array.from({ length: 7 }, (_, i) => ({ ...member, name: `M${i}` }));
-		expect(compose(api(payload({ board: seven }))).timeline.find((t) => t.kind === 'head')?.description).toBe('Siete integrantes representan hoy a los estudiantes de la carrera.');
-		expect(compose(api(payload({ board: [member] }))).timeline.find((t) => t.kind === 'head')?.description).toBe('Una persona representa hoy a los estudiantes de la carrera.');
+		expect(compose(api(payload({ board: seven }))).timeline.find((t) => t.kind === 'head')?.description).toBe(
+			'Siete integrantes representan hoy a los estudiantes de la carrera.',
+		);
+		expect(compose(api(payload({ board: [member] }))).timeline.find((t) => t.kind === 'head')?.description).toBe(
+			'Una persona representa hoy a los estudiantes de la carrera.',
+		);
 		const empty = compose(api(payload({ board: [] }))).timeline.find((t) => t.kind === 'head');
 		expect(empty?.description).toBeUndefined();
 		expect(empty?.href).toBeUndefined();
@@ -157,11 +213,20 @@ describe('composeSiteContent: API path', () => {
 	});
 
 	it('lists news newest first, with the three latest for the home, and shows the nav link only when there are news', () => {
-		const news = ['2026-01-01', '2026-04-01', '2026-02-01', '2026-03-01'].map((publishedAt) => newsItem({ slug: `n-${publishedAt}`, publishedAt }));
+		const news = ['2026-01-01', '2026-04-01', '2026-02-01', '2026-03-01'].map((publishedAt) =>
+			newsItem({ slug: `n-${publishedAt}`, publishedAt }),
+		);
 		const withNews = compose(api(payload({ news })));
 		expect(withNews.news.map((entry) => entry.date)).toEqual(['2026-04-01', '2026-03-01', '2026-02-01', '2026-01-01']);
 		expect(withNews.latestNews.map((entry) => entry.date)).toEqual(['2026-04-01', '2026-03-01', '2026-02-01']);
-		expect(withNews.navLinks.map((link) => link.href)).toEqual(['#actividades', '/novedades', '#nosotros', '#directiva', '#faq', '#redes']);
+		expect(withNews.navLinks.map((link) => link.href)).toEqual([
+			'#actividades',
+			'/novedades',
+			'#nosotros',
+			'#directiva',
+			'#faq',
+			'#redes',
+		]);
 
 		const without = compose(api());
 		expect(without.news).toEqual([]);
@@ -179,15 +244,35 @@ describe('composeSiteContent: API path', () => {
 describe('composeSiteContent: fallback path', () => {
 	it('merges the demo events by date, keeping real ones, and derives their kind', () => {
 		const result = compose(fallback());
-		expect(result.timeline.map((t) => `${t.id}:${t.kind}`)).toEqual(['proxima-actividad:next', 'demo-future:upcoming', 'directiva-actual:head', 'demo-past:commit', 'fundacion:initial']);
+		expect(result.timeline.map((t) => `${t.id}:${t.kind}`)).toEqual([
+			'proxima-actividad:next',
+			'demo-future:upcoming',
+			'directiva-actual:head',
+			'demo-past:commit',
+			'fundacion:initial',
+		]);
 		expect(result.timeline.filter((t) => t.demo)).toHaveLength(2);
 	});
 
 	it('interleaves real and demo history newest first, undated last', () => {
 		const e = payload().events[0];
-		const content = payload({ events: [{ ...e, slug: 'real-april', date: '2026-04-14' }, { ...e, slug: 'real-undated', date: null }, { ...e, slug: 'real-june', date: '2026-06-01' }], faqs: [], pillars: [] });
+		const content = payload({
+			events: [
+				{ ...e, slug: 'real-april', date: '2026-04-14' },
+				{ ...e, slug: 'real-undated', date: null },
+				{ ...e, slug: 'real-june', date: '2026-06-01' },
+			],
+			faqs: [],
+			pillars: [],
+		});
 		const ids = compose(fallback(content)).timeline.map((t) => t.id);
-		expect(ids.slice(ids.indexOf('directiva-actual') + 1)).toEqual(['real-june', 'demo-past', 'real-april', 'real-undated', 'fundacion']);
+		expect(ids.slice(ids.indexOf('directiva-actual') + 1)).toEqual([
+			'real-june',
+			'demo-past',
+			'real-april',
+			'real-undated',
+			'fundacion',
+		]);
 	});
 
 	it('turns a demo event into history once its date passes', () => {

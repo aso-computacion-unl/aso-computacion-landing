@@ -14,42 +14,48 @@ const { faq } = getContent(locale);
 
 		{/* Static fallback and the single source of the terminal: `ui.ts` reads these entries and swaps in the terminal. */}
 		<div class="faq-list mt-12 lg:mt-16" data-faq-static>
-			{
-				faq.items.map((item) => (
-					<details class="faq-item" name="faq" data-faq-entry data-topic={item.topic}>
-						<summary>
-							<span class="faq-mark" aria-hidden="true">?</span>
-							<span class="faq-q">
-								<span class="faq-topic" aria-hidden="true">git help {item.topic}</span>
-								<span class="faq-title" data-faq-q>{item.q}</span>
+			{faq.items.map((item) => (
+				<details class="faq-item" name="faq" data-faq-entry data-topic={item.topic}>
+					<summary>
+						<span class="faq-mark" aria-hidden="true">
+							?
+						</span>
+						<span class="faq-q">
+							<span class="faq-topic" aria-hidden="true">
+								git help {item.topic}
 							</span>
-							<span class="faq-plus" aria-hidden="true"></span>
-						</summary>
-						<div class="faq-a">
-							<p data-faq-a>{item.a}</p>
-						</div>
-					</details>
-				))
-			}
+							<span class="faq-title" data-faq-q>
+								{item.q}
+							</span>
+						</span>
+						<span class="faq-plus" aria-hidden="true"></span>
+					</summary>
+					<div class="faq-a">
+						<p data-faq-a>{item.a}</p>
+					</div>
+				</details>
+			))}
 		</div>
 
 		<div class="faq-term mt-12 lg:mt-16" data-faq-term hidden>
 			<div class="term-window faq-guide-window">
 				<div class="term-titlebar">
-					<span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+					<span class="term-dots" aria-hidden="true">
+						<span></span>
+						<span></span>
+						<span></span>
+					</span>
 					<span class="term-title">{t('faq.termTitle')}</span>
 				</div>
 				<ul class="faq-guide" role="list">
-					{
-						faq.items.map((item) => (
-							<li>
-								<button type="button" class="faq-guide-row" data-faq-run={`git help ${item.topic}`}>
-									<span class="faq-guide-cmd">❯ git help {item.topic}</span>
-									<span class="faq-guide-q">{item.q}</span>
-								</button>
-							</li>
-						))
-					}
+					{faq.items.map((item) => (
+						<li>
+							<button type="button" class="faq-guide-row" data-faq-run={`git help ${item.topic}`}>
+								<span class="faq-guide-cmd">❯ git help {item.topic}</span>
+								<span class="faq-guide-q">{item.q}</span>
+							</button>
+						</li>
+					))}
 					{
 						/* Free commands: the shell reads their name, description and output from these rows (they exist only in the terminal). */
 						faq.commands.map((command) => (
@@ -69,17 +75,25 @@ const { faq } = getContent(locale);
 						))
 					}
 				</ul>
-				<p class="faq-guide-hint">{t('faq.hint')} <code>help</code>, <code>git help &lt;{t('faq.topicWord')}&gt;</code>, <code>clear</code></p>
+				<p class="faq-guide-hint">
+					{t('faq.hint')} <code>help</code>, <code>git help &lt;{t('faq.topicWord')}&gt;</code>, <code>clear</code>
+				</p>
 			</div>
 
 			<div class="term-window faq-shell-window" data-faq-shell>
 				<div class="term-titlebar">
-					<span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+					<span class="term-dots" aria-hidden="true">
+						<span></span>
+						<span></span>
+						<span></span>
+					</span>
 					<span class="term-title">aso@unl: ~/faq</span>
 				</div>
 				<div class="faq-out" data-faq-out role="log" aria-live="polite" aria-label={t('faq.log')}></div>
 				<form class="faq-prompt" data-faq-form>
-					<label class="faq-prompt-sign" for="faq-input">aso@unl:~$<span class="sr-only">{t('faq.promptHint')}</span></label>
+					<label class="faq-prompt-sign" for="faq-input">
+						aso@unl:~$<span class="sr-only">{t('faq.promptHint')}</span>
+					</label>
 					<input
 						id="faq-input"
 						class="faq-input"
