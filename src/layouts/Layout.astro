@@ -1,12 +1,14 @@
 ---
 import '../styles/global.css';
-import { getContent } from '../data/content';
+import { getContent, turnstileSiteKey } from '../data/content';
 import { contactEmail } from '../data/site';
 import { alternatePath, defaultLocale, htmlLang, locales, toLocale } from '../i18n/locales';
 import { cloudflareBeacon } from '../lib/analytics';
 import { buildNewsArticle, buildOrganization, serializeJsonLd } from '../lib/seo/jsonld';
+import { eventsStructuredData } from '../lib/seo/events';
 import { buildSocialMeta } from '../lib/seo/meta';
 import { newsFeedPath } from '../lib/seo/rss';
+import type { TimelineEntry } from '../lib/admin-content/model';
 import { useTranslations } from '../i18n/ui';
 
 interface Props {
@@ -22,9 +24,20 @@ interface Props {
 	article?: { headline: string; datePublished: string };
 	// A page that exists once, outside the language routes (the 404): no canonical, no hreflang alternates.
 	standalone?: boolean;
+	// The activities shown on the page: each upcoming one with schema values adds its Event structured data.
+	events?: readonly TimelineEntry[];
 }
 
-const { title, description, image, type = 'website', noindex = false, article, standalone = false } = Astro.props;
+const {
+	title,
+	description,
+	image,
+	type = 'website',
+	noindex = false,
+	article,
+	standalone = false,
+	events = [],
+} = Astro.props;
 
 const locale = toLocale(Astro.currentLocale);
 // `site` is set in astro.config.mjs; every absolute URL of the page is built from it.
@@ -65,6 +78,14 @@ const structuredData = [
 				}),
 			]
 		: []),
+	...eventsStructuredData(events, {
+		organization,
+		inLanguage: htmlLang[locale],
+		pageUrl: meta.canonical,
+		fallbackImage: meta.image,
+		openFormShown: turnstileSiteKey !== undefined,
+		now: Date.now(),
+	}),
 ];
 // The same page in every language, absolute as hreflang asks for.
 const alternateHref = (path: string) => new URL(path, site).href;

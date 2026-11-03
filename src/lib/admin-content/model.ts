@@ -10,6 +10,26 @@ export type ActivityType = (typeof activityTypes)[number];
 
 export type TimelineKind = 'next' | 'upcoming' | 'head' | 'commit' | 'merge' | 'initial';
 
+// S8: how people sign up for an upcoming event. Only what the card needs. `href` is the admin's page for `unl` (the
+// student signs in there) and the endpoint the landing's form posts to for `open`. The seats left are not known (the
+// site is static): `capacity` is the total.
+export interface EntryRegistration {
+	mode: 'unl' | 'open';
+	href: string;
+	capacity?: number;
+	// ISO UTC instant after which registration is closed (exclusive).
+	deadline?: string;
+}
+
+// S8: the values of a schema.org Event (Ecuador time, -05:00); the landing adds the rest from the entry itself.
+export interface EntrySchema {
+	startDate: string;
+	endDate?: string;
+	location?: string;
+	// The admin's page for `unl` registration; `open` uses the card on the home page.
+	registrationUrl?: string;
+}
+
 export interface TimelineEntry {
 	// Stable slug. Also seeds the decorative short hash shown next to the entry.
 	id: string;
@@ -41,6 +61,11 @@ export interface TimelineEntry {
 	// Optional link. External URLs (http...) open in a new tab.
 	href?: string;
 	hrefLabel?: string;
+	// S8, upcoming events only.
+	registration?: EntryRegistration;
+	// The admin's `.ics` download.
+	calendarHref?: string;
+	schema?: EntrySchema;
 }
 
 export interface Pillar {

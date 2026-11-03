@@ -42,6 +42,8 @@ ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 | `ALLOW_CONTENT_FALLBACK` | build environment | `1` (or `true`) downgrades the production gate failure to a warning, for an emergency deploy. Any other value is ignored. |
 | `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered. Not secret: it ends up in the page. |
 
+| `PUBLIC_TURNSTILE_SITE_KEY` | build environment | Public site key of the Cloudflare Turnstile widget the open registration form uses. Optional: unset, an event that uses the open form shows no form and the build warns. Not secret: it ends up in the page. See "Event registration". |
+
 Alternative to the variable: enable Web Analytics in the Cloudflare Pages project (Settings → Web Analytics), which
 injects the beacon by itself. In that case leave `PUBLIC_CF_BEACON_TOKEN` unset, or visits are counted twice.
 
@@ -134,6 +136,9 @@ section with nothing to show is left out.
   against a mock admin to cover them. The sections are static (no scroll animation), so reduced
   motion needs nothing; only the hover lift of a linked logo sits behind `prefers-reduced-motion`.
   They have no header link yet.
+- **Registration, calendar and structured data** (`registration`, `calendarUrl`, `structuredData` on each event, S8) add the
+  sign-up block, the `.ics` link and the Event JSON-LD to upcoming events. See "Event registration" below. The keys are
+  additive to `version` 1: an event from an admin that predates them reads as `null` in all three and shows none of it.
 - **Settings** `tagline`, `description` and `about` replace the landing copy when present.
 - **Photos**: admin images are plain `<img>` tags served by Cloudinary. The build inserts a
   delivery transformation after `/image/upload/` (`f_auto,q_auto,c_limit,w_<n>`, see
@@ -184,6 +189,84 @@ The token expires, so a `401` just means "mint another one". Use `--outDir` if y
 Never copy a preview build into the production project. See [DEPLOY.md](DEPLOY.md#preview-builds) for a separate,
 non-public Cloudflare Pages project.
 
+### Event registration
+
+Which way an event takes sign-ups is decided in the admin (`registration.mode`); the landing only renders it. Everything
+below applies to **upcoming** events (dated today or later, Ecuador time): a past event shows no registration, no
+calendar link and no structured data.
+
+| Admin says | The card shows |
+| --- | --- |
+| `registration: null` (mode none, or an older admin) | Nothing about registration. |
+| `mode: "unl"` with `url` | A button "Inscribirme con mi cuenta UNL" to the admin's page (`/foro/eventos/<slug>`, new tab). The student signs in there; the landing handles no data. |
+| `mode: "open"` with `endpoint` | A "Inscribirme" disclosure (`<details>`) with the form: name, email, career, semester (1 to 12) and the Turnstile widget. Needs `PUBLIC_TURNSTILE_SITE_KEY`; without it, no form. |
+| `capacity`, `deadline` | "Cupos limitados: N" (the total: the seats left are not published) and "Inscripciones hasta el …" in Ecuador time. |
+| a `deadline` already passed at build time, or by the visitor's clock | "Las inscripciones están cerradas." and no way to sign up. The page is built ahead of time, so `src/scripts/registration.ts` checks again in the browser. |
+| `calendarUrl` | "Añadir al calendario · .ics", a link to the admin's file (it sends `Content-Disposition: attachment`). |
+
+A `unl` registration without `url`, or an `open` one without `endpoint` (the admin has no `AUTH_URL` yet), is dropped: there
+is nowhere to send the person.
+
+**Links must be on the admin's origin.** A payload can only send people (and what they type) to the host the content came
+from: the origin of `ADMIN_CONTENT_URL` (of `ADMIN_PREVIEW_URL` in a preview build). A `registration` whose `url` or `endpoint`
+is on any other origin (another host, subdomain, port or scheme, or a `user@host` trick), a `calendarUrl`, and a
+`structuredData.registrationUrl` are each **left out** (that event shows no registration, no calendar link, no offer) while the
+rest of the payload stays valid, and the build prints `[registration] events[N] (<slug>): the registration link is not on the
+admin origin (...) and was left out.` If the origin is not known, all of them are left out (fail closed). This is defence in
+depth against a compromised or misconfigured admin, on top of https-only validation (`src/lib/admin-content/validate.ts`,
+`ParseOptions.adminOrigin`; `parsePublicContent` returns these as `warnings`).
+
+**Validation of the three keys** (`src/lib/admin-content/validate.ts`, additive to `version` 1; a rejected value makes the
+whole payload invalid like any other field): `registration` is `null` or `{ mode: "unl" | "open", capacity, deadline, url,
+endpoint }` with `capacity` a whole number from 1 to 100000 or `null`, `deadline` an ISO instant in UTC or `null`; the three
+URLs (`url`, `endpoint`, `calendarUrl`, `structuredData.registrationUrl`) are https (plain http only for `localhost` and
+`127.0.0.1`, for a local admin); `structuredData` is `null` or `{ startDate, endDate, location, registrationUrl }` with the
+dates as `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss-05:00`. Only the documented keys are copied. Absent keys read as `null`.
+
+**The open form** (`src/components/EventRegistration.astro`, `src/scripts/registration.ts`):
+
+- Nothing of Turnstile is downloaded until someone opens the form; pages without any registration block download none of
+  the script (a one-line check loads it on demand). The widget follows the page theme and language.
+- Checks before sending (`src/lib/registration/fields.ts`, the admin's own limits): name 1 to 120, email valid up to 254,
+  career 1 to 120, semester 1 to 12, no control characters. The first wrong field gets `aria-invalid`, its message
+  (`aria-describedby`) and focus; nothing is sent. Sending without a completed Turnstile check says so and sends nothing.
+- The request (`src/lib/registration/submit.ts`) is `POST <endpoint>` with `Content-Type: application/json`, the four
+  fields (the semester as a number) and `turnstileToken`, `credentials: 'omit'`, 15 s timeout. A Turnstile token works
+  once, so the widget is reset after every attempt.
+- **Every answer of the endpoint has its own message** (`src/lib/registration/outcome.ts`; Spanish and English in
+  `src/i18n/ui.ts`). The error box is `role="alert"`, the confirmation `role="status"`; both take focus when they end the form.
+
+  | Answer | Shown | Then |
+  | --- | --- | --- |
+  | 201 | "Tu inscripción quedó registrada" | form gives way to the message |
+  | 400 `validation` + `field` | that field's message, `aria-invalid`, focus on the field | try again |
+  | 400 `captcha` | the security check failed | new check, try again |
+  | 404 `not_found` | the event no longer takes registrations this way | form gives way |
+  | 409 `duplicate` | there is already a registration with that email | try again |
+  | 409 `full` / `closed` | no seats left / registration closed | form gives way |
+  | 429 `rate_limited` | too many attempts, wait a few minutes | try again |
+  | 503, any 5xx | the service is not available | try again |
+  | 400 `bad_request`, 413, 415, anything else | "No pudimos enviar tu inscripción" | try again |
+  | no answer (offline, CORS, timeout) | "No pudimos conectarnos" | try again |
+
+  A second click while a request is in flight is ignored (`aria-disabled`, not `disabled`, so focus stays). The form says
+  the data is used only for that activity and deleted 90 days after it ends (the admin's retention rule).
+- **The form can never submit natively**, because a GET to the page would put the name, email, career and semester in the
+  URL (history, server logs, the analytics beacon). The server-rendered `<form>` is `method="post"` with no `action` and
+  `onsubmit="return false"`, and its submit button is `disabled` until `src/scripts/registration.ts` has attached its handler
+  (which enables it). So if the script is blocked or late, Enter in a field does nothing and not even `form.requestSubmit()`
+  navigates or sends a request. Covered in `e2e/event-registration.spec.ts` with the script chunk blocked.
+- Without JavaScript the form is not shown (`js-only`), with a `<noscript>` note; the UNL link and the calendar link work
+  without it.
+
+**Structured data** (`src/lib/seo/events.ts`, `buildEvent` in `src/lib/seo/jsonld.ts`): every upcoming event with
+`structuredData` adds a schema.org `Event` to the home (Spanish and English): name, description, `startDate` / `endDate`
+(Ecuador time as the admin writes them), `location` as a `Place` named by the event's `lugar`, the first Cloudinary photo (else
+the default share image), the organization as `organizer`, `eventStatus` scheduled and offline attendance. When people can sign up
+(and the deadline has not passed) it adds a free `Offer` (`price: "0"`): its URL is the admin's page for `unl` and the
+event's card for `open`, `<home>#evento-<slug>`. The card's `id` is that anchor, prefixed so a slug such as `faq` never
+takes a section's id. An open registration whose form is not shown (no site key) is not offered.
+
 ### News
 
 Each item is `{ slug, title, summary, body, publishedAt, cover }` (contract S6 of the admin).
@@ -230,7 +313,7 @@ in that payload must be Cloudinary ones.
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, Markdown, share links, related posts, motion plan
+pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, Markdown, share links, related posts, motion plan, registration rules and answers, Event JSON-LD
 pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
 
@@ -246,6 +329,15 @@ pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of
   axe in both themes, nothing animated under reduced motion) and the preview mode (token header, banner, noindex,
   a draft shows up, the token is in no file, a normal build ignores it, a 401 or a missing `preview: true` fails the
   build). It runs seven builds, so it adds roughly 40 seconds.
+- `event-registration.spec.ts`: three builds against a mock admin that also plays the registration endpoint (CORS
+  included) and a fake Turnstile (`page.route`: no spec reaches Cloudflare). It covers what each event shows (UNL link,
+  open form, none, closed at build time, expired in the browser via `page.clock`, past, English), the form (Turnstile
+  loaded on first open only, the JSON and token sent, a new token after every attempt, client checks with focus and
+  `aria-invalid`, no send without the check, a blocked or failing widget), **every answer of the endpoint**
+  (201, validation per field, captcha, 404, duplicate, full, closed, 429, 503, 413, bad request, no answer) and
+  that a double click sends once, the `.ics` links, the `Event` JSON-LD and its offers, an admin without the S8 keys, a
+  build without the site key (no form, a warning, UNL still works), links on another origin (left out, build warning), the form with its script blocked (nothing in the URL, no request) and axe in both themes and languages with the form open
+  and an error showing. Events are dated relative to the day of the run.
 
 Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
 pages three times each on the fallback build, mobile profile, and asserts the median run. Budgets:
@@ -303,8 +395,9 @@ domain is a one-line change there. A page without its own share image (news post
 default one, `public/og-default.png` (1200×630).
 
 Structured data (JSON-LD, `src/lib/seo/jsonld.ts`): every page carries the `Organization` (name, URL, logo,
-`sameAs` from the socials in the admin, contact email) and each news post adds a `NewsArticle` (headline, summary,
-date, cover, language, the organization as publisher). Content can never close the `<script>` tag: `<` is
+`sameAs` from the socials in the admin, contact email), each news post adds a `NewsArticle` (headline, summary,
+date, cover, language, the organization as publisher) and the home adds an `Event` per upcoming activity that has
+schedule values (see "Event registration"). Content can never close the `<script>` tag: `<` is
 escaped by `serializeJsonLd`. The contact email is `contactEmail` in `src/data/site.ts`, used by the footer and
 the structured data: change it there only.
 
@@ -358,7 +451,8 @@ src/
 │   └── site.ts           # landing-owned copy and demo placeholders
 ├── lib/admin-content/    # validate, load (fetch + fallback), preview (build mode), map, news, markdown, compose (+ tests)
 ├── i18n/                 # locales, localized paths, UI dictionary (es/en)
-├── lib/seo/              # canonical URL, social meta, JSON-LD, robots.txt, RSS items (+ tests)
+├── lib/seo/              # canonical URL, social meta, JSON-LD (Organization, NewsArticle, Event), robots.txt, RSS items (+ tests)
+├── lib/registration/     # event registration: deadline rules, form fields, endpoint answers, submit (+ tests)
 ├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
 ├── views/                # the pages' bodies, shared by both languages
 ├── pages/                # thin routes: / and /novedades (es), /en/... (en); 404, robots.txt, RSS

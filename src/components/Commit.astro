@@ -1,9 +1,11 @@
 ---
+import EventRegistration from './EventRegistration.astro';
 import Photo from './Photo.astro';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { metaLabel, useTranslations } from '../i18n/ui';
 import type { TimelineKind } from '../lib/admin-content/model';
+import { eventAnchor } from '../lib/seo/events';
 import { shortHash } from './shortHash';
 
 type Entry = ReturnType<typeof getContent>['timeline'][number];
@@ -43,9 +45,14 @@ const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
+const hasRegistration = !compact && Boolean(entry.registration || entry.calendarHref);
 ---
 
-<li class:list={['commit', { 'is-last': last }]} data-type={entry.type}>
+<li
+	class:list={['commit', { 'is-last': last }]}
+	data-type={entry.type}
+	id={!compact && entry.kind === 'upcoming' ? eventAnchor(entry.id) : undefined}
+>
 	<span
 		class:list={['node', nodeClass[entry.kind]]}
 		data-node
@@ -53,7 +60,7 @@ const isNext = !compact && entry === nextEvent;
 		aria-hidden="true"
 	></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class:list={['card', 'card-row']} data-card={compact ? undefined : ''}>
+	<div class:list={['card', 'card-row', { 'has-reg': hasRegistration }]} data-card={compact ? undefined : ''}>
 		{isNext && (
 			<span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">
 				{t('commit.new')}
@@ -101,6 +108,7 @@ const isNext = !compact && entry === nextEvent;
 				))}
 			</dl>
 		)}
+		{hasRegistration && <EventRegistration entry={entry} />}
 		{showPhoto && entry.image && (
 			<div class="duo photo">
 				<Photo

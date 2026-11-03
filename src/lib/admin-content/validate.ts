@@ -2,12 +2,15 @@ import {
 	PUBLIC_CONTENT_VERSION,
 	datePrecisions,
 	eventTypes,
+	registrationModes,
 	type DatePrecision,
 	type EventType,
 	type PublicBoardMember,
 	type PublicCommand,
 	type PublicContent,
 	type PublicEvent,
+	type PublicEventRegistration,
+	type PublicEventStructuredData,
 	type PublicFaq,
 	type PublicImage,
 	type PublicImpactStat,
@@ -18,13 +21,19 @@ import {
 	type PublicSocial,
 	type PublicSponsor,
 	type PublicTestimonial,
+	type RegistrationMode,
 } from './types';
 
-export type ParseResult = { ok: true; content: PublicContent } | { ok: false; reason: string };
+// `warnings` are things the payload asked for that the landing refused without rejecting the payload (see `adminOrigin`).
+export type ParseResult = { ok: true; content: PublicContent; warnings: string[] } | { ok: false; reason: string };
 
 export interface ParseOptions {
 	// The committed fallback.json may point at images bundled with the landing (`/src/assets/...`). A network payload may not.
 	allowLocalImages?: boolean;
+	// Origin (`https://host[:port]`) of the admin the payload came from. The registration links, the calendar link and
+	// the schema registration URL of an event are only kept when they live on it, so a compromised or misconfigured
+	// admin cannot send people (and their data) to another host. Unset, they are all left out: it fails closed.
+	adminOrigin?: string;
 }
 
 class Invalid extends Error {}
@@ -70,6 +79,8 @@ const LIMIT = {
 	name: 120,
 	role: 160,
 	proofAlt: 200,
+	// Registration follows the admin's contract (S8): seats go up to 5000, with the usual headroom.
+	capacity: 100_000,
 } as const;
 
 const COUNT = {
@@ -107,6 +118,17 @@ const dimension = (value: unknown, path: string): number =>
 const httpsUrl = (value: unknown, path: string): string => {
 	const url = text(value, path, LIMIT.url);
 	return /^https:\/\/\S+$/i.test(url) ? url : fail(path, 'expected an https URL');
+};
+
+// URLs the admin builds from its own public origin (registration page and endpoint, calendar file). https always; plain
+// http only for a local admin, which is how development and the e2e mock reach it.
+const LOCAL_HTTP = /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:[/?#]\S*)?$/i;
+
+const adminUrl = (value: unknown, path: string): string => {
+	const url = text(value, path, LIMIT.url);
+	return /^https:\/\/[^\s/]\S*$/i.test(url) || LOCAL_HTTP.test(url)
+		? url
+		: fail(path, 'expected an https URL (http only for localhost)');
 };
 
 const calendarDate = (value: unknown, path: string): string => {
@@ -152,6 +174,33 @@ const eventType = (value: unknown, path: string): EventType =>
 		? (value as EventType)
 		: fail(path, `expected one of ${eventTypes.join(', ')}`);
 
+const registrationMode = (value: unknown, path: string): RegistrationMode =>
+	(registrationModes as readonly unknown[]).includes(value)
+		? (value as RegistrationMode)
+		: fail(path, `expected one of ${registrationModes.join(', ')}`);
+
+const capacity = (value: unknown, path: string): number =>
+	typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= LIMIT.capacity
+		? value
+		: fail(path, `expected a positive integer of at most ${LIMIT.capacity}`);
+
+// An instant as the admin writes it (`toISOString()`): UTC with a Z.
+const instant = (value: unknown, path: string): string => {
+	const content = text(value, path, LIMIT.generatedAt);
+	return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(content) && !Number.isNaN(Date.parse(content))
+		? content
+		: fail(path, 'expected an ISO instant in UTC (YYYY-MM-DDTHH:mm:ss.sssZ)');
+};
+
+// A schema.org date: a calendar day, or that day with an Ecuador time (the admin always writes -05:00).
+const eventDateTime = (value: unknown, path: string): string => {
+	const content = text(value, path, LIMIT.short);
+	const match = /^(\d{4}-\d{2}-\d{2})(?:T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)-05:00)?$/.exec(content);
+	if (!match) return fail(path, 'expected YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss-05:00');
+	calendarDate(match[1], path);
+	return content;
+};
+
 const short = (value: unknown, path: string) => text(value, path, LIMIT.short);
 const body = (value: unknown, path: string) => text(value, path, LIMIT.text);
 
@@ -167,7 +216,7 @@ const PATH_ESCAPE = /\.\.|%2e/i;
 
 // Every reader below copies key by key instead of spreading: whatever the payload carries beyond the documented
 // keys is dropped here, which is what keeps S4 true even if the admin ever leaks a field.
-const readers = (options: ParseOptions) => {
+const readers = (options: ParseOptions, warnings: string[]) => {
 	const imageUrl = (value: unknown, path: string): string => {
 		const url = text(value, path, LIMIT.url);
 		if (CLOUDINARY_IMAGE.test(url) && !PATH_ESCAPE.test(url)) return url;
@@ -256,8 +305,46 @@ const readers = (options: ParseOptions) => {
 		return items.map((item, index) => read(item, `${path}[${index}]`));
 	};
 
+	// The origin of an absolute URL, or undefined when it does not parse. Userinfo and look-alike hosts change it.
+	const originOf = (url: string): string | undefined => {
+		try {
+			return new URL(url).origin;
+		} catch {
+			return undefined;
+		}
+	};
+
+	const onAdminOrigin = (url: string | null): boolean =>
+		url === null || (options.adminOrigin !== undefined && originOf(url) === options.adminOrigin);
+
 	const readEvent = (value: unknown, path: string): PublicEvent => {
 		const raw = object(value, path);
+		const event = readEventFields(raw, path);
+		const slug = event.slug;
+		const refuse = (what: string) =>
+			warnings.push(
+				`${path} (${slug}): ${what} is not on the admin origin${options.adminOrigin ? ` (${options.adminOrigin})` : ' (unknown)'} and was left out.`,
+			);
+		const { registration, structuredData } = event;
+		if (
+			registration &&
+			!(options.adminOrigin && onAdminOrigin(registration.url) && onAdminOrigin(registration.endpoint))
+		) {
+			refuse('the registration link');
+			event.registration = null;
+		}
+		if (event.calendarUrl !== null && !onAdminOrigin(event.calendarUrl)) {
+			refuse('the calendar link');
+			event.calendarUrl = null;
+		}
+		if (structuredData?.registrationUrl && !onAdminOrigin(structuredData.registrationUrl)) {
+			refuse('the schema registration URL');
+			structuredData.registrationUrl = null;
+		}
+		return event;
+	};
+
+	const readEventFields = (raw: Obj, path: string): PublicEvent => {
 		return {
 			slug: nonEmpty(raw.slug, `${path}.slug`, LIMIT.short),
 			title: nonEmpty(raw.title, `${path}.title`, LIMIT.title),
@@ -276,8 +363,36 @@ const readers = (options: ParseOptions) => {
 			linkLabel: nullable(raw.linkLabel, `${path}.linkLabel`, short),
 			highlights: list(raw.highlights, `${path}.highlights`, COUNT.highlights, short),
 			photos: list(raw.photos, `${path}.photos`, COUNT.photos, readImage),
+			registration: optionalField(raw.registration, `${path}.registration`, readRegistration),
+			calendarUrl: optionalField(raw.calendarUrl, `${path}.calendarUrl`, adminUrl),
+			structuredData: optionalField(raw.structuredData, `${path}.structuredData`, readStructuredData),
 		};
 	};
+
+	const readRegistration = (value: unknown, path: string): PublicEventRegistration => {
+		const raw = object(value, path);
+		return {
+			mode: registrationMode(raw.mode, `${path}.mode`),
+			capacity: nullable(raw.capacity, `${path}.capacity`, capacity),
+			deadline: nullable(raw.deadline, `${path}.deadline`, instant),
+			url: nullable(raw.url, `${path}.url`, adminUrl),
+			endpoint: nullable(raw.endpoint, `${path}.endpoint`, adminUrl),
+		};
+	};
+
+	const readStructuredData = (value: unknown, path: string): PublicEventStructuredData => {
+		const raw = object(value, path);
+		return {
+			startDate: eventDateTime(raw.startDate, `${path}.startDate`),
+			endDate: nullable(raw.endDate, `${path}.endDate`, eventDateTime),
+			location: nullable(raw.location, `${path}.location`, short),
+			registrationUrl: nullable(raw.registrationUrl, `${path}.registrationUrl`, adminUrl),
+		};
+	};
+
+	// Added after version 1 shipped (S8): an admin that does not send the key has nothing to say about it.
+	const optionalField = <T>(value: unknown, path: string, read: (value: unknown, path: string) => T): T | null =>
+		value === undefined ? null : nullable(value, path, read);
 
 	const readFaq = (value: unknown, path: string): PublicFaq => {
 		const raw = object(value, path);
@@ -368,6 +483,7 @@ const uniqueSlugs = (items: PublicNewsItem[]): PublicNewsItem[] => {
 // Validates an untrusted payload against the version 1 shape and returns a clean copy with only the documented keys.
 // Never throws: a rejected payload comes back as `{ ok: false, reason }` so the caller can fall back.
 export function parsePublicContent(raw: unknown, options: ParseOptions = {}): ParseResult {
+	const warnings: string[] = [];
 	try {
 		const root = object(raw, 'payload');
 		if (root.version !== PUBLIC_CONTENT_VERSION) {
@@ -389,30 +505,28 @@ export function parsePublicContent(raw: unknown, options: ParseOptions = {}): Pa
 			readImpactStat,
 			readTestimonial,
 			readSponsor,
-		} = readers(options);
+		} = readers(options, warnings);
 		// Added after version 1 shipped (S9): an admin that does not send a list yet has none of it.
 		const optional = <T>(key: string, read: (item: unknown, path: string) => T): T[] =>
 			root[key] === undefined ? [] : list(root[key], key, COUNT.others, read);
-		return {
-			ok: true,
-			content: {
-				version: PUBLIC_CONTENT_VERSION,
-				generatedAt: text(root.generatedAt, 'generatedAt', LIMIT.generatedAt),
-				events: list(root.events, 'events', COUNT.events, readEvent),
-				faqs: list(root.faqs, 'faqs', COUNT.others, readFaq),
-				pillars: list(root.pillars, 'pillars', COUNT.others, readPillar),
-				socials: list(root.socials, 'socials', COUNT.others, readSocial),
-				board: list(root.board, 'board', COUNT.others, readMember),
-				settings: nullable(root.settings, 'settings', readSettings),
-				// Added after version 1 shipped: an admin that does not send it yet has no news.
-				news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
-				// Added after version 1 shipped: an admin that does not send it yet has no free commands.
-				commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
-				impact: optional('impact', readImpactStat),
-				testimonials: optional('testimonials', readTestimonial),
-				sponsors: optional('sponsors', readSponsor),
-			},
+		const content: PublicContent = {
+			version: PUBLIC_CONTENT_VERSION,
+			generatedAt: text(root.generatedAt, 'generatedAt', LIMIT.generatedAt),
+			events: list(root.events, 'events', COUNT.events, readEvent),
+			faqs: list(root.faqs, 'faqs', COUNT.others, readFaq),
+			pillars: list(root.pillars, 'pillars', COUNT.others, readPillar),
+			socials: list(root.socials, 'socials', COUNT.others, readSocial),
+			board: list(root.board, 'board', COUNT.others, readMember),
+			settings: nullable(root.settings, 'settings', readSettings),
+			// Added after version 1 shipped: an admin that does not send it yet has no news.
+			news: root.news === undefined ? [] : uniqueSlugs(list(root.news, 'news', COUNT.news, readNewsItem)),
+			// Added after version 1 shipped: an admin that does not send it yet has no free commands.
+			commands: root.commands === undefined ? [] : list(root.commands, 'commands', COUNT.others, readCommand),
+			impact: optional('impact', readImpactStat),
+			testimonials: optional('testimonials', readTestimonial),
+			sponsors: optional('sponsors', readSponsor),
 		};
+		return { ok: true, content, warnings };
 	} catch (error) {
 		if (error instanceof Invalid) return { ok: false, reason: error.message };
 		throw error;

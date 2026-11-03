@@ -1,7 +1,7 @@
 // Events -> timeline entries. The kind of an entry comes from its date, never from a stored flag.
-import type { TimelineEntry, TimelineKind } from './model';
+import type { EntryRegistration, EntrySchema, TimelineEntry, TimelineKind } from './model';
 import { slugify, toPhoto, type MapContext } from './map';
-import type { DatePrecision, PublicEvent } from './types';
+import type { DatePrecision, PublicEvent, PublicEventRegistration, PublicEventStructuredData } from './types';
 import type { Locale } from '../../i18n/locales';
 
 const TIME_ZONE = 'America/Guayaquil';
@@ -60,9 +60,35 @@ const branchIds = (highlights: readonly string[]) => {
 	});
 };
 
+// A registration the card can act on: `unl` needs the admin's page, `open` needs the endpoint to post to.
+const toEntryRegistration = (registration: PublicEventRegistration | null): EntryRegistration | undefined => {
+	if (!registration) return undefined;
+	const href = registration.mode === 'unl' ? registration.url : registration.endpoint;
+	if (!href) return undefined;
+	return {
+		mode: registration.mode,
+		href,
+		...(registration.capacity ? { capacity: registration.capacity } : {}),
+		...(registration.deadline ? { deadline: registration.deadline } : {}),
+	};
+};
+
+const toEntrySchema = (data: PublicEventStructuredData | null): EntrySchema | undefined =>
+	data
+		? {
+				startDate: data.startDate,
+				...(data.endDate ? { endDate: data.endDate } : {}),
+				...(data.location ? { location: data.location } : {}),
+				...(data.registrationUrl ? { registrationUrl: data.registrationUrl } : {}),
+			}
+		: undefined;
+
 export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEntry => {
 	const kind = eventKind(event, ctx.today);
 	const photos = event.photos.map((photo) => toPhoto(photo, ctx));
+	// Signing up, the calendar file and the schema values only make sense before the event is over.
+	const registration = kind === 'upcoming' ? toEntryRegistration(event.registration) : undefined;
+	const schema = kind === 'upcoming' ? toEntrySchema(event.structuredData) : undefined;
 	const meta = {
 		...(event.hora ? { hora: event.hora } : {}),
 		...(event.lugar ? { lugar: event.lugar } : {}),
@@ -89,5 +115,8 @@ export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEn
 		...(kind === 'merge' ? { branch: { name: event.slug, commits: branchIds(event.highlights) } } : {}),
 		...(photos.length > 0 ? { image: photos[0], gallery: photos } : {}),
 		...(event.linkUrl ? { href: event.linkUrl, hrefLabel: event.linkLabel || 'Más información' } : {}),
+		...(registration ? { registration } : {}),
+		...(kind === 'upcoming' && event.calendarUrl ? { calendarHref: event.calendarUrl } : {}),
+		...(schema ? { schema } : {}),
 	};
 };

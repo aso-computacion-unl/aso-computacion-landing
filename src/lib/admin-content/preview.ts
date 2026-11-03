@@ -107,7 +107,7 @@ const readBody = async (response: Response): Promise<unknown> => {
 // the admin marked `preview: true`.
 export async function loadPreviewContent(
 	options: PreviewLoadOptions,
-): Promise<{ source: 'preview'; content: PublicContent }> {
+): Promise<{ source: 'preview'; content: PublicContent; warnings: string[] }> {
 	const { url, token, fetch: doFetch = fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
 
 	let raw: unknown;
@@ -146,7 +146,7 @@ export async function loadPreviewContent(
 			`unsupported schemaVersion ${JSON.stringify(root.schemaVersion)} (this landing reads version ${PUBLIC_CONTENT_VERSION}).`,
 		);
 
-	const parsed = parsePublicContent(raw);
+	const parsed = parsePublicContent(raw, { adminOrigin: new URL(url).origin });
 	if (!parsed.ok) throw new PreviewBuildError(`the preview response was rejected (${parsed.reason}).`);
-	return { source: 'preview', content: parsed.content };
+	return { source: 'preview', content: parsed.content, warnings: parsed.warnings };
 }

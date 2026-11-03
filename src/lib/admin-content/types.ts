@@ -18,6 +18,32 @@ export interface PublicImage {
 	alt: string;
 }
 
+export const registrationModes = ['unl', 'open'] as const;
+export type RegistrationMode = (typeof registrationModes)[number];
+
+// S8: how people sign up for one event. Added after version 1 shipped: a payload without it is read as null (no
+// registration). The seats left are never published (the landing is static): `capacity` is the total.
+export interface PublicEventRegistration {
+	mode: RegistrationMode;
+	// Seats; null is unlimited.
+	capacity: number | null;
+	// ISO UTC instant after which registration is closed (exclusive); null closes it with the event day.
+	deadline: string | null;
+	// `unl` only: the admin's page where a student signs in with the institutional Google account.
+	url: string | null;
+	// `open` only: where the landing's form POSTs.
+	endpoint: string | null;
+}
+
+// S8: values for a schema.org Event, in Ecuador time (-05:00). Null without an exact day.
+export interface PublicEventStructuredData {
+	// YYYY-MM-DD when the time is unknown, else YYYY-MM-DDTHH:mm:00-05:00.
+	startDate: string;
+	endDate: string | null;
+	location: string | null;
+	registrationUrl: string | null;
+}
+
 export interface PublicEvent {
 	slug: string;
 	title: string;
@@ -35,6 +61,11 @@ export interface PublicEvent {
 	linkLabel: string | null;
 	highlights: string[];
 	photos: PublicImage[];
+	// S8, all three added after version 1 shipped: a payload without them reads as null.
+	registration: PublicEventRegistration | null;
+	// The admin's `.ics` download for this event.
+	calendarUrl: string | null;
+	structuredData: PublicEventStructuredData | null;
 }
 
 export interface PublicFaq {

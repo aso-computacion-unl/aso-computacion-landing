@@ -18,12 +18,12 @@ import Layout from '../layouts/Layout.astro';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 
-const { faq, impact, latestNews, site, socials, sponsors, team, testimonials } = getContent(
+const { faq, impact, latestNews, site, socials, sponsors, team, testimonials, timeline } = getContent(
 	toLocale(Astro.currentLocale),
 );
 ---
 
-<Layout title={`${site.name} · ${site.tagline}`} description={site.description}>
+<Layout title={`${site.name} · ${site.tagline}`} description={site.description} events={timeline}>
 	<SiteHeader />
 	<main id="contenido">
 		<Hero />

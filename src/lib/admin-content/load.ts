@@ -12,10 +12,11 @@ export interface LoadOptions {
 }
 
 export type LoadedContent =
-	| { source: 'api'; content: PublicContent }
-	| { source: 'fallback'; content: PublicContent; reason: string }
+	// `warnings`: what the payload asked for that the landing refused (see ParseOptions.adminOrigin); printed by the build.
+	| { source: 'api'; content: PublicContent; warnings?: string[] }
+	| { source: 'fallback'; content: PublicContent; reason: string; warnings?: string[] }
 	// A preview build (see preview.ts): drafts and scheduled content, never public, never a fallback.
-	| { source: 'preview'; content: PublicContent };
+	| { source: 'preview'; content: PublicContent; warnings?: string[] };
 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 
@@ -84,7 +85,7 @@ export async function loadPublicContent(options: LoadOptions): Promise<LoadedCon
 		return useFallback(describe(error));
 	}
 
-	const parsed = parsePublicContent(raw);
+	const parsed = parsePublicContent(raw, { adminOrigin: new URL(target).origin });
 	if (!parsed.ok) return useFallback(`the response was rejected (${parsed.reason})`);
-	return { source: 'api', content: parsed.content };
+	return { source: 'api', content: parsed.content, warnings: parsed.warnings };
 }
