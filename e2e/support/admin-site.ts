@@ -2,12 +2,19 @@
 // content produces. The committed fallback has no social proof and no preview, by design, so `pnpm build` alone cannot
 // show them. Each build goes to its own directory under node_modules/.cache and never touches dist/.
 import { execFile } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '../..');
+// Astro's CLI from this project's install, run with the current Node binary: no PATH lookup.
+const astroBin = path.join(
+	path.dirname(createRequire(import.meta.url).resolve('astro/package.json')),
+	'bin',
+	'astro.mjs',
+);
 const outputRoot = path.join(root, 'node_modules/.cache/aso-e2e');
 
 export const TOKEN = 'e2e.preview-token.signature';
@@ -82,8 +89,8 @@ export function buildSite(name: string, env: Record<string, string>): Promise<Bu
 	const childEnv = { ...process.env, ...Object.fromEntries(CLEARED.map((key) => [key, ''])), ...env };
 	return new Promise((resolve) => {
 		execFile(
-			'pnpm',
-			['exec', 'astro', 'build', '--outDir', outDir],
+			process.execPath,
+			[astroBin, 'build', '--outDir', outDir],
 			{ cwd: root, env: childEnv, maxBuffer: 32 * 1024 * 1024 },
 			(error, stdout, stderr) =>
 				resolve({
