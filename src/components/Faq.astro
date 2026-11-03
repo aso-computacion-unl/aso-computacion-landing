@@ -6,14 +6,19 @@ import SectionHead from './SectionHead.astro';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { faq } = getContent(locale);
+const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 ---
 
-<section id="faq" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32" data-faq>
+<section id="faq" class="deep bg-navy-deep py-section" data-faq>
 	<div class="wrap">
-		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo} />
+		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo}>
+			<p class="lead faq-forum">
+				{t('faq.forumBefore')} <a href="#foro">{t('faq.forumLink')}</a>.
+			</p>
+		</SectionHead>
 
-		{/* Static fallback and the single source of the terminal: `ui.ts` reads these entries and swaps in the terminal. */}
-		<div class="faq-list mt-12 lg:mt-16" data-faq-static>
+		{/* Static fallback and the single source of the questions: `ui.ts` reads these entries and swaps in the prompt. */}
+		<div class="faq-list mt-head" data-faq-static>
 			{faq.items.map((item) => (
 				<details class="faq-item" name="faq" data-faq-entry data-topic={item.topic}>
 					<summary>
@@ -37,76 +42,71 @@ const { faq } = getContent(locale);
 			))}
 		</div>
 
-		<div class="faq-term mt-12 lg:mt-16" data-faq-term hidden>
-			<div class="term-window faq-guide-window">
-				<div class="term-titlebar">
-					<span class="term-dots" aria-hidden="true">
-						<span></span>
-						<span></span>
-						<span></span>
+		<div class="faq-term mt-head" data-faq-term hidden>
+			<form class="faq-prompt" data-faq-form>
+				<label class="faq-prompt-sign" for="faq-input">
+					aso@unl:~$<span class="sr-only"> {t('faq.prompt')}</span>
+				</label>
+				<input
+					id="faq-input"
+					class="faq-input"
+					data-faq-input
+					type="text"
+					autocomplete="off"
+					autocapitalize="off"
+					spellcheck="false"
+					enterkeyhint="send"
+					placeholder={placeholder}
+				/>
+				<button type="submit" class="btn btn-primary faq-run">
+					<span class="btn-face">
+						<span>{t('faq.run')}</span>
+						<span class="btn-glyph" aria-hidden="true">
+							→
+						</span>
 					</span>
-					<span class="term-title">{t('faq.termTitle')}</span>
-				</div>
-				<ul class="faq-guide" role="list">
-					{faq.items.map((item) => (
+				</button>
+			</form>
+			<p class="faq-hint">
+				<code>help</code> · <code>git help &lt;{t('faq.topicWord')}&gt;</code> · <code>clear</code> · {t('faq.repeat')}
+			</p>
+
+			{/* The answer opens here as a manual page; the shell in `ui.ts` fills it and shows it. */}
+			<div class="faq-man" data-faq-man role="region" aria-live="polite" aria-label={t('faq.page')} hidden></div>
+
+			<ul class="faq-cards" aria-label={t('faq.topics')}>
+				{faq.items.map((item) => (
+					<li>
+						<button type="button" class="faq-card" data-faq-run={`git help ${item.topic}`}>
+							<span class="faq-card-cmd">
+								git help <span class="slug">{item.topic}</span>
+							</span>
+							<span class="faq-card-q">{item.q}</span>
+						</button>
+					</li>
+				))}
+				{
+					/* Free commands: the shell reads their name, description and output from these cards (they exist only with the prompt). */
+					faq.commands.map((command) => (
 						<li>
-							<button type="button" class="faq-guide-row" data-faq-run={`git help ${item.topic}`}>
-								<span class="faq-guide-cmd">❯ git help {item.topic}</span>
-								<span class="faq-guide-q">{item.q}</span>
+							<button
+								type="button"
+								class="faq-card is-free"
+								data-faq-run={command.name}
+								data-faq-command
+								data-description={command.description}
+								data-output={command.output}
+							>
+								<span class="faq-card-tag">{t('faq.free')}</span>
+								<span class="faq-card-q">{command.description}</span>
+								<span class="faq-card-cmd">
+									<span class="slug">{command.name}</span>
+								</span>
 							</button>
 						</li>
-					))}
-					{
-						/* Free commands: the shell reads their name, description and output from these rows (they exist only in the terminal). */
-						faq.commands.map((command) => (
-							<li>
-								<button
-									type="button"
-									class="faq-guide-row"
-									data-faq-run={command.name}
-									data-faq-command
-									data-description={command.description}
-									data-output={command.output}
-								>
-									<span class="faq-guide-cmd">❯ {command.name}</span>
-									<span class="faq-guide-q">{command.description}</span>
-								</button>
-							</li>
-						))
-					}
-				</ul>
-				<p class="faq-guide-hint">
-					{t('faq.hint')} <code>help</code>, <code>git help &lt;{t('faq.topicWord')}&gt;</code>, <code>clear</code>
-				</p>
-			</div>
-
-			<div class="term-window faq-shell-window" data-faq-shell>
-				<div class="term-titlebar">
-					<span class="term-dots" aria-hidden="true">
-						<span></span>
-						<span></span>
-						<span></span>
-					</span>
-					<span class="term-title">aso@unl: ~/faq</span>
-				</div>
-				<div class="faq-out" data-faq-out role="log" aria-live="polite" aria-label={t('faq.log')}></div>
-				<form class="faq-prompt" data-faq-form>
-					<label class="faq-prompt-sign" for="faq-input">
-						aso@unl:~$<span class="sr-only">{t('faq.promptHint')}</span>
-					</label>
-					<input
-						id="faq-input"
-						class="faq-input"
-						data-faq-input
-						type="text"
-						autocomplete="off"
-						autocapitalize="off"
-						spellcheck="false"
-						enterkeyhint="send"
-						placeholder={t('faq.placeholder')}
-					/>
-				</form>
-			</div>
+					))
+				}
+			</ul>
 		</div>
 	</div>
 </section>

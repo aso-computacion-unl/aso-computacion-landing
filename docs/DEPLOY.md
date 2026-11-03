@@ -29,7 +29,10 @@ previews should read the admin too):
 | `PRODUCTION_BRANCH` | Optional. The branch whose builds are production builds (default `main`). Set it only if production deploys from another branch. |
 | `ALLOW_CONTENT_FALLBACK` | Emergency only. `1` lets a production build ship the fallback/demo content with a warning instead of failing. Leave unset. |
 | `PUBLIC_CF_BEACON_TOKEN` | Optional. Token of the site in Cloudflare Web Analytics (Analytics & Logs → Web Analytics → the site's snippet). The build then adds the cookie-free beacon; unset, it adds nothing. |
-| `PUBLIC_TURNSTILE_SITE_KEY` | Optional until an event uses the open registration form. The **public** site key of the Cloudflare Turnstile widget (see [Event registration](#event-registration)). Unset, those events show no form and the build prints a warning. |
+
+The landing needs no Turnstile variable: `PUBLIC_TURNSTILE_SITE_KEY` is not read any more, so delete it from the Pages project
+if it is still there (it does no harm, it is ignored). The Turnstile keys live in the admin (see
+[Event registration](#event-registration)).
 
 Instead of the variable you can switch on Web Analytics in the Pages project settings, which injects the beacon
 automatically. Do one or the other: with both, visits are counted twice.
@@ -163,20 +166,42 @@ day, so a scheduled item can show up to about a day late unless a rebuild is tri
 
 ## Event registration
 
-Each event chooses in the admin how people sign up (none, with a UNL Google account, or an open form). What the landing needs:
+Each event chooses in the admin how people sign up (none, with a UNL Google account, or an open form). **Signing up
+happens on the admin's event page, `<admin>/foro/eventos/<slug>`**, for both modes: the landing has no form, no
+Turnstile widget and sends nothing a person types. It does two things:
 
-- **UNL account**: nothing. The card links to the admin's page (`/foro/eventos/<slug>`), where the student signs in.
-- **Open form**: a Cloudflare Turnstile widget.
-  1. Cloudflare dashboard → **Turnstile → Add widget**. Hostnames: the landing's (`aso-computacion-landing.pages.dev`, or the custom domain once there is one) and `localhost` for development. Mode: *Managed*.
-  2. Put the **site key** in this project as `PUBLIC_TURNSTILE_SITE_KEY` (public, it ends up in the page) and the **secret key** in the admin as `TURNSTILE_SECRET_KEY`.
-  3. In the admin, `PUBLIC_CORS_ORIGINS` must list the landing's origin (the form's `POST` is a cross-origin request), and `AUTH_URL` must be set (the public API builds the endpoint and calendar URLs from it; they are `null` otherwise and the card shows nothing).
-  4. Rebuild: the key is baked into the page at build time.
-  5. The registration, calendar and UNL links the admin sends must be on the **same origin as `ADMIN_CONTENT_URL`** (that is what `AUTH_URL` is in the admin). Links on another origin are left out and the build prints `[registration] … is not on the admin origin … and was left out.` If registration vanishes after a deploy, check that warning and `AUTH_URL`.
-- Without `PUBLIC_TURNSTILE_SITE_KEY` an open-form event shows **no form** (it would only fail) and the build prints `[registration] PUBLIC_TURNSTILE_SITE_KEY is not set: the open registration form of <slugs> is not shown`. The Event structured data does not offer that registration either. UNL-account events are unaffected.
-- Cloudflare's published test keys work for a local run: site key `1x00000000000000000000AA` (always passes) with the secret `1x0000000000000000000000000000000AA` in the admin. Outside production the admin skips the check when its secret is unset.
-- `public/_headers` sets no `script-src`/`frame-src`, so Turnstile (`https://challenges.cloudflare.com`) loads without changes. If a CSP with those directives is ever added, it must allow that origin for both.
-- The page is static, so a registration that closed after the build (the deadline passed, the event day ended) is closed by the card itself in the browser, and the admin refuses a late one anyway (`closed`). The seats left are not known to the page: the admin answers `full` when there are none.
-- Registrations are personal data kept by the admin (deleted 90 days after the event, see its docs). The landing stores nothing and sets no cookie: the form is one `POST` with `credentials: 'omit'`.
+- **Links there.** The "Inscribirme" action of every ticket (and the "Ver el boleto" link of an Actividades card) goes to that
+  page. An event without registration is a free pass: it keeps its calendar link and no action. The forum links go to
+  `<admin>/foro`.
+- **Reads the live seats.** When the page loads, the browser makes one `GET <admin>/api/public/events/seats` (no
+  credentials, 4 s timeout) and the tickets show seats left, "Sin cupos" or "Inscripciones cerradas". The endpoint is
+  public and read-only (counts and slugs, no personal data) and the admin answers it with open CORS, so it needs **no
+  `PUBLIC_CORS_ORIGINS` entry** for the landing. If it is slow, down or answers something else, nothing changes: the tickets keep the
+  capacity they were built with and the admin stays the authority when someone signs up.
+
+What the admin needs (see its own `docs/DEPLOY.md`, section 4c):
+
+1. `AUTH_URL` set to the admin's public origin: the public API builds the registration and calendar URLs from it. Without it
+   they are `null` and the ticket has no action.
+2. For open-form events, the Cloudflare Turnstile widget (**Turnstile → Add widget**, hostname = the admin's, *Managed*):
+   its **site key** as `TURNSTILE_SITE_KEY` and its **secret key** as `TURNSTILE_SECRET_KEY`, both in the admin. Nothing of
+   Turnstile goes into this project.
+
+Rules on this side:
+
+- **Same-origin rule.** Every link the landing puts on a ticket, a forum button or a calendar entry points to the admin's
+  origin, the one of `ADMIN_CONTENT_URL` (of `ADMIN_PREVIEW_URL` in a preview build), and to nowhere else. A registration,
+  calendar or structured-data link the payload sends on another origin is left out and the build prints
+  `[registration] … is not on the admin origin … and was left out.` With no known origin all of them are left out (and
+  the tickets never ask for seats). If registration vanishes after a deploy, check that warning and the admin's `AUTH_URL`.
+- The event page is a different origin from the landing, so a student leaves the site to sign up. The tickets open it in
+  the same tab; the forum button opens a new one.
+- A registration that closed after the build (the deadline passed) is closed by the ticket itself in the browser, and
+  the admin refuses a late one anyway (`closed`).
+- Registrations are personal data kept by the admin (deleted 90 days after the event, see its docs). The landing
+  stores nothing and sets no cookie.
+- `public/_headers` sets no `script-src`/`frame-src`, so nothing here needs a CSP change: the seats request is a plain
+  `fetch`, and the landing loads no third-party script for registration.
 
 ## Refreshing `fallback.json`
 
@@ -201,10 +226,10 @@ Instagram.
 - [ ] `pnpm build` works locally without any env (fallback path) and with `ADMIN_CONTENT_URL` set.
 - [ ] Cloudflare Pages project created with the settings above (`pnpm build`, `dist`, `NODE_VERSION`).
 - [ ] `ADMIN_CONTENT_URL` set in Cloudflare; the first build log has **no** `[content-gate]` line other than the join copy note.
-- [ ] Landing origin added to the admin's `PUBLIC_CORS_ORIGINS` if anything fetches it from the browser.
+- [ ] Nothing to add to the admin's `PUBLIC_CORS_ORIGINS` for the landing: the content is read at build time and the seats endpoint answers any origin.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
 - [ ] Daily rebuild run once by hand (Actions → Daily rebuild) and a build appears in Cloudflare.
-- [ ] Optional, registration: `PUBLIC_TURNSTILE_SITE_KEY` set, the landing's origin in the admin's `PUBLIC_CORS_ORIGINS`, and an event with the open form accepts a test registration (which an admin can then delete).
+- [ ] Optional, registration: an event with registration shows its ticket with seats left (the seats request in the browser answers 200), and "Inscribirme" opens `<admin>/foro/eventos/<slug>` on the admin's origin. The admin has `AUTH_URL` and, for open-form events, the Turnstile keys.
 - [ ] Optional, preview: the preview project (if any) is behind Cloudflare Access, and a build with an expired token fails with `HTTP 401` instead of publishing.
 - [ ] Break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the `[content-gate] WARNING`. On the production branch the same break fails the build and the previous deployment stays live.

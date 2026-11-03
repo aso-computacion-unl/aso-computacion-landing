@@ -14,11 +14,11 @@ const t = useTranslations(toLocale(Astro.currentLocale));
 ---
 
 {sponsors.length > 0 && (
-	<section id="aliados" class="deep bg-navy-deep py-16 sm:py-24 lg:py-32">
+	<section id="aliados" class="deep bg-navy-deep py-section">
 		<div class="wrap">
 			<SectionHead eyebrow="$ git remote add allies" title={t('sponsors.title')} lead={t('sponsors.lead')} />
 
-			<ul class="allies mt-12 lg:mt-16" aria-label={t('sponsors.list')}>
+			<ul class="allies mt-head" aria-label={t('sponsors.list')}>
 				{sponsors.map((sponsor) => {
 					const logo = (
 						<Photo

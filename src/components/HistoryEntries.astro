@@ -1,0 +1,58 @@
+---
+import { getContent } from '../data/content';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+import Commit from './Commit.astro';
+import { shortHash } from './shortHash';
+
+type Entry = ReturnType<typeof getContent>['timeline'][number];
+
+// One list of the activity graph's history: its commits, and under a merge the feature branch it brings in. `last` marks
+// the list that ends on the root commit, where the main rail stops.
+interface Props {
+	entries: Entry[];
+	last?: boolean;
+}
+
+const { entries, last = false } = Astro.props;
+const t = useTranslations(toLocale(Astro.currentLocale));
+---
+
+<ol>
+	{entries.map((entry, index) => (
+		<Commit entry={entry} dense last={last && index === entries.length - 1}>
+			{entry.branch && (
+				<div class="branch">
+					<div class="bend">
+						<svg viewBox="0 0 56 48" aria-hidden="true">
+							<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
+						</svg>
+						<p class="px-3">
+							<span class="tag">{entry.branch.name}</span>
+						</p>
+					</div>
+					<span class="rail rail-feat" data-rail data-rail-scrub></span>
+					<ol aria-label={t('activities.branch', { title: entry.title })}>
+						{entry.branch.commits.map((sub) => (
+							<li class="commit">
+								<span class="node" data-node aria-hidden="true" />
+								<span class="link" data-link aria-hidden="true" />
+								<div class="card" data-card>
+									<h4 class="font-semibold leading-6 text-ink">{sub.title}</h4>
+									<p class="ref" aria-hidden="true">
+										{shortHash(`${entry.id}/${sub.id}`)}
+									</p>
+								</div>
+							</li>
+						))}
+					</ol>
+					<div class="bend">
+						<svg viewBox="0 0 56 48" aria-hidden="true">
+							<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
+						</svg>
+					</div>
+				</div>
+			)}
+		</Commit>
+	))}
+</ol>

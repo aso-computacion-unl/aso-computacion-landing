@@ -1,4 +1,5 @@
-// Command logic of the FAQ terminal. Pure (no DOM) so it can be tested; `ui.ts` wires it to the page.
+// Command logic of the FAQ prompt. Pure (no DOM) so it can be tested; `ui.ts` wires it to the page. A command resolves to
+// one of a few outcomes (`resolve`), shown either as terminal lines (`runFaqCommand`) or as a manual page (`manualFor`).
 
 export type FaqEntry = { topic: string; q: string; a: string };
 
@@ -21,6 +22,7 @@ const MESSAGES = {
 		didYouMean: (topic: string) => ` ¿Quisiste decir 'git help ${topic}'?`,
 		didYouMeanCommand: (name: string) => ` ¿Quisiste decir '${name}'?`,
 		typeHelp: " Escribe 'help' para ver los temas.",
+		topicOf: 'tema de la ASO',
 	},
 	en: {
 		help: 'Available topics. Type one or tap it in the list:',
@@ -29,6 +31,7 @@ const MESSAGES = {
 		didYouMean: (topic: string) => ` Did you mean 'git help ${topic}'?`,
 		didYouMeanCommand: (name: string) => ` Did you mean '${name}'?`,
 		typeHelp: " Type 'help' to see the topics.",
+		topicOf: 'ASO topic',
 	},
 };
 
@@ -83,32 +86,34 @@ export const helpLines = (
 	...commands.map((command) => ({ tone: 'topic' as const, text: command.name, note: command.description })),
 ];
 
-export const runFaqCommand = (
+type Resolved =
+	| { kind: 'empty' }
+	| { kind: 'clear' }
+	| { kind: 'help' }
+	| { kind: 'topic'; item: FaqEntry }
+	| { kind: 'free'; entry: FaqCommandEntry }
+	| { kind: 'unknown'; text: string };
+
+// The one place that decides what a typed command means: clear, help, a topic (bare or `git help <topic>`), a free command
+// or nothing known (with the message and the closest name as a hint).
+const resolve = (
 	input: string,
 	items: readonly FaqEntry[],
-	locale: FaqLocale = 'es',
-	commands: readonly FaqCommandEntry[] = [],
-): FaqResult => {
+	locale: FaqLocale,
+	commands: readonly FaqCommandEntry[],
+): Resolved => {
 	const m = MESSAGES[locale];
 	const command = normalize(input);
-	if (command === '') return { kind: 'lines', lines: [] };
+	if (command === '') return { kind: 'empty' };
 	if (command === 'clear') return { kind: 'clear' };
-	if (HELP_WORDS.has(command)) return { kind: 'lines', lines: helpLines(items, locale, commands) };
+	if (HELP_WORDS.has(command)) return { kind: 'help' };
 
 	const asked = command.startsWith('git help ') ? command.slice('git help '.length) : command;
 	const item = items.find((entry) => entry.topic === asked);
-	if (item) {
-		return {
-			kind: 'lines',
-			lines: [
-				{ tone: 'question', text: item.q },
-				{ tone: 'answer', text: item.a },
-			],
-		};
-	}
+	if (item) return { kind: 'topic', item };
 
-	const free = commands.find((entry) => entry.name === command);
-	if (free) return { kind: 'lines', lines: [{ tone: 'answer', text: free.output }] };
+	const entry = commands.find((free) => free.name === command);
+	if (entry) return { kind: 'free', entry };
 
 	const suggestion = closestName(asked, items, commands);
 	const head = command.startsWith('git help ') ? m.noTopic(asked) : m.notFound(input.trim());
@@ -117,8 +122,109 @@ export const runFaqCommand = (
 			? m.didYouMeanCommand(suggestion.name)
 			: m.didYouMean(suggestion.name)
 		: m.typeHelp;
-	const text = head + hint;
-	return { kind: 'lines', lines: [{ tone: 'error', text }] };
+	return { kind: 'unknown', text: head + hint };
+};
+
+export const runFaqCommand = (
+	input: string,
+	items: readonly FaqEntry[],
+	locale: FaqLocale = 'es',
+	commands: readonly FaqCommandEntry[] = [],
+): FaqResult => {
+	const result = resolve(input, items, locale, commands);
+	switch (result.kind) {
+		case 'empty':
+			return { kind: 'lines', lines: [] };
+		case 'clear':
+			return { kind: 'clear' };
+		case 'help':
+			return { kind: 'lines', lines: helpLines(items, locale, commands) };
+		case 'topic':
+			return {
+				kind: 'lines',
+				lines: [
+					{ tone: 'question', text: result.item.q },
+					{ tone: 'answer', text: result.item.a },
+				],
+			};
+		case 'free':
+			return { kind: 'lines', lines: [{ tone: 'answer', text: result.entry.output }] };
+		case 'unknown':
+			return { kind: 'lines', lines: [{ tone: 'error', text: result.text }] };
+	}
+};
+
+// A section of a manual page; the page layer decides the label of each kind ("Nombre", "Pregunta", ...).
+export type ManualSection =
+	| { kind: 'name' | 'question' | 'answer' | 'output' | 'error'; text: string }
+	| { kind: 'topics'; rows: { command: string; note: string }[] };
+
+// What the prompt shows for a command, as a manual page: a title like `GIT-HELP-COSTO(1)`, the command that is open (so the
+// matching card can be marked) and the sections.
+export type ManualPage = { title: string; current: string; sections: ManualSection[] };
+
+export type ManualResult = { kind: 'none' } | { kind: 'clear' } | { kind: 'page'; page: ManualPage };
+
+export const manualFor = (
+	input: string,
+	items: readonly FaqEntry[],
+	locale: FaqLocale = 'es',
+	commands: readonly FaqCommandEntry[] = [],
+): ManualResult => {
+	const result = resolve(input, items, locale, commands);
+	switch (result.kind) {
+		case 'empty':
+			return { kind: 'none' };
+		case 'clear':
+			return { kind: 'clear' };
+		case 'help':
+			return {
+				kind: 'page',
+				page: {
+					title: 'GIT-HELP(1)',
+					current: '',
+					sections: [
+						{
+							kind: 'topics',
+							rows: [
+								...items.map((item) => ({ command: `git help ${item.topic}`, note: item.q })),
+								...commands.map((command) => ({ command: command.name, note: command.description })),
+							],
+						},
+					],
+				},
+			};
+		case 'topic':
+			return {
+				kind: 'page',
+				page: {
+					title: `GIT-HELP-${result.item.topic.toUpperCase()}(1)`,
+					current: `git help ${result.item.topic}`,
+					sections: [
+						{ kind: 'name', text: `git help ${result.item.topic} — ${MESSAGES[locale].topicOf}` },
+						{ kind: 'question', text: result.item.q },
+						{ kind: 'answer', text: result.item.a },
+					],
+				},
+			};
+		case 'free':
+			return {
+				kind: 'page',
+				page: {
+					title: `${result.entry.name.toUpperCase()}(1)`,
+					current: result.entry.name,
+					sections: [
+						{ kind: 'name', text: `${result.entry.name} — ${result.entry.description}` },
+						{ kind: 'output', text: result.entry.output },
+					],
+				},
+			};
+		case 'unknown':
+			return {
+				kind: 'page',
+				page: { title: 'ERROR', current: '', sections: [{ kind: 'error', text: result.text }] },
+			};
+	}
 };
 
 export const completeFaqCommand = (

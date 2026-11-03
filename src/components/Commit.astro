@@ -1,11 +1,11 @@
 ---
-import EventRegistration from './EventRegistration.astro';
 import Photo from './Photo.astro';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { metaLabel, useTranslations } from '../i18n/ui';
 import type { TimelineKind } from '../lib/admin-content/model';
 import { eventAnchor } from '../lib/seo/events';
+import { ticketAnchor, ticketMode } from '../lib/registration/tickets';
 import { shortHash } from './shortHash';
 
 type Entry = ReturnType<typeof getContent>['timeline'][number];
@@ -14,9 +14,11 @@ interface Props {
 	entry: Entry;
 	last?: boolean;
 	compact?: boolean;
+	// The activity graph's tighter card: less padding, no hash line, the links in one row.
+	dense?: boolean;
 }
 
-const { entry, last = false, compact = false } = Astro.props;
+const { entry, last = false, compact = false, dense = false } = Astro.props;
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { nextEvent } = getContent(locale);
@@ -45,7 +47,12 @@ const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
-const hasRegistration = !compact && Boolean(entry.registration || entry.calendarHref);
+// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity has no ticket to point to.
+const mode = entry.kind === 'upcoming' ? ticketMode(entry) : undefined;
+const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
+const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
+// The hash line is decoration (aria-hidden, derived from the id): a dense card leaves it out.
+const showRef = !dense && Boolean(hash || deco);
 ---
 
 <li
@@ -60,7 +67,10 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 		aria-hidden="true"
 	></span>
 	<span class="link" data-link aria-hidden="true"></span>
-	<div class:list={['card', 'card-row', { 'has-reg': hasRegistration }]} data-card={compact ? undefined : ''}>
+	<div
+		class:list={['card', 'card-row', { 'has-reg': hasRegistration, 'card-dense': dense }]}
+		data-card={compact ? undefined : ''}
+	>
 		{isNext && (
 			<span class="sticker" style="top:-0.75rem;right:1.25rem" aria-hidden="true">
 				{t('commit.new')}
@@ -68,7 +78,7 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 		)}
 		<div class="card-main">
 			{entry.stamp && (
-				<p class="leading-none">
+				<p class="stamp-line leading-none">
 					<span class:list={['stamp', { 'stamp-past': !upcoming }]}>{entry.stamp}</span>
 					{entry.demo && (
 						<span class="demo-tag" title={t('demo.title')}>
@@ -77,13 +87,18 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 					)}
 				</p>
 			)}
-			<h3 class="mt-3 font-display text-lg leading-snug text-ink md:text-xl xl:text-2xl">{entry.title}</h3>
+			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
 			{entry.msg && <p class="msg">{entry.msg}</p>}
-			{!compact && entry.description && <p class="mt-2 max-w-[60ch] text-mist">{entry.description}</p>}
+			{!compact && entry.description && (
+				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
+			)}
 			{!compact && entry.href && (
 				<a
 					href={entry.href}
-					class="mt-3 inline-block text-sm font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink"
+					class:list={[
+						'inline-flex min-h-11 items-center text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
+						{ 'mt-1': !dense },
+					]}
 					target={external ? '_blank' : undefined}
 					rel={external ? 'me noopener' : undefined}
 				>
@@ -91,7 +106,7 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 					{external && <span class="sr-only"> {t('newTab')}</span>}
 				</a>
 			)}
-			{(hash || deco) && (
+			{showRef && (
 				<p class="ref" aria-hidden="true">
 					{hash}
 					{deco && <span class:list={['ref-deco', { 'ml-2': hash }]}>{deco}</span>}
@@ -108,7 +123,24 @@ const hasRegistration = !compact && Boolean(entry.registration || entry.calendar
 				))}
 			</dl>
 		)}
-		{hasRegistration && <EventRegistration entry={entry} />}
+		{hasRegistration && (
+			<div class="reg">
+				{ticketLink && (
+					<a class="reg-ticket" href={ticketLink}>
+						{t('ticket.link')}
+						<span class="sr-only">: {entry.title}</span>
+						<span aria-hidden="true"> →</span>
+					</a>
+				)}
+				{entry.calendarHref && (
+					<a class="reg-calendar" href={entry.calendarHref}>
+						{t('calendar.add')}
+						<span class="sr-only">: {entry.title}</span>
+						<span aria-hidden="true"> · .ics</span>
+					</a>
+				)}
+			</div>
+		)}
 		{showPhoto && entry.image && (
 			<div class="duo photo">
 				<Photo

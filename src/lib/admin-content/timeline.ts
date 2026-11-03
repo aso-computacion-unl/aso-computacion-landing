@@ -3,6 +3,7 @@ import type { EntryRegistration, EntrySchema, TimelineEntry, TimelineKind } from
 import { slugify, toPhoto, type MapContext } from './map';
 import type { DatePrecision, PublicEvent, PublicEventRegistration, PublicEventStructuredData } from './types';
 import type { Locale } from '../../i18n/locales';
+import { adminOriginOf, eventUrl } from './forum';
 
 const TIME_ZONE = 'America/Guayaquil';
 
@@ -60,10 +61,14 @@ const branchIds = (highlights: readonly string[]) => {
 	});
 };
 
-// A registration the card can act on: `unl` needs the admin's page, `open` needs the endpoint to post to.
-const toEntryRegistration = (registration: PublicEventRegistration | null): EntryRegistration | undefined => {
+// A registration the card can act on. Both modes sign up on the admin's event page; the payload's own links are only
+// where that origin is read from (they were already checked to live on it), because the `open` mode sends no page URL.
+const toEntryRegistration = (
+	registration: PublicEventRegistration | null,
+	slug: string,
+): EntryRegistration | undefined => {
 	if (!registration) return undefined;
-	const href = registration.mode === 'unl' ? registration.url : registration.endpoint;
+	const href = eventUrl(adminOriginOf(registration.url ?? registration.endpoint ?? undefined), slug);
 	if (!href) return undefined;
 	return {
 		mode: registration.mode,
@@ -87,7 +92,7 @@ export const toTimelineEntry = (event: PublicEvent, ctx: MapContext): TimelineEn
 	const kind = eventKind(event, ctx.today);
 	const photos = event.photos.map((photo) => toPhoto(photo, ctx));
 	// Signing up, the calendar file and the schema values only make sense before the event is over.
-	const registration = kind === 'upcoming' ? toEntryRegistration(event.registration) : undefined;
+	const registration = kind === 'upcoming' ? toEntryRegistration(event.registration, event.slug) : undefined;
 	const schema = kind === 'upcoming' ? toEntrySchema(event.structuredData) : undefined;
 	const meta = {
 		...(event.hora ? { hora: event.hora } : {}),

@@ -1,0 +1,33 @@
+---
+// The "languages" moment of Inscripciones: the association's line written in five syntaxes, typed in one after another
+// in a small code window (src/scripts/languages.ts; the first one is drawn complete, which is also what shows without
+// JS or with reduced motion). Decoration, so the window is one image for assistive technology.
+import { motto, snippets } from '../data/site';
+import { toLocale } from '../i18n/locales';
+import { useTranslations } from '../i18n/ui';
+
+const t = useTranslations(toLocale(Astro.currentLocale));
+const length = (parts: (typeof snippets)[number]['parts']) => parts.reduce((sum, [, text]) => sum + text.length, 0);
+---
+
+<figure class="lang" data-lang role="img" aria-label={t('moment.languages', { motto })}>
+	<div class="lang-stack" aria-hidden="true">
+		{snippets.map((snippet, index) => (
+			<div class:list={['lg', { on: index === 0, st: index === 0 }]}>
+				<p class="lg-h">
+					<b>{snippet.file}</b>
+					<span>{snippet.name}</span>
+				</p>
+				<p class="lg-c" style={`--n:${length(snippet.parts)}`}>
+					<code>{snippet.parts.map(([kind, text]) => (kind === 'p' ? text : <span class={kind}>{text}</span>))}</code>
+					<i class="cur" />
+				</p>
+			</div>
+		))}
+	</div>
+	<p class="lang-dots" data-lang-dots aria-hidden="true">
+		{snippets.map((_, index) => (
+			<i class:list={{ on: index === 0 }} />
+		))}
+	</p>
+</figure>

@@ -14,7 +14,6 @@ const page = {
 	inLanguage: 'es',
 	pageUrl: 'https://example.test/',
 	fallbackImage: 'https://example.test/og-default.png',
-	openFormShown: true,
 	now: Date.parse('2026-10-22T12:00:00Z'),
 };
 const entry = (overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
@@ -61,31 +60,33 @@ describe('eventsStructuredData', () => {
 		expect(event.offers).toMatchObject({ url: 'https://admin.test/foro/eventos/taller-de-git', price: '0' });
 	});
 
-	it('points the offer of an open registration to the card on the home page', () => {
+	it('points the offer of an open registration to the admin event page too, with its deadline', () => {
 		const [event] = eventsStructuredData(
 			[
 				entry({
-					registration: { mode: 'open', href: 'https://admin.test/api/x', deadline: '2026-11-12T15:00:00.000Z' },
+					registration: {
+						mode: 'open',
+						href: 'https://admin.test/foro/eventos/taller-de-git',
+						deadline: '2026-11-12T15:00:00.000Z',
+					},
 				}),
 			],
 			page,
 		);
 		expect(event.offers).toMatchObject({
-			url: 'https://example.test/#evento-taller-de-git',
+			url: 'https://admin.test/foro/eventos/taller-de-git',
 			validThrough: '2026-11-12T15:00:00.000Z',
 		});
 	});
 
-	it('does not offer an open registration whose form is not shown, but still offers a UNL one', () => {
-		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/api/x' } });
-		expect(eventsStructuredData([open], { ...page, openFormShown: false })[0]).not.toHaveProperty('offers');
-		const unl = entry({ registration: { mode: 'unl', href: 'https://admin.test/foro/eventos/x' } });
-		expect(eventsStructuredData([unl], { ...page, openFormShown: false })[0]).toHaveProperty('offers');
+	it('offers an open registration, which now lives on the admin event page', () => {
+		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/foro/eventos/x' } });
+		expect(eventsStructuredData([open], page)[0]).toHaveProperty('offers.url', 'https://admin.test/foro/eventos/x');
 	});
 
 	it('offers nothing once the deadline passed or when there is no registration', () => {
 		const closed = entry({
-			registration: { mode: 'open', href: 'https://admin.test/api/x', deadline: '2026-10-01T00:00:00.000Z' },
+			registration: { mode: 'open', href: 'https://admin.test/foro/eventos/x', deadline: '2026-10-01T00:00:00.000Z' },
 		});
 		expect(eventsStructuredData([closed], page)[0]).not.toHaveProperty('offers');
 		expect(eventsStructuredData([entry()], page)[0]).not.toHaveProperty('offers');

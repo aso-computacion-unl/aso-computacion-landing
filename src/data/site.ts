@@ -23,13 +23,13 @@ export type { ActivityType, TimelineKind } from '../lib/admin-content/model';
 export const site: SiteCopy = {
 	name: 'ASO Computación',
 	tagline: 'Asociación Estudiantil de la carrera de Computación',
-	// The hero headline, one entry per line so each line can move on its own. `headlineAccent` is the line drawn in sky.
+	// The hero headline, one entry per line. `headlineAccent` is the line drawn with the red underline.
 	headline: ['Entérate de', 'lo que pasa en', 'Computación.'],
 	headlineAccent: 2,
-	// Caption that appears at the end of the hero scroll moment, beside the branch.
+	// Caption that appears at the end of the Actividades opener, beside the branch.
 	heroCue: 'Baja por la rama: este es nuestro historial.',
 	description:
-		'ASO Computación es la asociación estudiantil de la carrera. Aquí está nuestro historial, actividad por actividad.',
+		'Somos la asociación de estudiantes de Computación de la UNL: talleres, charlas y eventos, y tu voz ante la facultad.',
 	// Verbatim from the ASO's own LinkedIn page.
 	about:
 		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
@@ -93,8 +93,10 @@ export const demoPillars: Pillar[] = [
 ];
 
 export const navLinks = [
-	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Inscripciones', href: '#inscripciones' },
 	{ label: 'Novedades', href: '/novedades' },
+	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Foro', href: '#foro' },
 	{ label: 'Nosotros', href: '#nosotros' },
 	{ label: 'Directiva', href: '#directiva' },
 	{ label: 'FAQ', href: '#faq' },
@@ -247,14 +249,6 @@ export const join = {
 			text: 'Lo que aprendiste hace un año le sirve a quien está empezando.',
 		},
 	],
-	newcomer: {
-		title: 'Tu primera idea',
-		lead: 'Al principio nadie conoce a nadie.',
-		steps: [
-			'Es normal: llega a una actividad, saluda y quédate a ver. Todas están abiertas a cualquier estudiante de Computación.',
-			'No necesitas experiencia previa para opinar. Escríbenos por mensaje directo y te contamos cuál es la próxima actividad.',
-		],
-	},
 	cta: 'Envíanos tu idea',
 	// Second collage row: activity-type tags (no photos of people here; board photos live only in Directiva).
 	tags: [
@@ -276,10 +270,194 @@ export const demoCollage: Photo[] = [
 	{ src: colectivoC, alt: '' },
 ];
 
+// The forum section. The forum itself lives on the admin's origin (`/foro`, see ../lib/admin-content/forum.ts); this is
+// its door on the landing: the categories as they exist there, three steps, and a few example threads.
+export type ForumCategoryId = 'general' | 'materias' | 'propuestas';
+export type ForumThreadStatus = 'open' | 'solved' | 'locked';
+
+export interface ForumThread {
+	id: string;
+	status: ForumThreadStatus;
+	title: string;
+	category: ForumCategoryId;
+	// Age as the forum shows it ("hace 2 h"): fixed text, since the page is built ahead of time.
+	when: string;
+	replies: number;
+}
+
+// The "languages" moment of Inscripciones: the association's own line (the message of the "Bienvenida" commit) written in
+// five syntaxes. Code is code, so it is the same on the English page. Each part says how to colour it: keyword, string
+// or plain punctuation.
+export const motto = 'aquí nadie empieza solo';
+
+export type CodeKind = 'k' | 's' | 'p';
+export interface Snippet {
+	file: string;
+	name: string;
+	parts: readonly (readonly [CodeKind, string])[];
+}
+
+export const snippets: readonly Snippet[] = [
+	{
+		file: 'hola.py',
+		name: 'Python',
+		parts: [
+			['k', 'print'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ')'],
+		],
+	},
+	{
+		file: 'hola.js',
+		name: 'JavaScript',
+		parts: [
+			['k', 'console'],
+			['p', '.'],
+			['k', 'log'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.c',
+		name: 'C',
+		parts: [
+			['k', 'printf'],
+			['p', '('],
+			['s', `"${motto}\\n"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.rs',
+		name: 'Rust',
+		parts: [
+			['k', 'println!'],
+			['p', '('],
+			['s', `"${motto}"`],
+			['p', ');'],
+		],
+	},
+	{
+		file: 'hola.hs',
+		name: 'Haskell',
+		parts: [
+			['k', 'putStrLn'],
+			['p', ' '],
+			['s', `"${motto}"`],
+		],
+	},
+];
+
+// A line of the example activity feed: what is happening in the forum "right now". Invented, like the threads.
+export type ForumFeedKind = 'reply' | 'thanks' | 'open' | 'solved' | 'join';
+
+export interface ForumFeedLine {
+	// "14:02": fixed text, since the page is built ahead of time.
+	time: string;
+	kind: ForumFeedKind;
+	// The thread it is about, in the forum's own (Spanish) words.
+	topic: string;
+	who?: string;
+	count?: number;
+}
+
+// DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
+// public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
+// feed, or with the board's own words, then drop `demo`.
+export const forum = {
+	demo: true,
+	eyebrow: '$ git log foro --oneline',
+	title: 'El foro de Computación',
+	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL.',
+	// Names and descriptions as the forum has them.
+	categories: [
+		{ id: 'general', name: 'General', description: 'Todo lo que no cabe en otra categoría.' },
+		{ id: 'materias', name: 'Materias', description: 'Dudas de las materias, apuntes y preparación de exámenes.' },
+		{ id: 'propuestas', name: 'Propuestas', description: 'Ideas de talleres, charlas y eventos para la asociación.' },
+	] as { id: ForumCategoryId; name: string; description: string }[],
+	threads: [
+		{
+			id: 'estructuras-de-datos',
+			status: 'open',
+			title: '¿Cómo preparo el examen de Estructuras de Datos?',
+			category: 'materias',
+			when: 'hace 2 h',
+			replies: 6,
+		},
+		{
+			id: 'postgres-docker',
+			status: 'solved',
+			title: 'Error al conectar Postgres desde Docker en el laboratorio',
+			category: 'materias',
+			when: 'hace 5 h',
+			replies: 9,
+		},
+		{
+			id: 'taller-docker',
+			status: 'open',
+			title: 'Propuesta: taller de Docker para primeros ciclos',
+			category: 'propuestas',
+			when: 'ayer',
+			replies: 14,
+		},
+		{
+			id: 'equipo-hackathon',
+			status: 'open',
+			title: 'Busco equipo para el hackathon (backend con Node)',
+			category: 'general',
+			when: 'ayer',
+			replies: 3,
+		},
+		{
+			id: 'electivas',
+			status: 'solved',
+			title: '¿Qué electivas recomiendan para 7.º ciclo?',
+			category: 'general',
+			when: 'hace 3 días',
+			replies: 21,
+		},
+		{
+			id: 'laboratorio-sabados',
+			status: 'locked',
+			title: 'Horario del laboratorio abierto los sábados',
+			category: 'general',
+			when: 'hace 1 semana',
+			replies: 4,
+		},
+	] as ForumThread[],
+	// The feed that scrolls beside the threads: made-up lines in the style of `tail -f`.
+	feed: [
+		{ time: '14:02', kind: 'reply', who: 'María', topic: 'Estructuras de Datos' },
+		{ time: '14:03', kind: 'thanks', count: 1, topic: 'Postgres desde Docker' },
+		{ time: '14:05', kind: 'open', who: 'Diego', topic: '¿Alguien tiene apuntes de Redes?' },
+		{ time: '14:06', kind: 'solved', topic: '¿Qué electivas para 7.º ciclo?' },
+		{ time: '14:08', kind: 'join', who: 'Ana', topic: 'hackathon' },
+		{ time: '14:09', kind: 'thanks', count: 3, topic: 'Taller de Docker' },
+		{ time: '14:11', kind: 'reply', who: 'Luis', topic: 'Busco equipo (Node)' },
+	] as ForumFeedLine[],
+	steps: [
+		{
+			title: 'Pregunta o responde',
+			text: 'Abre un hilo en Materias, Propuestas o General, o responde el de otra persona.',
+		},
+		{
+			title: 'Dile “me sirvió”',
+			text: 'Reacciona a las respuestas útiles para que las vea más gente.',
+		},
+		{
+			title: 'Marca la mejor respuesta',
+			text: 'Quien abrió el hilo la marca y el hilo queda resuelto. La directiva modera y puedes reportar cualquier mensaje.',
+		},
+	],
+};
+
 // Section copy of the FAQ. The items come from the admin; `demoFaqItems` fills the section while the fallback has none.
 export const faqCopy = {
 	title: 'Preguntas frecuentes',
-	lead: 'Lo que más nos preguntan sobre la ASO y sus actividades. Si falta algo, escríbenos por mensaje directo.',
+	lead: 'Escribe un tema o toca una tarjeta: la respuesta se abre aquí mismo, como una página de manual.',
 };
 
 // DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). `topic` is the slug shown as
@@ -342,8 +520,18 @@ export interface LandingCopy {
 	navLinks: typeof navLinks;
 	timelineAnchors: Anchors;
 	join: typeof join;
+	forum: typeof forum;
 	faqCopy: typeof faqCopy;
 }
+
+const enThreadAge: Record<string, string> = {
+	'estructuras-de-datos': '2 h ago',
+	'postgres-docker': '5 h ago',
+	'taller-docker': 'yesterday',
+	'equipo-hackathon': 'yesterday',
+	electivas: '3 days ago',
+	'laboratorio-sabados': '1 week ago',
+};
 
 const enCopy: LandingCopy = {
 	site: {
@@ -353,7 +541,7 @@ const enCopy: LandingCopy = {
 		headlineAccent: 2,
 		heroCue: 'Scroll down the branch: this is our history.',
 		description:
-			'ASO Computación is the student association of the program. Here is our history, activity by activity.',
+			'We are the Computer Science student association at the UNL: workshops, talks and events, and your voice before the faculty.',
 		about:
 			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
 	},
@@ -373,8 +561,10 @@ const enCopy: LandingCopy = {
 		sr: 'We are the Computer Science ASO: students, community and your voice.',
 	},
 	navLinks: [
-		{ label: 'Activities', href: '#actividades' },
+		{ label: 'Sign-ups', href: '#inscripciones' },
 		{ label: 'News', href: '/novedades' },
+		{ label: 'Activities', href: '#actividades' },
+		{ label: 'Forum', href: '#foro' },
 		{ label: 'About', href: '#nosotros' },
 		{ label: 'Board', href: '#directiva' },
 		{ label: 'FAQ', href: '#faq' },
@@ -426,14 +616,6 @@ const enCopy: LandingCopy = {
 				text: 'What you learned a year ago helps someone who is just starting.',
 			},
 		],
-		newcomer: {
-			title: 'Your first idea',
-			lead: 'At first nobody knows anybody.',
-			steps: [
-				'That is normal: come to an activity, say hi and stay to watch. They are all open to any Computer Science student.',
-				'You need no experience to have an opinion. Send us a direct message and we will tell you about the next activity.',
-			],
-		},
 		cta: 'Send us your idea',
 		tags: [
 			'#workshops',
@@ -446,13 +628,34 @@ const enCopy: LandingCopy = {
 			'#learn-by-doing',
 		],
 	},
+	// The categories keep the forum's own names (the forum is in Spanish) and so do the example threads; what is
+	// translated is the landing's words around them.
+	forum: {
+		...forum,
+		title: 'The Computer Science forum',
+		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students.',
+		categories: [
+			{ ...forum.categories[0], description: 'Everything that does not fit another category.' },
+			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
+			{ ...forum.categories[2], description: 'Ideas for workshops, talks and events for the association.' },
+		],
+		threads: forum.threads.map((thread) => ({ ...thread, when: enThreadAge[thread.id] ?? thread.when })),
+		steps: [
+			{ title: 'Ask or answer', text: 'Open a thread in Materias, Propuestas or General, or answer someone else’s.' },
+			{ title: 'Say “it helped”', text: 'React to the useful answers so more people see them.' },
+			{
+				title: 'Mark the best answer',
+				text: 'Whoever opened the thread marks it and the thread is solved. The board moderates and you can report any message.',
+			},
+		],
+	},
 	faqCopy: {
 		title: 'Frequently asked questions',
-		lead: 'What people ask us most about the ASO and its activities. If something is missing, send us a direct message.',
+		lead: 'Type a topic or tap a card: the answer opens right here, like a manual page.',
 	},
 };
 
 export const copy: Record<Locale, LandingCopy> = {
-	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, faqCopy },
+	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
 	en: enCopy,
 };

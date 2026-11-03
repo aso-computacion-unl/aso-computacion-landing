@@ -14,8 +14,6 @@ export interface EventsPage {
 	pageUrl: string;
 	// Absolute share image, for an event that has no remote photo (a crawler cannot read a bundled one).
 	fallbackImage: string;
-	// Whether the open form is rendered (it needs the Turnstile site key). An open registration with no form is not offered.
-	openFormShown: boolean;
 	// `Date.now()` of the build: a registration whose deadline already passed is not offered.
 	now: number;
 }
@@ -26,10 +24,7 @@ export function eventsStructuredData(entries: readonly TimelineEntry[], page: Ev
 	return entries.flatMap((entry) => {
 		if (entry.kind !== 'upcoming' || !entry.schema) return [];
 		const { registration, schema } = entry;
-		const open =
-			registration &&
-			!registrationClosed(registration.deadline, page.now) &&
-			(registration.mode === 'unl' || page.openFormShown);
+		const open = registration && !registrationClosed(registration.deadline, page.now);
 		const image = (entry.gallery ?? []).map(remoteUrl).find((url) => url !== undefined) ?? page.fallbackImage;
 		const url = `${page.pageUrl}#${eventAnchor(entry.id)}`;
 		return [
@@ -45,8 +40,8 @@ export function eventsStructuredData(entries: readonly TimelineEntry[], page: Ev
 				url,
 				registration: open
 					? {
-							// UNL registration happens on the admin's page; the open form is the card itself.
-							url: registration.mode === 'unl' ? (schema.registrationUrl ?? registration.href) : url,
+							// Both modes register on the admin's event page.
+							url: registration.href,
 							deadline: registration.deadline,
 						}
 					: undefined,

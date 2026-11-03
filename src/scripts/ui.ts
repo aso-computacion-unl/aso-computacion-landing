@@ -1,43 +1,24 @@
 import { toLocale } from '../i18n/locales';
-import { typeLabel, useTranslations } from '../i18n/ui';
+import { typeLabel, useTranslations, type UiKey } from '../i18n/ui';
 import {
-	helpLines,
-	runFaqCommand,
+	manualFor,
 	tabFaqCommand,
 	type FaqCommandEntry,
 	type FaqEntry,
-	type FaqLine,
+	type ManualPage,
+	type ManualSection,
 } from './faq-shell';
+import './idle-motion';
+import { initForumFeed } from './forum-feed';
+import { initForumTabs } from './forum-tabs';
+import { initNewsVisor } from './news-visor';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
 const t = useTranslations(locale);
 
-// Small interactions that work with or without motion: countdown, activity filters, board cards on touch.
+// Small interactions that work with or without motion: activity filters, board cards on touch, forum tabs.
 // Every one of them has a complete static fallback in the HTML.
-
-// Countdown: days until the next dated upcoming event, computed in the visitor's local time.
-const countdown = document.querySelector<HTMLElement>('[data-countdown]');
-if (countdown?.dataset.countdown) {
-	const [year, month, day] = countdown.dataset.countdown.split('-').map(Number);
-	const now = new Date();
-	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-	const days = Math.round((new Date(year, month - 1, day).getTime() - today.getTime()) / 86_400_000);
-	const staticView = countdown.querySelector<HTMLElement>('[data-static]');
-	const liveView = countdown.querySelector<HTMLElement>('[data-live]');
-	if (days >= 0 && staticView && liveView) {
-		const label = liveView.querySelector('[data-count-label]');
-		const num = liveView.querySelector('[data-count-num]');
-		const unit = liveView.querySelector('[data-count-unit]');
-		if (label && num && unit) {
-			label.textContent = days === 0 ? t('count.is') : days === 1 ? t('count.one') : t('count.many');
-			num.textContent = days === 0 ? t('count.today') : String(days);
-			unit.textContent = days === 0 ? '' : days === 1 ? t('count.dayOne') : t('count.dayMany');
-			staticView.hidden = true;
-			liveView.hidden = false;
-		}
-	}
-}
 
 // Filters: dim the entries that do not match; the rail stays intact. Entries without a type are never dimmed.
 const filters = document.querySelector<HTMLElement>('[data-filters]');
@@ -56,6 +37,8 @@ if (filters && timeline) {
 			const match = type === 'all' || item.dataset.type === type;
 			item.classList.toggle('is-dim', !match);
 			if (match) shown += 1;
+			// A match in the folded history opens it, so a filter never points at something that cannot be seen.
+			if (match && type !== 'all') item.closest('details')?.setAttribute('open', '');
 		});
 		if (status)
 			status.textContent =
@@ -95,13 +78,30 @@ if (history && rootNode && mainRail) {
 	new ResizeObserver(fitRail).observe(history);
 }
 
-// FAQ terminal: replaces the static <details> list with a small shell (help, git help <tema>, clear, history, Tab).
-// The <details> entries stay the single source of questions and answers, and the fallback without JS.
+// The folded history opens and closes, which moves everything below it: the scroll animations measure again.
+history
+	?.querySelector('[data-history-more]')
+	?.addEventListener('toggle', () => window.dispatchEvent(new Event('aso:relayout')));
+
+// Forum tabs: pick a category and the example threads filter to it (the bar stays hidden without JS, which shows them all).
+const forum = document.querySelector<HTMLElement>('[data-forum]');
+if (forum) initForumTabs(forum, t);
+
+// The forum's example feed scrolls in line by line, except under reduced motion, where it keeps the lines it was drawn with.
+const feed = document.querySelector<HTMLElement>('[data-forum-feed]');
+if (feed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) initForumFeed(feed);
+
+// News terminal: the row under the pointer or focus shows its post in the pane beside it.
+const newsVisor = document.querySelector<HTMLElement>('[data-news-visor]');
+if (newsVisor) initNewsVisor(newsVisor);
+
+// FAQ prompt: replaces the static <details> list with a big prompt (help, git help <tema>, clear, history, Tab), the
+// answer as a manual page and a card per topic. The <details> entries stay the single source of questions and answers,
+// and the fallback without JS.
 const faqSection = document.querySelector<HTMLElement>('[data-faq]');
 const faqStatic = faqSection?.querySelector<HTMLElement>('[data-faq-static]');
 const faqTerm = faqSection?.querySelector<HTMLElement>('[data-faq-term]');
-const faqShell = faqSection?.querySelector<HTMLElement>('[data-faq-shell]');
-const faqOut = faqSection?.querySelector<HTMLElement>('[data-faq-out]');
+const faqMan = faqSection?.querySelector<HTMLElement>('[data-faq-man]');
 const faqForm = faqSection?.querySelector<HTMLFormElement>('[data-faq-form]');
 const faqInput = faqSection?.querySelector<HTMLInputElement>('[data-faq-input]');
 const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLElement>('[data-faq-entry]') ?? []).map(
@@ -111,100 +111,105 @@ const faqEntries: FaqEntry[] = Array.from(faqSection?.querySelectorAll<HTMLEleme
 		a: entry.querySelector('[data-faq-a]')?.textContent?.trim() ?? '',
 	}),
 );
-// Free commands exist only in the guide list, as rows carrying their description and output.
+// Free commands exist only as cards, carrying their description and output.
 const faqCommands: FaqCommandEntry[] = Array.from(
 	faqSection?.querySelectorAll<HTMLElement>('[data-faq-command]') ?? [],
-).map((row) => ({
-	name: row.dataset.faqRun ?? '',
-	description: row.dataset.description ?? '',
-	output: row.dataset.output ?? '',
+).map((card) => ({
+	name: card.dataset.faqRun ?? '',
+	description: card.dataset.description ?? '',
+	output: card.dataset.output ?? '',
 }));
-if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntries.length > 0) {
-	const MAX_LINES = 120;
+if (faqStatic && faqTerm && faqMan && faqForm && faqInput && (faqEntries.length > 0 || faqCommands.length > 0)) {
 	const MAX_HISTORY = 50;
 	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-	const guideRows = Array.from(faqTerm.querySelectorAll<HTMLButtonElement>('.faq-guide-row'));
+	const cards = Array.from(faqTerm.querySelectorAll<HTMLButtonElement>('.faq-card'));
 	const typed: string[] = [];
 	let historyIndex: number | null = null;
 	let draft = '';
 
-	const line = (className: string, text = ''): HTMLDivElement => {
-		const element = document.createElement('div');
-		element.className = `term-line ${className}`;
-		element.textContent = text;
+	const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string) => {
+		const element = document.createElement(tag);
+		element.className = className;
+		if (text !== undefined) element.textContent = text;
 		return element;
 	};
 
-	// Every value goes in through textContent: questions and answers come from the admin.
-	const render = (item: FaqLine): HTMLElement => {
-		if (item.tone !== 'topic') return line(`is-${item.tone}`, item.text);
-		const row = line('is-topic');
-		const run = document.createElement('button');
-		run.type = 'button';
-		run.className = 'term-run';
-		run.dataset.faqRun = item.text;
-		run.textContent = item.text;
-		const note = document.createElement('span');
-		note.className = 'term-note';
-		note.textContent = item.note ?? '';
-		row.append(run, note);
-		return row;
+	const runButton = (command: string, className: string, text = command): HTMLButtonElement => {
+		const button = el('button', className, text);
+		button.type = 'button';
+		button.dataset.faqRun = command;
+		return button;
 	};
 
-	const echo = (command: string): HTMLElement => {
-		const row = line('is-in');
-		const sign = document.createElement('span');
-		sign.className = 'term-sign';
-		sign.textContent = 'aso@unl:~$';
-		row.append(sign, document.createTextNode(` ${command}`));
-		return row;
+	const labels: Record<ManualSection['kind'], UiKey> = {
+		name: 'faq.man.name',
+		question: 'faq.man.question',
+		answer: 'faq.man.answer',
+		output: 'faq.man.output',
+		error: 'faq.man.error',
+		topics: 'faq.man.topics',
 	};
 
-	const append = (nodes: HTMLElement[]) => {
-		faqOut.append(...nodes);
-		while (faqOut.childElementCount > MAX_LINES) faqOut.firstElementChild?.remove();
-		faqOut.scrollTop = faqOut.scrollHeight;
+	// One term/definition pair of the page. Every value goes in through textContent: questions and answers come from the admin.
+	const section = (item: ManualSection): [HTMLElement, HTMLElement] => {
+		const value = el('dd', '');
+		if (item.kind === 'topics') {
+			const list = el('div', 'faq-man-topics');
+			for (const row of item.rows) {
+				const button = runButton(row.command, 'faq-man-topic');
+				button.replaceChildren(el('span', 'faq-man-cmd', row.command), el('span', 'faq-man-note', row.note));
+				list.append(button);
+			}
+			value.append(list);
+		} else {
+			value.append(el(item.kind === 'output' ? 'pre' : 'p', `faq-man-${item.kind}`, item.text));
+		}
+		return [el('dt', '', t(labels[item.kind])), value];
 	};
 
-	const markCurrent = (command: string) => {
-		guideRows.forEach((row) =>
-			row.toggleAttribute('aria-current', row.dataset.faqRun === command.trim().toLowerCase()),
-		);
+	const showPage = (page: ManualPage) => {
+		const top = el('div', 'faq-man-top');
+		const clear = runButton('clear', 'faq-man-clear');
+		clear.setAttribute('aria-label', t('faq.man.clear'));
+		top.append(el('span', '', page.title), clear);
+		const list = el('dl', 'faq-man-sections');
+		for (const item of page.sections) list.append(...section(item));
+		faqMan.replaceChildren(top, list);
+		faqMan.hidden = false;
+		cards.forEach((card) => card.toggleAttribute('aria-current', card.dataset.faqRun === page.current));
+	};
+
+	const clearPage = () => {
+		faqMan.replaceChildren();
+		faqMan.hidden = true;
+		cards.forEach((card) => card.removeAttribute('aria-current'));
 	};
 
 	const run = (command: string) => {
-		const result = runFaqCommand(command, faqEntries, locale, faqCommands);
+		const result = manualFor(command, faqEntries, locale, faqCommands);
+		if (result.kind === 'none') return;
 		if (command.trim() !== '') {
 			typed.push(command.trim());
 			if (typed.length > MAX_HISTORY) typed.shift();
 		}
 		historyIndex = null;
 		faqInput.value = '';
-		markCurrent(command);
-		if (result.kind === 'clear') {
-			faqOut.replaceChildren();
-			return;
-		}
-		append([echo(command.trim()), ...result.lines.map(render)]);
+		if (result.kind === 'clear') clearPage();
+		else showPage(result.page);
 	};
 
-	// The shell may sit below the guide on narrow screens: bring the answer into view after a tap.
+	// A tap on a card can leave the page below the fold on narrow screens: bring it into view.
 	const reveal = () => {
-		const box = faqShell.getBoundingClientRect();
-		if (box.top >= 0 && box.bottom <= window.innerHeight) return;
-		faqShell.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+		const box = faqMan.getBoundingClientRect();
+		if (faqMan.hidden || (box.top >= 0 && box.bottom <= window.innerHeight)) return;
+		faqMan.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 	};
 
 	faqTerm.addEventListener('click', (event) => {
 		const button = (event.target as Element).closest<HTMLButtonElement>('[data-faq-run]');
 		if (!button?.dataset.faqRun) return;
 		run(button.dataset.faqRun);
-		reveal();
-	});
-
-	faqOut.addEventListener('click', (event) => {
-		if ((event.target as Element).closest('button') || window.getSelection()?.toString()) return;
-		faqInput.focus({ preventScroll: true });
+		if (button.closest('.faq-cards')) reveal();
 	});
 
 	faqForm.addEventListener('submit', (event) => {
@@ -232,16 +237,27 @@ if (faqStatic && faqTerm && faqShell && faqOut && faqForm && faqInput && faqEntr
 			return;
 		}
 		if (event.key === 'Tab') {
-			// Only take Tab when there is something to complete, so keyboard users can still tab out of the shell.
+			// Only take Tab when there is something to complete, so keyboard users can still tab out of the prompt.
 			const tab = tabFaqCommand(faqInput.value, faqEntries, faqCommands);
 			if (!tab) return;
 			event.preventDefault();
 			faqInput.value = tab.value;
-			if (tab.options.length > 0) append([line('is-out', tab.options.join('   '))]);
+			if (tab.options.length > 0)
+				showPage({
+					title: 'TAB',
+					current: '',
+					sections: [{ kind: 'topics', rows: tab.options.map((option) => ({ command: option, note: '' })) }],
+				});
 		}
 	});
 
-	append([echo('help'), ...helpLines(faqEntries, locale, faqCommands).map(render)]);
+	// Opens on the first topic (or the list, when there are only free commands), as the user would after typing it.
+	const first = faqEntries[0] ? `git help ${faqEntries[0].topic}` : 'help';
+	const opening = manualFor(first, faqEntries, locale, faqCommands);
+	if (opening.kind === 'page') showPage(opening.page);
 	faqStatic.hidden = true;
 	faqTerm.hidden = false;
 }
+
+// The three moments from the degree (networks, languages, hacking) load only on a page that has one.
+if (document.querySelector('[data-net], [data-lang], [data-decrypt]')) void import('./moments');

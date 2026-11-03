@@ -5,15 +5,19 @@
 import type { ImageMetadata } from 'astro';
 import { locales, type Locale } from '../i18n/locales';
 import { composeSiteContent } from '../lib/admin-content/compose';
+import { adminOriginOf, forumUrl } from '../lib/admin-content/forum';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
-import { openFormWithoutSiteKey } from '../lib/registration/rules';
+import { seatsUrl } from '../lib/registration/seats';
+import { chooseTickets } from '../lib/registration/tickets';
 import fallback from './fallback.json';
 import { demoBoardFun, demoCollage, demoEvents, demoFaqItems, demoPillars, copy } from './site';
 
 // Flip to true once the board approves the join copy and its `demo` flag is gone: production then fails if it returns.
 const STRICT_JOIN = false;
+// Same for the forum section's example threads: flip once they are real (or the board approves them) and `demo` is gone.
+const STRICT_FORUM = false;
 
 // Bundled images the fallback snapshot can point at (`/src/assets/...`), as Astro image metadata.
 const bundled = import.meta.glob<ImageMetadata>('/src/assets/**/*.{jpg,jpeg,png,webp,avif}', {
@@ -30,9 +34,11 @@ const loaded = preview
 	? await loadPreviewContent(preview)
 	: await loadPublicContent({ url: adminUrl, fallback, warn: () => {} });
 
-// Public Cloudflare Turnstile site key (S8): the open registration form needs it to show its widget. Without it the form
-// is not rendered and the build says so (below). The secret half lives in the admin (TURNSTILE_SECRET_KEY).
-export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() || undefined;
+// The forum lives on the admin's origin: the one the content came from (the preview's, in a preview build). Unknown or
+// unsafe, there is no forum link (fail closed, like the registration links), and the tickets never ask for their seats.
+const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
+const forumLink = forumUrl(adminOrigin);
+const seatsLink = seatsUrl(adminOrigin);
 
 // A registration link the payload put on another origin was left out (validate.ts): say which, once per build.
 for (const warning of loaded.warnings ?? []) console.warn(`[registration] ${warning}`);
@@ -64,10 +70,16 @@ function build(locale: Locale) {
 		// True on a preview build: the layout adds the banner and noindex, and the site is never meant to be public.
 		preview: resolved.source === 'preview',
 		site: resolved.site,
-		navLinks: resolved.navLinks,
+		// No ticket to show (nothing upcoming): no link to the section either.
+		navLinks: resolved.navLinks.filter(
+			(link) => link.href !== '#inscripciones' || chooseTickets(resolved.timeline).length > 0,
+		),
 		timeline: resolved.timeline,
 		nextEvent: resolved.nextEvent,
 		pillars: resolved.pillars,
+		forum: { ...landing.forum, url: forumLink },
+		// The admin's public seats endpoint, when its origin is known.
+		seatsUrl: seatsLink,
 		faq: { ...landing.faqCopy, demo: resolved.faqIsDemo, items: resolved.faqItems, commands: resolved.faqCommands },
 		team: resolved.team,
 		socials: resolved.socials,
@@ -92,6 +104,8 @@ function enforceContentGate() {
 		demo: detectDemoContent(locales.map(getContent)),
 		joinDemo: locales.some((locale) => copy[locale].join.demo),
 		strictJoin: STRICT_JOIN,
+		forumDemo: locales.some((locale) => copy[locale].forum.demo),
+		strictForum: STRICT_FORUM,
 	});
 	if (result.status === 'fail') throw new Error(result.message);
 	if (result.status === 'warn') console.warn(result.message);
@@ -108,11 +122,5 @@ export function getContent(locale: Locale = 'es') {
 }
 
 enforceContentGate();
-
-const noSiteKey = openFormWithoutSiteKey(getContent('es').timeline, turnstileSiteKey);
-if (noSiteKey.length > 0)
-	console.warn(
-		`[registration] PUBLIC_TURNSTILE_SITE_KEY is not set: the open registration form of ${noSiteKey.join(', ')} is not shown. See docs/DEPLOY.md.`,
-	);
 
 export type SiteData = ReturnType<typeof getContent>;

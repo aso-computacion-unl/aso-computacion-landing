@@ -1,175 +1,140 @@
 ---
+// The Actividades section. It opens with the scroll moment that used to open the page: the isotype grows, its brackets
+// slide off and its cursor thins into the stem, which lands on the trunk below (src/scripts/motion.ts). The isotype stays
+// on top of the stem as the root commit. The trunk then splits into two sides: what is coming on a dotted lane, what we
+// already did on a solid one (stacked on phones). Without motion the opener is its static end state.
+import IsotypeColor from '../assets/brand/isotype-color.svg';
+import IsotypeWhite from '../assets/brand/isotype-white.svg';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { typeLabel, useTranslations } from '../i18n/ui';
 import { activityTypes } from '../data/site';
-import { shortHash } from './shortHash';
 import Commit from './Commit.astro';
+import HeroMark from './HeroMark.astro';
+import HistoryEntries from './HistoryEntries.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { nextEvent, timeline } = getContent(locale);
+const { site, timeline } = getContent(locale);
 const headIndex = timeline.findIndex((entry) => entry.kind === 'head');
 const planned = timeline.slice(0, headIndex);
 const history = timeline.slice(headIndex);
-const last = history.length - 1;
+// Compact history: HEAD and the latest past entries show; the older ones fold into a disclosure (a plain <details>, so it
+// opens without JS) and the root commit always shows, because the rail ends on it.
+const RECENT_PAST = 1;
+const recent = history.slice(0, 1 + RECENT_PAST);
+const older = history.length > RECENT_PAST + 2 ? history.slice(1 + RECENT_PAST, -1) : [];
+const shown = older.length > 0 ? recent : history.slice(0, -1);
+const root = history.slice(-1);
 const typedCount = (type: string) => timeline.filter((entry) => entry.type === type).length;
 ---
 
-<section id="actividades" class="bg-navy pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-28 lg:pt-32">
-	<div class="wrap grid gap-10 lg:grid-cols-[minmax(20rem,26rem)_minmax(0,1fr)] lg:gap-16">
-		<aside
-			class="lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:self-start lg:overflow-y-auto"
-			aria-label={t('activities.aside')}
-		>
-			<p class="max-w-[34ch] text-lg text-mist">{t('activities.intro')}</p>
-			<p class="mt-2 font-mono text-[0.8125rem] text-sky" aria-hidden="true">
-				$ git log --graph main
-			</p>
+<section id="actividades" class="act lane-vars deep bg-navy-deep" aria-labelledby="actividades-title">
+	<div class="op" data-opener>
+		<div class="op-stage" data-opener-stage>
+			<div class="op-head wrap" data-opener-head>
+				<h2 class="h2-xl" id="actividades-title">
+					{t('activities.title')}
+				</h2>
+				<p class="lead">{t('activities.intro')}</p>
+			</div>
+			<div class="op-mark" data-opener-mark aria-hidden="true">
+				<HeroMark />
+			</div>
+			<div class="op-end">
+				<span class="op-stem" data-opener-stem aria-hidden="true"></span>
+				<span class="op-emblem" data-opener-emblem aria-hidden="true">
+					<IsotypeWhite class="theme-dark-only" />
+					<IsotypeColor class="theme-light-only" />
+				</span>
+				<div class="op-cue" data-opener-cue aria-hidden="true">
+					<p class="font-mono text-label text-sky">$ git log --graph main</p>
+					<p class="op-cue-title">{site.heroCue}</p>
+				</div>
+			</div>
+		</div>
+	</div>
 
-			{nextEvent && (
-				<div class="panel mt-8 p-4 sm:p-6" data-countdown={nextEvent.date}>
-					<p class="leading-none">
-						<span class="stamp" style="margin-left:0">
-							{t('activities.next')}
-						</span>
-						{nextEvent.demo && (
-							<span class="demo-tag" title={t('demo.title')}>
-								demo
-							</span>
+	<div class="sp pb-section">
+		<div class="wrap">
+			<div class="sp-top">
+				<span class="trunk" data-trunk aria-hidden="true"></span>
+				<div class="sp-controls">
+					<div class="js-only sp-filters" data-filters>
+						<p class="font-mono text-label text-sky" aria-hidden="true">
+							git log --grep=
+						</p>
+						<div class="mt-3 flex flex-wrap justify-center gap-2" role="group" aria-label={t('filters.label')}>
+							<button type="button" class="chip" data-filter="all" aria-pressed="true">
+								{t('filters.all')}
+							</button>
+							{activityTypes.map((type) => (
+								<button type="button" class="chip" data-filter={type} aria-pressed="false">
+									{typeLabel(locale, type)}
+									<span class="chip-count">{typedCount(type)}</span>
+								</button>
+							))}
+						</div>
+						<p class="mt-2 min-h-5 font-mono text-label text-mist" data-filter-status aria-live="polite"></p>
+					</div>
+					<ul class="legend sp-legend" aria-label={t('legend.label')}>
+						<li>
+							<span class="swatch bg-signal" aria-hidden="true"></span>
+							{t('legend.next')}
+						</li>
+						<li>
+							<span class="swatch swatch-dash" aria-hidden="true"></span>
+							{t('legend.planned')}
+						</li>
+						<li>
+							<span class="swatch" aria-hidden="true"></span>
+							{t('legend.past')}
+						</li>
+						<li>
+							<span class="swatch bg-ink" aria-hidden="true"></span>
+							{t('legend.branch')}
+						</li>
+						<li>
+							<span class="swatch size-4" aria-hidden="true"></span>
+							{t('legend.head')}
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="sp-cols" data-timeline>
+				<span class="sp-bus" data-fork aria-hidden="true"></span>
+				<div class="sp-col sp-plan">
+					<span class="sp-pre" data-fork aria-hidden="true"></span>
+					<p class="tag tag-plan sp-label">{t('soon')}</p>
+					<div class="graph plan">
+						<span class="rail rail-main" data-rail data-rail-scrub></span>
+						<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
+						<ol>
+							{planned.map((entry) => (
+								<Commit entry={entry} dense />
+							))}
+						</ol>
+					</div>
+				</div>
+				<div class="sp-col">
+					<span class="sp-pre" data-fork aria-hidden="true"></span>
+					<p class="tag sp-label">{t('activities.past')}</p>
+					<div class="graph" data-history>
+						<span class="rail rail-main" data-rail data-rail-scrub></span>
+						<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
+						<HistoryEntries entries={shown} />
+						{older.length > 0 && (
+							<details class="history-more" data-history-more>
+								<summary class="history-toggle">
+									<span class="history-show">{t('activities.history.show', { count: older.length })}</span>
+									<span class="history-hide">{t('activities.history.hide')}</span>
+								</summary>
+								<HistoryEntries entries={older} />
+							</details>
 						)}
-					</p>
-					<div data-static>
-						<p class="mt-5 font-mono text-[0.8125rem] text-mist">{t('activities.date')}</p>
-						<p class="font-display text-4xl leading-none text-ink sm:text-5xl">{nextEvent.stamp}</p>
+						<HistoryEntries entries={root} last />
 					</div>
-					<div data-live hidden>
-						<p class="mt-4 font-mono text-[0.8125rem] text-mist sm:mt-5" data-count-label>
-							{t('count.many')}
-						</p>
-						<p class="flex items-baseline gap-3 leading-none">
-							<span
-								class="inline-flex overflow-hidden font-display text-[4.5rem] leading-[0.95] text-ink sm:text-[7rem]"
-								data-count-num
-							>
-								00
-							</span>
-							<span class="font-display text-2xl text-sky sm:text-3xl" data-count-unit>
-								{t('count.dayMany')}
-							</span>
-						</p>
-					</div>
-					<p class="mt-4 text-lg font-semibold leading-snug text-ink">{nextEvent.title}</p>
-					<p class="mt-1 font-mono text-[0.8125rem] leading-5 text-mist">
-						{nextEvent.stamp}
-						{nextEvent.meta?.hora && ` · ${nextEvent.meta.hora}`}
-						{nextEvent.meta?.lugar && ` · ${nextEvent.meta.lugar}`}
-					</p>
-				</div>
-			)}
-
-			<div class="js-only mt-8" data-filters>
-				<p class="font-mono text-[0.8125rem] text-sky" aria-hidden="true">
-					git log --grep=
-				</p>
-				<div class="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('filters.label')}>
-					<button type="button" class="chip" data-filter="all" aria-pressed="true">
-						{t('filters.all')}
-					</button>
-					{activityTypes.map((type) => (
-						<button type="button" class="chip" data-filter={type} aria-pressed="false">
-							{typeLabel(locale, type)}
-							<span class="chip-count">{typedCount(type)}</span>
-						</button>
-					))}
-				</div>
-				<p class="mt-3 min-h-5 font-mono text-[0.8125rem] text-mist" data-filter-status aria-live="polite"></p>
-			</div>
-
-			<ul
-				class="legend mt-8 hidden space-y-3 font-mono text-[0.8125rem] leading-5 text-mist lg:block"
-				aria-label={t('legend.label')}
-			>
-				<li class="flex items-center gap-3">
-					<span class="swatch bg-signal" aria-hidden="true"></span>
-					{t('legend.next')}
-				</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch swatch-dash" aria-hidden="true"></span>
-					{t('legend.planned')}
-				</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch" aria-hidden="true"></span>
-					{t('legend.past')}
-				</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch bg-ink" aria-hidden="true"></span>
-					{t('legend.branch')}
-				</li>
-				<li class="flex items-center gap-3">
-					<span class="swatch size-4" aria-hidden="true"></span>
-					{t('legend.head')}
-				</li>
-			</ul>
-		</aside>
-
-		<div class="lane-vars contents lg:block">
-			<div class="trunk-head order-first">
-				<span class="trunk" data-trunk data-rail-trunk aria-hidden="true"></span>
-				<h2 class="h2-xl">{t('activities.title')}</h2>
-			</div>
-			<div data-timeline>
-				<p class="tag tag-plan lane-tag mb-1">{t('soon')}</p>
-				<div class="graph plan">
-					<span class="rail rail-main" data-rail data-rail-scrub></span>
-					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
-					<ol>
-						{planned.map((entry) => (
-							<Commit entry={entry} />
-						))}
-					</ol>
-				</div>
-				<div class="graph" data-history>
-					<span class="rail rail-main" data-rail data-rail-scrub></span>
-					<span class="rail-cursor" data-rail-cursor aria-hidden="true"></span>
-					<ol>
-						{history.map((entry, index) => (
-							<Commit entry={entry} last={index === last}>
-								{entry.branch && (
-									<div class="branch">
-										<div class="bend">
-											<svg viewBox="0 0 56 48" aria-hidden="true">
-												<path d="M14 0 C14 28 42 20 42 48" pathLength="1" data-bend />
-											</svg>
-											<p class="px-3">
-												<span class="tag">{entry.branch.name}</span>
-											</p>
-										</div>
-										<span class="rail rail-feat" data-rail data-rail-scrub></span>
-										<ol aria-label={t('activities.branch', { title: entry.title })}>
-											{entry.branch.commits.map((sub) => (
-												<li class="commit">
-													<span class="node" data-node aria-hidden="true" />
-													<span class="link" data-link aria-hidden="true" />
-													<div class="card" data-card>
-														<h4 class="font-semibold leading-6 text-ink">{sub.title}</h4>
-														<p class="ref" aria-hidden="true">
-															{shortHash(`${entry.id}/${sub.id}`)}
-														</p>
-													</div>
-												</li>
-											))}
-										</ol>
-										<div class="bend">
-											<svg viewBox="0 0 56 48" aria-hidden="true">
-												<path d="M42 0 C42 28 14 20 14 48" pathLength="1" data-bend />
-											</svg>
-										</div>
-									</div>
-								)}
-							</Commit>
-						))}
-					</ol>
 				</div>
 			</div>
 		</div>

@@ -31,6 +31,48 @@ test.describe('motion loading', () => {
 		});
 	});
 
+	test.describe('off screen', () => {
+		const ribbonShift = (page: Page) =>
+			page.evaluate(async () => {
+				const track = document.querySelector('.ribbon-track');
+				const before = track ? getComputedStyle(track).transform : '';
+				await new Promise((resolve) => setTimeout(resolve, 600));
+				return track ? getComputedStyle(track).transform !== before : false;
+			});
+
+		test('the ribbon drifts while it shows and stops when it does not', async ({ page }) => {
+			await page.goto('/');
+			await expect(page.locator('html')).toHaveAttribute('data-motion-ready', 'true');
+			expect(await ribbonShift(page)).toBe(true);
+			await page.locator('#foro').scrollIntoViewIfNeeded();
+			await page.waitForTimeout(800);
+			expect(await ribbonShift(page)).toBe(false);
+		});
+
+		test('no looping animation runs where nobody can see it', async ({ page }) => {
+			await page.goto('/');
+			await expect(page.locator('html')).toHaveAttribute('data-motion-ready', 'true');
+			for (const place of ['#top', '#actividades', '#foro', '#faq']) {
+				await page.locator(place).scrollIntoViewIfNeeded();
+				await page.waitForTimeout(700);
+				const hidden = await page.evaluate(() =>
+					document
+						.getAnimations()
+						.filter((animation) => animation.playState === 'running')
+						.flatMap((animation) => {
+							const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+							// A cursor under the fold of a block that is half on screen still belongs to what is showing.
+							const shown = target?.closest('[data-lang], .forum-live, .tk-list') ?? target;
+							const box = shown?.getBoundingClientRect();
+							const away = box && (box.bottom < 0 || box.top > window.innerHeight);
+							return away ? [`${animation.constructor.name} ${target?.className}`] : [];
+						}),
+				);
+				expect(hidden, place).toEqual([]);
+			}
+		});
+	});
+
 	test.describe('reduced motion', () => {
 		test.use({ reducedMotion: 'reduce' });
 

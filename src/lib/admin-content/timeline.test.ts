@@ -204,7 +204,7 @@ describe('toTimelineEntry: registration, calendar and structured data (S8)', () 
 			mode: 'open',
 			capacity: 40,
 			deadline: '2026-11-12T15:00:00.000Z',
-			href: 'https://admin.example.test/api/public/events/taller-de-git/registrations',
+			href: 'https://admin.example.test/foro/eventos/taller-de-git',
 		});
 		expect(entry.calendarHref).toBe(CAL);
 		expect(entry.schema).toEqual({
