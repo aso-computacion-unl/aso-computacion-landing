@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
@@ -13,6 +14,8 @@ export default defineConfig({
 		defaultLocale: 'es',
 		routing: { prefixDefaultLocale: false },
 	},
+	// sitemap-index.xml lists every page with its hreflang alternates; robots.txt points at it (src/pages/robots.txt.ts).
+	integrations: [sitemap({ i18n: { defaultLocale: 'es', locales: { es: 'es-EC', en: 'en-US' } } })],
 	vite: {
 		plugins: [tailwindcss()],
 	},

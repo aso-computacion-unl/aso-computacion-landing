@@ -1,0 +1,47 @@
+---
+// Cloudflare Pages serves this file for every unknown URL, whatever the language, so it speaks both: Spanish first,
+// then English. It stands apart from the language routes (no header switch, no hreflang) and is never indexed.
+import IsotypeColor from '../assets/brand/isotype-color.svg';
+import IsotypeWhite from '../assets/brand/isotype-white.svg';
+import Button from '../components/Button.astro';
+import SectionHead from '../components/SectionHead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { getContent } from '../data/content';
+import { useTranslations } from '../i18n/ui';
+import Layout from '../layouts/Layout.astro';
+
+const es = useTranslations('es');
+const en = useTranslations('en');
+const { site } = getContent('es');
+---
+
+<Layout title={`${es('notFound.title')} · ${site.name}`} description={es('notFound.lead')} noindex standalone>
+	<header class="border-b border-sky/30 bg-navy">
+		<nav class="wrap flex h-16 items-center" aria-label={es('nav.label')}>
+			<a href="/" class="flex items-center gap-3" aria-label={es('nav.home', { name: site.name })}>
+				<IsotypeWhite class="theme-dark-only h-6 w-auto sm:h-8" aria-hidden="true" />
+				<IsotypeColor class="theme-light-only h-6 w-auto sm:h-8" aria-hidden="true" />
+				<span class="font-display text-base text-ink">{site.name}</span>
+			</a>
+		</nav>
+	</header>
+	<main id="contenido" class="bg-navy py-16 sm:py-24 lg:py-28">
+		<div class="wrap">
+			<SectionHead level={1} eyebrow={es('notFound.eyebrow')} title={es('notFound.title')} lead={es('notFound.lead')} />
+			<div class="mt-12 lg:mt-16">
+				<Button href="/">{es('notFound.home')}</Button>
+			</div>
+
+			<div lang="en" class="mt-16 border-t border-dashed border-sky/30 pt-8 font-mono text-[0.8125rem] text-mist">
+				<p class="text-ink">{en('notFound.title')}</p>
+				<p class="mt-2 max-w-prose">{en('notFound.lead')}</p>
+				<div class="mt-6">
+					<Button href="/en/" variant="ghost">
+						{en('notFound.home')}
+					</Button>
+				</div>
+			</div>
+		</div>
+	</main>
+	<SiteFooter />
+</Layout>
