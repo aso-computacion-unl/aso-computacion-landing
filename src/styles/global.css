@@ -621,6 +621,15 @@
 		line-height: 1.3;
 	}
 
+	.show-fun dl {
+		display: grid;
+		gap: inherit;
+	}
+
+	.show-fun .demo-tag {
+		justify-self: start;
+	}
+
 	.show-fun dt {
 		color: var(--color-sky);
 	}
@@ -697,6 +706,15 @@
 			margin-top: 1rem;
 			font-size: 0.9375rem;
 			line-height: 1.3;
+		}
+
+		.rest-fun dl {
+			display: grid;
+			gap: inherit;
+		}
+
+		.rest-fun .demo-tag {
+			justify-self: start;
 		}
 
 		.rest-fun dt {
@@ -1532,7 +1550,10 @@
 		color: var(--color-on-sky);
 	}
 
-	.eyebrow-light {
+	/* Inside the navy panel of the sky section: the .on-sky colours above would be navy on navy (dark) or white on white (light). */
+	.eyebrow-light,
+	.on-sky .eyebrow-light,
+	.on-sky .eyebrow-light span:first-child {
 		color: var(--color-sky);
 	}
 
@@ -1935,7 +1956,7 @@
 		padding: 0.75rem 1.25rem 1.125rem;
 		font-size: 0.8125rem;
 		line-height: 1.6;
-		color: color-mix(in oklab, var(--color-mist) 70%, transparent);
+		color: color-mix(in oklab, var(--color-mist) 88%, transparent);
 	}
 
 	.faq-guide-hint code {
@@ -1997,7 +2018,7 @@
 	}
 
 	.term-note {
-		color: color-mix(in oklab, var(--color-mist) 75%, transparent);
+		color: color-mix(in oklab, var(--color-mist) 88%, transparent);
 	}
 
 	.term-line.is-question {

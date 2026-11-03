@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HOME_NEWS_COUNT, latestNews, newsPath, toNews } from './news';
+import { HOME_NEWS_COUNT, RELATED_NEWS_COUNT, latestNews, newsPath, relatedNews, toNews } from './news';
 import { newsItem } from './test-fixtures';
 
 const ctx = { today: '2026-10-22', resolveLocal: () => undefined };
@@ -71,5 +71,52 @@ describe('latestNews', () => {
 		expect(latestNews(many(2))).toHaveLength(2);
 		expect(latestNews(many(1))).toHaveLength(1);
 		expect(latestNews([])).toEqual([]);
+	});
+});
+
+describe('relatedNews', () => {
+	const posts = toNews(
+		[
+			item('a', '2026-01-10'),
+			item('b', '2026-02-10'),
+			item('c', '2026-03-10'),
+			item('d', '2026-04-10'),
+			item('e', '2026-05-10'),
+		],
+		ctx,
+	);
+	const slugs = (list: { slug: string }[]) => list.map((entry) => entry.slug);
+
+	it('offers up to three other posts, newest first', () => {
+		expect(RELATED_NEWS_COUNT).toBe(3);
+		expect(slugs(relatedNews(posts, 'a'))).toEqual(['e', 'd', 'c']);
+	});
+
+	it('never offers the post being read', () => {
+		expect(slugs(relatedNews(posts, 'e'))).toEqual(['d', 'c', 'b']);
+		expect(slugs(relatedNews(posts, 'c'))).toEqual(['e', 'd', 'b']);
+	});
+
+	it('is shorter when there are fewer other posts, and empty when the post is the only one', () => {
+		expect(slugs(relatedNews(posts.slice(-3), 'a'))).toEqual(['c', 'b']);
+		expect(relatedNews(posts.slice(0, 1), 'e')).toEqual([]);
+		expect(relatedNews([], 'a')).toEqual([]);
+	});
+
+	it('orders by date even when the list is not sorted, and does not mutate it', () => {
+		const shuffled = [posts[0], posts[3], posts[1], posts[4], posts[2]];
+		const before = slugs(shuffled);
+		expect(slugs(relatedNews(shuffled, 'a'))).toEqual(['e', 'd', 'c']);
+		expect(slugs(shuffled)).toEqual(before);
+	});
+
+	it('keeps the given order for posts of the same day', () => {
+		const sameDay = toNews([item('x', '2026-05-09'), item('y', '2026-05-09'), item('z', '2026-05-09')], ctx);
+		expect(slugs(relatedNews(sameDay, 'z'))).toEqual(['x', 'y']);
+	});
+
+	it('honours a different limit', () => {
+		expect(slugs(relatedNews(posts, 'a', 1))).toEqual(['e']);
+		expect(relatedNews(posts, 'a', 0)).toEqual([]);
 	});
 });

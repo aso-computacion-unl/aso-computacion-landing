@@ -150,7 +150,13 @@ Where it shows up:
   `/novedades`. It is left out when there are no news, and so is the "Novedades" nav link.
 - **`/novedades`**: every item. **`/novedades/<slug>`**: one static page per item, built by
   `getStaticPaths` from the resolved content, with its own `<title>`, meta description (the
-  summary) and share image (the cover).
+  summary) and share image (the cover). The post ends with "Sigue leyendo" / "Keep reading": up to 3
+  other posts of the same language, newest first (`relatedNews` in `src/lib/admin-content/news.ts`),
+  left out when there are none.
+- **Share** (`src/components/ShareBar.astro`): every post has "Compartir" / "Share" controls built from its
+  canonical URL (`src/lib/share.ts`). Without JS they are links to WhatsApp, X and LinkedIn. With JS,
+  `src/scripts/share.ts` shows the browser's share sheet (`navigator.share`) alone when there is one, and
+  otherwise keeps the links and adds a "Copiar enlace" button that confirms in an `aria-live` region.
 - **No news** (the fallback snapshot has `"news": []`, and so does an admin that has none
   published): there are no `/novedades/<slug>` pages, and `/novedades` still builds as a short
   empty state marked `noindex`, so a shared or bookmarked link never ends in a 404.
@@ -170,8 +176,26 @@ in that payload must be Cloudinary ones.
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback, mapping and the Markdown renderer
+pnpm test      # vitest: fetch, validation, fallback, mapping, Markdown, share links, related posts, motion plan
+pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
+
+`pnpm test:e2e` (CI job `e2e`) runs two suites in `e2e/`, on the fallback build so it needs no secrets:
+
+- `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/` (and the first news post
+  when the fallback has one), in the dark and the light theme with motion reduced. Any **serious or critical**
+  violation fails, and the failure prints the rule and the offending elements.
+- `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download.
+
+Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
+pages three times each on the fallback build, mobile profile, and asserts the median run. Budgets:
+performance ≥ 0.9, accessibility ≥ 0.95, best-practices ≥ 0.95, SEO ≥ 0.95. One budget is lower on purpose:
+SEO of `/novedades/` is 0.65 because with no news that page is `noindex` (Lighthouse's `is-crawlable` fails,
+measured 0.66); once the build has news the page is indexable, so raise it to 0.95. Reports stay in `.lighthouseci/`
+(ignored by git); nothing is uploaded.
+
+First time: `pnpm exec playwright install chromium`. To see what the home page downloads on first load:
+`pnpm build && pnpm preview` and, in another terminal, `pnpm measure:js`.
 
 ## Editing content
 
@@ -247,6 +271,22 @@ The raster brand files under `public/` are generated from the vectors in `src/as
 ```sh
 pnpm assets:brand   # scripts/generate-brand-assets.mjs (sharp); commit the PNGs it writes
 ```
+
+## Motion
+
+The scroll choreography (`src/scripts/motion.ts`) uses GSAP + ScrollTrigger, and Lenis for smooth scrolling. What a
+visitor downloads is decided by `planMotion` in `src/scripts/motion-policy.ts` (pure, unit-tested):
+
+| Visitor | GSAP + ScrollTrigger | Lenis |
+|---------|----------------------|-------|
+| `prefers-reduced-motion: reduce` | not loaded; the page is static | not loaded |
+| Touch screen (no `(pointer: fine) and (hover: hover)`) | loaded | not loaded; native scrolling |
+| Mouse | loaded | loaded |
+
+The libraries are separate chunks fetched with a dynamic `import()` after the first paint, once the browser is
+idle (a second at most), so they never compete with the HTML, CSS and fonts. Everything is visible without them;
+the pre-motion state lives behind `html.motion`, which the layout adds only when motion is allowed and removes
+if the script fails or never starts.
 
 ## Structure
 
