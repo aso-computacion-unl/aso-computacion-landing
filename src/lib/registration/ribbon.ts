@@ -17,13 +17,17 @@ const shortDate = (date: string, locale: Locale, monthOnly: boolean): string =>
 
 export function ribbonItems(tickets: readonly Ticket[], locale: Locale): string[] {
 	const t = useTranslations(locale);
-	const activities = tickets.slice(0, RIBBON_ACTIVITIES).map(({ entry, mode }, index) => {
+	// A demo activity carries a "demo" tag on its ticket; the band has no room for one, so it never names it.
+	const real = tickets.filter(({ entry }) => !entry.demo);
+	const activities = real.slice(0, RIBBON_ACTIVITIES).map(({ entry, mode }, index) => {
 		const parts = [
 			shortTitle(entry.title),
 			entry.date && shortDate(entry.date, locale, entry.datePrecision === 'month'),
 		].filter(Boolean);
 		if (index === 0) return t('ribbon.next', { item: parts.join(' · ') });
-		return [...parts, t(mode === 'free' ? 'ribbon.free' : 'ribbon.seats')].join(' · ');
+		// "cupos limitados" only when the admin set a capacity; without one nothing is said about seats.
+		const access = mode === 'free' ? t('ribbon.free') : entry.registration?.capacity ? t('ribbon.seats') : undefined;
+		return [...parts, access].filter(Boolean).join(' · ');
 	});
 	return [...activities, t('ribbon.forum'), t('ribbon.instagram')];
 }

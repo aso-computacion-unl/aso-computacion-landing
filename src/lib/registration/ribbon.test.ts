@@ -3,7 +3,7 @@ import type { TimelineEntry } from '../admin-content/model';
 import { ribbonItems } from './ribbon';
 import { chooseTickets } from './tickets';
 
-const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x' };
+const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x', capacity: 40 };
 const entry = (id: string, overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
 	id,
 	kind: 'upcoming',
@@ -39,6 +39,26 @@ describe('ribbonItems', () => {
 			'Next: Python workshop · Nov 12',
 			'Ask in the forum',
 			'Everything is announced first on Instagram',
+		]);
+	});
+
+	it('says "cupos limitados" only when the registration has a capacity', () => {
+		const tickets = chooseTickets([
+			entry('a', { title: 'Primera', date: '2026-11-01' }),
+			entry('b', { title: 'Sin cupo', date: '2026-11-02', registration: { ...unl, capacity: undefined } }),
+		]);
+		expect(ribbonItems(tickets, 'es')[1]).toBe('Sin cupo · 2 nov');
+	});
+
+	it('never names a demo activity as if it were real', () => {
+		const tickets = chooseTickets([
+			entry('demo', { title: 'Ejemplo', date: '2026-11-01', demo: true }),
+			entry('real', { title: 'Real', date: '2026-11-02' }),
+		]);
+		expect(ribbonItems(tickets, 'es')).toEqual([
+			'Próximo: Real · 2 nov',
+			'Pregunta en el foro',
+			'Todo se anuncia primero en Instagram',
 		]);
 	});
 

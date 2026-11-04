@@ -148,7 +148,7 @@ test.describe('polish', () => {
 		for (const reason of await reasons.all()) await expect(reason.locator('p:not(.reason-num)')).toHaveCount(0);
 	});
 
-	test('an upcoming card leaves hora / lugar / para to its ticket and keeps its description short', async ({
+	test('an upcoming card leaves hora / lugar / para to its ticket, and shortens its description only when it links on', async ({
 		page,
 	}) => {
 		await page.goto('/');
@@ -162,6 +162,11 @@ test.describe('polish', () => {
 				const style = getComputedStyle(node);
 				return { clamp: style.webkitLineClamp, height: node.clientHeight, line: parseFloat(style.lineHeight) };
 			});
+			// Without a link to the activity's page the card is the only place the full description can be read.
+			if ((await card.locator('[data-card-link]').count()) === 0) {
+				expect(clamp).not.toBe('2');
+				continue;
+			}
 			expect(clamp).toBe('2');
 			expect(height).toBeLessThanOrEqual(line * 2 + 1);
 		}
