@@ -1,4 +1,6 @@
 ---
+// The questions people ask most, as a plain accordion: one <details> per question, the plus/minus mark on the title row.
+// The list is the admin's FAQ (src/data/content.ts); the question for a missing answer goes after it, to the forum.
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
@@ -6,107 +8,32 @@ import SectionHead from './SectionHead.astro';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { faq } = getContent(locale);
-const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 ---
 
-<section id="faq" class="bg-navy py-section" data-faq>
+<section id="faq" class="bg-navy py-section">
 	<div class="wrap">
-		<SectionHead eyebrow={t('faq.eyebrow')} title={faq.title} lead={faq.lead} demo={faq.demo}>
-			<p class="lead faq-forum">
-				{t('faq.forumBefore')} <a href="#foro">{t('faq.forumLink')}</a>.
-			</p>
-		</SectionHead>
+		<SectionHead eyebrow={t('faq.eyebrow')} title={faq.title} lead={faq.lead} demo={faq.demo} />
 
-		{/* Static fallback and the single source of the questions: `ui.ts` reads these entries and swaps in the prompt. */}
-		<div class="faq-list mt-head" data-faq-static>
+		<div class="faq-list mt-head">
 			{faq.items.map((item) => (
-				<details class="faq-item" name="faq" data-faq-entry data-topic={item.topic}>
+				<details class="faq-item" name="faq">
 					<summary>
-						<span class="faq-mark" aria-hidden="true">
-							?
-						</span>
-						<span class="faq-q">
-							<span class="faq-topic" aria-hidden="true">
-								git help {item.topic}
-							</span>
-							<span class="faq-title" data-faq-q>
-								{item.q}
-							</span>
-						</span>
-						<span class="faq-plus" aria-hidden="true"></span>
+						<span class="faq-title">{item.q}</span>
+						<span class="faq-plus" aria-hidden="true" />
 					</summary>
 					<div class="faq-a">
-						<p data-faq-a>{item.a}</p>
+						<p>{item.a}</p>
 					</div>
 				</details>
 			))}
 		</div>
 
-		<div class="faq-term mt-head" data-faq-term hidden>
-			<form class="faq-prompt" data-faq-form>
-				<label class="faq-prompt-sign" for="faq-input">
-					aso@unl:~$<span class="sr-only"> {t('faq.prompt')}</span>
-				</label>
-				<input
-					id="faq-input"
-					class="faq-input"
-					data-faq-input
-					type="text"
-					autocomplete="off"
-					autocapitalize="off"
-					spellcheck="false"
-					enterkeyhint="send"
-					placeholder={placeholder}
-				/>
-				<button type="submit" class="btn btn-primary faq-run">
-					<span class="btn-face">
-						<span>{t('faq.run')}</span>
-						<span class="btn-glyph" aria-hidden="true">
-							→
-						</span>
-					</span>
-				</button>
-			</form>
-			<p class="faq-hint">
-				<code>help</code> · <code>git help &lt;{t('faq.topicWord')}&gt;</code> · <code>clear</code> · {t('faq.repeat')}
-			</p>
-
-			{/* The answer opens here as a manual page; the shell in `ui.ts` fills it and shows it. */}
-			<div class="faq-man" data-faq-man role="region" aria-live="polite" aria-label={t('faq.page')} hidden></div>
-
-			<ul class="faq-cards" aria-label={t('faq.topics')}>
-				{faq.items.map((item) => (
-					<li>
-						<button type="button" class="faq-card" data-faq-run={`git help ${item.topic}`}>
-							<span class="faq-card-cmd">
-								git help <span class="slug">{item.topic}</span>
-							</span>
-							<span class="faq-card-q">{item.q}</span>
-						</button>
-					</li>
-				))}
-				{
-					/* Free commands: the shell reads their name, description and output from these cards (they exist only with the prompt). */
-					faq.commands.map((command) => (
-						<li>
-							<button
-								type="button"
-								class="faq-card is-free"
-								data-faq-run={command.name}
-								data-faq-command
-								data-description={command.description}
-								data-output={command.output}
-							>
-								<span class="faq-card-tag">{t('faq.free')}</span>
-								<span class="faq-card-q">{command.description}</span>
-								<span class="faq-card-cmd">
-									<span class="slug">{command.name}</span>
-								</span>
-							</button>
-						</li>
-					))
-				}
-			</ul>
-		</div>
+		<p class="faq-after">
+			{t('faq.forumBefore')}
+			<a href="#foro">
+				{t('faq.forumLink')}
+				<span aria-hidden="true">→</span>
+			</a>
+		</p>
 	</div>
 </section>

@@ -116,11 +116,9 @@ test.describe('keyboard', () => {
 				if (!el || el === document.body) return { end: true } as const;
 				const style = getComputedStyle(el);
 				const rect = el.getBoundingClientRect();
-				// The FAQ prompt draws its ring on the frame around the input (checked on its own below).
 				const ring =
 					(style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0) ||
-					(style.boxShadow !== 'none' && style.boxShadow !== '') ||
-					el.matches('[data-faq-input]');
+					(style.boxShadow !== 'none' && style.boxShadow !== '');
 				return {
 					end: false,
 					label: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''} ${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}`,
@@ -137,43 +135,6 @@ test.describe('keyboard', () => {
 		expect(stops.length).toBeGreaterThan(20);
 		expect(stops.length).toBeLessThan(160);
 	});
-
-	for (const theme of ['dark', 'light'] as const) {
-		test(`the FAQ prompt shows focus on its frame, at 3:1 against its unfocused border (${theme} theme)`, async ({
-			page,
-		}) => {
-			await page.addInitScript((value) => localStorage.setItem('aso-theme', value), theme);
-			await page.goto('/', { waitUntil: 'networkidle' });
-			const frame = page.locator('.faq-prompt');
-			await frame.scrollIntoViewIfNeeded();
-			const border = () =>
-				frame.evaluate((element) => {
-					const context = document.createElement('canvas').getContext('2d')!;
-					const rgb = (color: string, under: [number, number, number]) => {
-						context.clearRect(0, 0, 1, 1);
-						context.fillStyle = color;
-						context.fillRect(0, 0, 1, 1);
-						const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
-						return [r, g, b].map((value, i) => (value * a + under[i] * (255 - a)) / 255) as [number, number, number];
-					};
-					const style = getComputedStyle(element);
-					const luminance = (c: number[]) =>
-						c.map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)) as number[];
-					const well = rgb(style.backgroundColor, [255, 255, 255]);
-					const line = rgb(style.borderTopColor, well);
-					const [wr, wg, wb] = luminance(well);
-					const [lr, lg, lb] = luminance(line);
-					const lw = 0.2126 * wr + 0.7152 * wg + 0.0722 * wb;
-					const ll = 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
-					return { line, ratio: (Math.max(lw, ll) + 0.05) / (Math.min(lw, ll) + 0.05) };
-				});
-			const resting = await border();
-			await page.locator('[data-faq-input]').focus();
-			const focused = await border();
-			expect(focused.line).not.toEqual(resting.line);
-			expect(focused.ratio).toBeGreaterThanOrEqual(3);
-		});
-	}
 
 	test('the theme switch works from the keyboard and is remembered', async ({ page }) => {
 		await page.goto('/');
@@ -251,53 +212,78 @@ test.describe('reduced motion', () => {
 	});
 });
 
-test.describe('FAQ terminal', () => {
-	const run = async (page: Page, command: string) => {
-		await page.locator('[data-faq-input]').fill(command);
+test.describe('FAQ accordion', () => {
+	const item = (page: Page, index: number) => page.locator('#faq .faq-item').nth(index);
+
+	test('is a plain accordion: one question per summary, no terminal, cards, badges or labels', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		const faq = page.locator('#faq');
+		expect(await faq.locator('details.faq-item').count()).toBeGreaterThan(1);
+		await expect(faq.locator('details.faq-item summary .faq-title').first()).not.toBeEmpty();
+		await expect(faq.locator('[data-faq], [data-faq-term], .faq-card, .faq-prompt, .faq-man, .faq-mark')).toHaveCount(
+			0,
+		);
+		await expect(faq.getByText(/git help/)).toHaveCount(0);
+		await expect(faq.locator('header .lead')).toHaveText('Lo que más nos preguntan.');
+	});
+
+	test('opens and closes by click, one at a time', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await item(page, 0).scrollIntoViewIfNeeded();
+		await expect(item(page, 0)).not.toHaveAttribute('open', '');
+		await item(page, 0).locator('summary').click();
+		await expect(item(page, 0)).toHaveAttribute('open', '');
+		await expect(item(page, 0).locator('.faq-a')).toBeVisible();
+		await item(page, 1).locator('summary').click();
+		await expect(item(page, 1)).toHaveAttribute('open', '');
+		await expect(item(page, 0)).not.toHaveAttribute('open', '');
+		await item(page, 1).locator('summary').click();
+		await expect(item(page, 1)).not.toHaveAttribute('open', '');
+	});
+
+	test('opens and closes from the keyboard alone', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		const summary = item(page, 0).locator('summary');
+		await summary.scrollIntoViewIfNeeded();
+		await summary.focus();
 		await page.keyboard.press('Enter');
-	};
-
-	test('an empty line, an unknown command and a very long line leave the page standing, with a hint', async ({
-		page,
-	}) => {
-		const problems = watch(page);
-		await page.setViewportSize({ width: 320, height: 800 });
-		await page.goto('/', { waitUntil: 'networkidle' });
-		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
-		await run(page, '');
-		await run(page, 'rm -rf /');
-		await expect(page.locator('[data-faq-man]')).toContainText(/no encontrado/i);
-		await run(page, 'x'.repeat(5000));
-		await expect(page.locator('[data-faq-man]')).toContainText(/no encontrado/i);
-		expect(await overflow(page)).toBe(0);
-		expect(problems).toEqual([]);
+		await expect(item(page, 0)).toHaveAttribute('open', '');
+		await page.keyboard.press('Space');
+		await expect(item(page, 0)).not.toHaveAttribute('open', '');
+		await page.keyboard.press('Space');
+		await expect(item(page, 0)).toHaveAttribute('open', '');
 	});
 
-	test('markup typed into the prompt is printed as text, never run', async ({ page }) => {
-		const dialogs: string[] = [];
-		page.on('dialog', (dialog) => {
-			dialogs.push(dialog.message());
-			void dialog.dismiss();
-		});
-		await page.goto('/', { waitUntil: 'networkidle' });
-		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
-		await run(page, '<img src=x onerror=alert(1)><b>negrita</b>');
-		await expect(page.locator('[data-faq-man]')).toContainText('<img src=x onerror=alert(1)>');
-		await expect(page.locator('[data-faq-man] img, [data-faq-man] b')).toHaveCount(0);
-		expect(dialogs).toEqual([]);
+	test('keeps the plus/minus mark on the title row, at the edge of the box', async ({ page }) => {
+		for (const width of [1440, 390]) {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto('/', { waitUntil: 'networkidle' });
+			const summary = item(page, 0).locator('summary');
+			await summary.scrollIntoViewIfNeeded();
+			const [box, title, plus] = await Promise.all([
+				summary.boundingBox(),
+				summary.locator('.faq-title').boundingBox(),
+				summary.locator('.faq-plus').boundingBox(),
+			]);
+			expect(box && title && plus, `${width}px`).toBeTruthy();
+			// Same row (the mark is centred on the title block) and pinned to the right edge of the summary.
+			expect(Math.abs(plus!.y + plus!.height / 2 - (title!.y + title!.height / 2)), `${width}px`).toBeLessThan(2);
+			expect(box!.x + box!.width - (plus!.x + plus!.width), `${width}px`).toBeLessThan(32);
+			expect(title!.x - box!.x, `${width}px`).toBeLessThan(32);
+		}
 	});
 
-	test('help, a topic and clear work from the keyboard alone, and the answer is announced', async ({ page }) => {
+	test('sends the missing question to the forum from a 44px link after the list', async ({ page }) => {
 		await page.goto('/', { waitUntil: 'networkidle' });
-		await page.locator('[data-faq-input]').scrollIntoViewIfNeeded();
-		await expect(page.locator('[data-faq-man]')).toHaveAttribute('aria-live', 'polite');
-		await run(page, 'help');
-		await expect(page.locator('[data-faq-man]')).toBeVisible();
-		const topic = await page.locator('.faq-card[data-faq-run]').first().getAttribute('data-faq-run');
-		await run(page, topic ?? 'help');
-		await expect(page.locator('[data-faq-man]')).toBeVisible();
-		await run(page, 'clear');
-		await expect(page.locator('[data-faq-man]')).toBeHidden();
+		const faq = page.locator('#faq');
+		const link = faq.locator('.faq-after a');
+		await expect(link).toHaveAttribute('href', '#foro');
+		await expect(faq.locator('.faq-list ~ .faq-after')).toHaveCount(1);
+		await expect(faq.locator('header').getByRole('link')).toHaveCount(0);
+		await link.scrollIntoViewIfNeeded();
+		expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+		await link.click();
+		await expect(page).toHaveURL(/#foro$/);
 	});
 });
 

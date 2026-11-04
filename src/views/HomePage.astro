@@ -33,7 +33,7 @@ const { faq, latestNews, site, socials, sponsors, team, timeline } = getContent(
 		{latestNews.length > 0 && <News />}
 		<Forum />
 		{team.length > 0 && <Board />}
-		{(faq.items.length > 0 || faq.commands.length > 0) && <Faq />}
+		{faq.items.length > 0 && <Faq />}
 		<Join />
 		{socials.length > 0 && <Socials />}
 		<Sponsors sponsors={sponsors} />

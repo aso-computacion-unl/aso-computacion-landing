@@ -1959,7 +1959,7 @@
 		z-index: 1;
 	}
 
-	/* FAQ: native <details>. Each question reads like a `git help <topic>` entry. */
+	/* FAQ: native <details>, one question per summary with the plus/minus mark on the title row. */
 	.faq-list {
 		display: grid;
 		align-items: start;
@@ -1981,7 +1981,7 @@
 
 	.faq-item summary {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 1rem;
 		padding: 1.125rem 1.25rem;
@@ -1993,31 +1993,8 @@
 		display: none;
 	}
 
-	.faq-mark {
-		display: grid;
-		place-items: center;
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 4px;
-		background: var(--color-sky);
-		color: var(--color-on-sky);
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	.faq-topic {
-		display: block;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.2;
-		color: var(--color-sky);
-	}
-
 	.faq-title {
 		display: block;
-		margin-top: 0.25rem;
 		font-size: var(--text-lead);
 		font-stretch: 118%;
 		font-weight: 700;
@@ -2060,7 +2037,7 @@
 	}
 
 	.faq-a {
-		padding: 0 1.25rem 1.5rem 4.75rem;
+		padding: 0 1.25rem 1.5rem;
 		font-size: var(--text-body);
 		line-height: 1.55;
 		color: var(--color-mist);
@@ -2084,428 +2061,30 @@
 		}
 	}
 
-	/* FAQ prompt: a big prompt, the answer as a manual page, and a card per topic. Enhances the <details> list above, which
-	   stays as the no-JS view. */
-	.faq-list[hidden],
-	.faq-term[hidden],
-	.faq-man[hidden] {
-		display: none;
-	}
-
-	/* The darker well the prompt and the free commands sit in (follows the theme's surfaces). */
-	.faq-prompt {
-		--well: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
-	}
-
-	.faq-forum {
-		margin-top: 0.75rem;
-	}
-
-	.faq-forum a {
-		color: var(--color-ink);
-		text-decoration: underline;
-		text-decoration-color: var(--color-signal);
-		text-decoration-thickness: 3px;
-		text-underline-offset: 5px;
-	}
-
-	.faq-prompt {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem 1rem;
-		padding: 0.875rem 0.875rem 0.875rem 1.75rem;
-		border: 2px solid color-mix(in oklab, var(--color-sky) 50%, transparent);
-		border-radius: 4px;
-		background: var(--well);
-		font-family: var(--font-mono);
-	}
-
-	.faq-prompt:focus-within {
-		border-color: var(--color-ink);
-	}
-
-	.faq-prompt-sign {
-		flex: none;
-		font-size: var(--text-lead);
-		color: var(--color-sky);
-	}
-
-	.faq-input {
-		flex: 1;
-		min-width: 0;
-		background: transparent;
-		color: var(--color-ink);
-		font: inherit;
-		font-size: var(--text-lead);
-		font-weight: 500;
-		line-height: 1.4;
-		caret-color: var(--color-sky);
-	}
-
-	.faq-input::placeholder {
-		color: color-mix(in oklab, var(--color-mist) 75%, transparent);
-		opacity: 1;
-	}
-
-	.faq-input:focus-visible {
-		outline: none;
-	}
-
-	.faq-run {
-		--lift: 4px;
-		flex: none;
-	}
-
-	.faq-run .btn-face {
-		height: 3rem;
-		padding-inline: 1.25rem;
-		font-size: var(--text-secondary);
-		cursor: pointer;
-	}
-
-	.faq-hint {
-		margin: 0.75rem 0 1.75rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.6;
-		color: var(--color-mist);
-	}
-
-	.faq-hint code {
-		color: var(--color-ink);
-	}
-
-	/* The manual page: title bar, then name / question / answer as a definition list. */
-	.faq-man {
-		margin-bottom: 2rem;
-		padding: 1.75rem 2.5rem 2.25rem;
-		border: 1px solid color-mix(in oklab, var(--color-sky) 32%, transparent);
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		/* Clears the sticky header when a tap scrolls the page into view. */
-		scroll-margin-top: 5rem;
-	}
-
-	.faq-man-top > span {
-		min-width: 0;
-	}
-
-	.faq-man-top {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.875rem;
-		border-bottom: 1px dashed color-mix(in oklab, var(--color-ink) 30%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.faq-man-clear {
-		min-height: 2.75rem;
-		padding: 0.25rem 0.625rem;
-		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 50%, transparent);
-		color: var(--color-ink);
-		font-family: var(--font-mono);
-		cursor: pointer;
-	}
-
-	.faq-man-clear:hover,
-	.faq-man-topic:hover,
-	.faq-card:hover {
-		background: color-mix(in srgb, var(--color-sky) 18%, var(--color-navy-lift));
-	}
-
-	.faq-man-sections {
-		display: grid;
-		grid-template-columns: 9.375rem minmax(0, 1fr);
-		gap: 1.375rem 1.5rem;
-		margin-top: 1.375rem;
-	}
-
-	.faq-man-sections dt {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 600;
-		line-height: 1.9;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--color-sky);
-	}
-
-	.faq-man-sections dd {
-		min-width: 0;
-		font-size: var(--text-body);
-		color: var(--color-mist);
-	}
-
-	.faq-man-name {
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 500;
-		line-height: 1.6;
-		color: var(--color-ink);
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-question {
-		font-size: var(--text-lead);
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.3;
-		color: var(--color-ink);
-	}
-
-	.faq-man-answer {
-		max-width: 46ch;
-		font-size: var(--text-lead);
-		font-stretch: 112%;
-		font-weight: 560;
-		line-height: 1.35;
-		letter-spacing: -0.012em;
-		color: var(--color-ink);
-		white-space: pre-line;
-	}
-
-	/* Signal as a bar over the answer, never as text. */
-	.faq-man-answer::before {
-		content: '';
-		display: block;
-		width: 3.5rem;
-		height: 4px;
-		margin-bottom: 1rem;
-		background: var(--color-signal);
-	}
-
-	.faq-man-output {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 500;
-		line-height: 1.5;
-		color: var(--color-ink);
-		white-space: pre-wrap;
-	}
-
-	/* Signal fails contrast as text on navy, so errors use a light tint of it. */
-	.faq-man-error {
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		line-height: 1.5;
-		color: color-mix(in oklab, var(--color-signal) 40%, var(--color-ink));
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-topics {
-		display: grid;
-		gap: 0.125rem;
-	}
-
-	.faq-man-topic {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0 1rem;
-		margin-left: -0.625rem;
-		padding: 0.375rem 0.625rem;
-		border-radius: 2px;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.5;
-		text-align: left;
-		cursor: pointer;
-	}
-
-	.faq-man-cmd {
-		color: var(--color-sky);
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-note {
-		color: var(--color-mist);
-	}
-
-	.faq-cards {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.625rem;
-	}
-
-	@media (min-width: 30rem) {
-		.faq-cards {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	/* Four across only where a whole slug still fits in a card. */
-	@media (min-width: 80rem) {
-		.faq-cards {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 1rem;
-		}
-	}
-
-	.faq-cards > li {
-		display: grid;
-		min-width: 0;
-	}
-
-	.faq-card {
-		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		align-content: start;
-		gap: 0.5rem;
-		width: 100%;
-		height: 100%;
-		min-height: 5.5rem;
-		padding: 0.875rem 0.875rem 1rem;
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		text-align: left;
-		cursor: pointer;
-	}
-
-	@media (min-width: 48rem) {
-		.faq-card {
-			min-height: 9.375rem;
-			padding: 1.25rem 1.25rem 1.375rem;
-		}
-	}
-
-	/* A slug (command topic, address segment) moves to the next line whole; it only breaks when it is wider than the box. */
-	.slug,
+	/* An address segment moves to the next line whole; it only breaks when it is wider than the box. */
 	.url-seg {
 		display: inline-block;
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
 
-	/* Commands are shown whole: a long topic wraps instead of being cut. */
-	.faq-card-cmd {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.3;
-		color: var(--color-sky);
-		overflow-wrap: break-word;
-	}
-
-	.faq-card-q {
-		font-size: var(--text-body);
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-		color: var(--color-ink);
-	}
-
-	.faq-card.is-free {
-		min-height: 0;
-		background: transparent;
-		box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--color-ink) 35%, transparent);
-	}
-
-	.faq-card.is-free .faq-card-q {
-		font-size: var(--text-secondary);
-		font-weight: 650;
-	}
-
-	.faq-card-tag {
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.3;
+	/* The question for a missing answer goes after the list; the link is a 44px target. */
+	.faq-after {
+		margin-top: 2rem;
+		font-size: var(--text-lead);
 		color: var(--color-mist);
 	}
 
-	/* The open topic: the action surface, with a signal bar on top. */
-	.faq-card[aria-current] {
-		background: var(--color-action);
-	}
-
-	.faq-card[aria-current]::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 auto;
-		height: 5px;
-		background: var(--color-signal);
-	}
-
-	.faq-card[aria-current] .faq-card-cmd {
-		font-weight: 700;
-		color: color-mix(in oklab, var(--color-sky) 60%, var(--color-on-action));
-	}
-
-	.faq-card[aria-current] .faq-card-q {
-		color: var(--color-on-action);
-	}
-
-	.faq-card[aria-current] .faq-card-tag {
-		color: color-mix(in oklab, var(--color-on-action) 78%, var(--color-action));
-	}
-
-	@media (max-width: 47.99rem) {
-		.faq-prompt {
-			flex-wrap: wrap;
-			padding: 0.875rem 1rem;
-		}
-
-		.faq-prompt-sign {
-			font-size: var(--text-body);
-		}
-
-		.faq-input {
-			flex: 1 1 9rem;
-			font-size: var(--text-body);
-		}
-
-		.faq-run {
-			flex: 1 1 100%;
-		}
-
-		.faq-run .btn-face {
-			justify-content: center;
-		}
-
-		.faq-man {
-			padding: 1.25rem 1.125rem 1.625rem;
-		}
-
-		.faq-man-sections {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 0.25rem;
-		}
-
-		.faq-man-sections dt {
-			padding-top: 0.875rem;
-		}
-
-		.faq-man-sections dt:first-child {
-			padding-top: 0;
-		}
-
-		.faq-man-sections dd {
-			margin-bottom: 0.375rem;
-		}
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.faq-card {
-			transition:
-				background-color 150ms ease,
-				transform 150ms ease;
-		}
-
-		.faq-man-sections {
-			animation: man-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
-		}
-	}
-
-	@keyframes man-in {
-		from {
-			opacity: 0;
-			transform: translateY(0.5rem);
-		}
+	.faq-after a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		min-height: 2.75rem;
+		color: var(--color-ink);
+		text-decoration: underline;
+		text-decoration-color: var(--color-signal);
+		text-decoration-thickness: 3px;
+		text-underline-offset: 5px;
 	}
 
 	/* The door is a paper ticket like the ones in Inscripciones: the way in is the only action, on a sky stub. */
@@ -3272,15 +2851,15 @@
 		}
 	}
 
-	/* The boxes that print what the admin wrote (activity cards, tickets, news tiles, FAQ cards and manual): a word longer
+	/* The boxes that print what the admin wrote (activity cards, tickets, news tiles, FAQ): a word longer
 	   than the box wraps inside it instead of pushing the page sideways. Not `main`: on the whole page it split
 	   "Vicepresidente" in the board cards. */
 	.card-main,
 	.card-meta,
 	.count,
 	.tile-body,
-	.faq-card,
-	.faq-man {
+	.faq-title,
+	.faq-a {
 		overflow-wrap: break-word;
 	}
 }

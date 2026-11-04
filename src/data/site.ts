@@ -410,11 +410,10 @@ export const forum = {
 // Section copy of the FAQ. The items come from the admin; `demoFaqItems` fills the section while the fallback has none.
 export const faqCopy = {
 	title: 'Preguntas frecuentes',
-	lead: 'Escribe un tema o toca una tarjeta: la respuesta se abre aquí mismo, como una página de manual.',
+	lead: 'Lo que más nos preguntan.',
 };
 
-// DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). `topic` is the slug shown as
-// `git help <topic>`.
+// DEMO: frequently asked questions (invented answers; the Instagram DM channel is real).
 export const demoFaqItems: FaqItem[] = [
 	{
 		topic: 'participar',
@@ -589,7 +588,7 @@ const enCopy: LandingCopy = {
 	},
 	faqCopy: {
 		title: 'Frequently asked questions',
-		lead: 'Type a topic or tap a card: the answer opens right here, like a manual page.',
+		lead: 'What we get asked the most.',
 	},
 };
 
