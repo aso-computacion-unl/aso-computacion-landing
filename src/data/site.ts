@@ -112,7 +112,6 @@ export const navLinks = [
 export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initial: TimelineEntry } = {
 	next: {
 		id: 'proxima-actividad',
-		msg: 'chore: pronto en tu feed',
 		kind: 'next',
 		stamp: 'Lo que sigue',
 		title: 'La próxima actividad se anuncia primero en Instagram',
@@ -123,7 +122,6 @@ export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initia
 	// The description is rewritten from the real board size (see compose.ts).
 	head: {
 		id: 'directiva-actual',
-		msg: 'docs(directiva): conoce a quienes hacen que esto pase',
 		kind: 'head',
 		stamp: 'HEAD',
 		title: 'Directiva actual',
@@ -133,7 +131,6 @@ export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initia
 	},
 	initial: {
 		id: 'fundacion',
-		msg: 'init: hola, mundo',
 		kind: 'initial',
 		stamp: '2020',
 		title: 'Nace ASO Computación',
@@ -148,7 +145,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'feria-de-proyectos',
 		date: '2026-12-11',
 		type: 'evento',
-		msg: 'feat(feria): demo day, esta vez sin demo en vivo que falle (ojalá)',
 		demo: true,
 		stamp: '11 dic 2026',
 		title: 'Feria de proyectos y cierre de ciclo',
@@ -160,7 +156,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'hackaton',
 		date: '2026-11-28',
 		type: 'evento',
-		msg: 'feat(hackaton): mucho café, cero bugs (ojalá)',
 		demo: true,
 		stamp: '28 nov 2026',
 		title: 'Hackatón ASO Computación',
@@ -172,7 +167,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'taller-python',
 		date: '2026-11-12',
 		type: 'taller',
-		msg: 'feat(taller): print("hola, primer ciclo")',
 		demo: true,
 		stamp: '12 nov 2026',
 		title: 'Taller de Python para primer ciclo',
@@ -185,7 +179,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'charla-ciberseguridad',
 		date: '2026-09-18',
 		type: 'charla',
-		msg: 'fix(charla): no, "123456" no es una contraseña segura',
 		demo: true,
 		stamp: '18 sep 2026',
 		title: 'Charla: introducción a la ciberseguridad',
@@ -201,7 +194,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'torneo-programacion',
 		date: '2026-06-25',
 		type: 'evento',
-		msg: 'feat(torneo): resolver, equivocarse, resolver otra vez',
 		demo: true,
 		stamp: '25 jun 2026',
 		title: 'Torneo de programación',
@@ -217,7 +209,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'taller-git',
 		date: '2026-05-20',
 		type: 'taller',
-		msg: 'chore(taller): git commit -m "ahora sí guardé"',
 		demo: true,
 		stamp: '20 may 2026',
 		title: 'Taller de Git y GitHub',
@@ -274,85 +265,14 @@ export const demoCollage: Photo[] = [
 // The forum section. The forum itself lives on the admin's origin (`/foro`, see ../lib/admin-content/forum.ts); this is
 // its door on the landing: the categories as they exist there and a few example threads.
 export type ForumCategoryId = 'general' | 'materias' | 'propuestas';
-export type ForumThreadStatus = 'open' | 'solved' | 'locked';
 
 export interface ForumThread {
 	id: string;
-	status: ForumThreadStatus;
 	title: string;
 	category: ForumCategoryId;
-	// Age as the forum shows it ("hace 2 h"): fixed text, since the page is built ahead of time.
-	when: string;
-	replies: number;
 }
 
-// The "languages" moment of Inscripciones: the association's own line (the message of the "Bienvenida" commit) written in
-// five syntaxes. Code is code, so it is the same on the English page. Each part says how to colour it: keyword, string
-// or plain punctuation.
-export const motto = 'aquí nadie empieza solo';
-
-export type CodeKind = 'k' | 's' | 'p';
-export interface Snippet {
-	file: string;
-	name: string;
-	parts: readonly (readonly [CodeKind, string])[];
-}
-
-export const snippets: readonly Snippet[] = [
-	{
-		file: 'hola.py',
-		name: 'Python',
-		parts: [
-			['k', 'print'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ')'],
-		],
-	},
-	{
-		file: 'hola.js',
-		name: 'JavaScript',
-		parts: [
-			['k', 'console'],
-			['p', '.'],
-			['k', 'log'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.c',
-		name: 'C',
-		parts: [
-			['k', 'printf'],
-			['p', '('],
-			['s', `"${motto}\\n"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.rs',
-		name: 'Rust',
-		parts: [
-			['k', 'println!'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.hs',
-		name: 'Haskell',
-		parts: [
-			['k', 'putStrLn'],
-			['p', ' '],
-			['s', `"${motto}"`],
-		],
-	},
-];
-
-// DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
+// DEMO: the example threads (invented titles; they are not read from the forum, which has no
 // public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
 // feed, or with the board's own words, then drop `demo`.
 export const forum = {
@@ -369,51 +289,33 @@ export const forum = {
 	threads: [
 		{
 			id: 'estructuras-de-datos',
-			status: 'open',
 			title: '¿Cómo preparo el examen de Estructuras de Datos?',
 			category: 'materias',
-			when: 'hace 2 h',
-			replies: 6,
 		},
 		{
 			id: 'postgres-docker',
-			status: 'solved',
 			title: 'Error al conectar Postgres desde Docker en el laboratorio',
 			category: 'materias',
-			when: 'hace 5 h',
-			replies: 9,
 		},
 		{
 			id: 'taller-docker',
-			status: 'open',
 			title: 'Propuesta: taller de Docker para primeros ciclos',
 			category: 'propuestas',
-			when: 'ayer',
-			replies: 14,
 		},
 		{
 			id: 'equipo-hackathon',
-			status: 'open',
 			title: 'Busco equipo para el hackathon (backend con Node)',
 			category: 'general',
-			when: 'ayer',
-			replies: 3,
 		},
 		{
 			id: 'electivas',
-			status: 'solved',
 			title: '¿Qué electivas recomiendan para 7.º ciclo?',
 			category: 'general',
-			when: 'hace 3 días',
-			replies: 21,
 		},
 		{
 			id: 'laboratorio-sabados',
-			status: 'locked',
 			title: 'Horario del laboratorio abierto los sábados',
 			category: 'general',
-			when: 'hace 1 semana',
-			replies: 4,
 		},
 	] as ForumThread[],
 };
@@ -486,15 +388,6 @@ export interface LandingCopy {
 	faqCopy: typeof faqCopy;
 }
 
-const enThreadAge: Record<string, string> = {
-	'estructuras-de-datos': '2 h ago',
-	'postgres-docker': '5 h ago',
-	'taller-docker': 'yesterday',
-	'equipo-hackathon': 'yesterday',
-	electivas: '3 days ago',
-	'laboratorio-sabados': '1 week ago',
-};
-
 const enCopy: LandingCopy = {
 	site: {
 		name: 'ASO Computación',
@@ -535,7 +428,6 @@ const enCopy: LandingCopy = {
 	timelineAnchors: {
 		next: {
 			...timelineAnchors.next,
-			msg: 'chore: soon in your feed',
 			stamp: 'Up next',
 			title: 'The next activity is announced first on Instagram',
 			description: 'Follow us to hear about it as soon as it is posted.',
@@ -543,14 +435,12 @@ const enCopy: LandingCopy = {
 		},
 		head: {
 			...timelineAnchors.head,
-			msg: 'docs(board): meet the people who make this happen',
 			title: 'Current board',
 			description: 'Seven members represent the students of the program today.',
 			hrefLabel: 'Meet the board',
 		},
 		initial: {
 			...timelineAnchors.initial,
-			msg: 'init: hello, world',
 			title: 'ASO Computación is born',
 			description: 'The student association of the Computer Science program is founded.',
 		},
@@ -599,7 +489,6 @@ const enCopy: LandingCopy = {
 			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
 			{ ...forum.categories[2], description: 'Ideas for workshops, talks and events for the association.' },
 		],
-		threads: forum.threads.map((thread) => ({ ...thread, when: enThreadAge[thread.id] ?? thread.when })),
 	},
 	faqCopy: {
 		title: 'Frequently asked questions',

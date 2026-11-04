@@ -206,10 +206,10 @@ describe('composeSiteContent: API path', () => {
 		expect(compose(api()).navLinks).toHaveLength(5);
 	});
 
-	it('keeps the FAQ link when there are free commands but no FAQs', () => {
+	it('hides the FAQ link when there are only free commands', () => {
 		const commands = [{ id: '1', command: 'horario', description: 'd', output: 'o' }];
 		const result = compose(api(payload({ faqs: [], board: [], socials: [], commands })));
-		expect(result.navLinks.map((l) => l.href)).toEqual(['#actividades', '#nosotros', '#faq']);
+		expect(result.navLinks.map((l) => l.href)).toEqual(['#actividades', '#nosotros']);
 	});
 
 	it('lists news newest first, with the three latest for the home, and shows the nav link only when there are news', () => {

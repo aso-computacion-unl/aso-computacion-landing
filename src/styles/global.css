@@ -356,15 +356,6 @@
 		color: var(--color-ink);
 	}
 
-	/* Commit message: the playful line of the entry. */
-	.msg {
-		margin-top: 0.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.4;
-		color: color-mix(in srgb, var(--color-ink) 72%, transparent);
-	}
-
 	/* The stamp overhangs the card edge so the date sits on the same line as its node. */
 	.stamp {
 		display: inline-flex;
@@ -496,10 +487,6 @@
 		min-width: 0;
 	}
 
-	.card-dense .msg {
-		margin-top: 0;
-	}
-
 	.card-dense .card-meta {
 		gap: 0 1.25rem;
 	}
@@ -531,10 +518,6 @@
 
 		.card-dense .card-main > h3 {
 			flex: 0 1 auto;
-		}
-
-		.card-dense .card-main > .msg {
-			flex: 1 1 14rem;
 		}
 
 		.card-dense .card-main > a {
@@ -1083,11 +1066,6 @@
 	/* The activity graph sits on either surface: its node rims and the rail end take the section's colour. */
 	.deep .graph {
 		--bg: var(--color-navy-deep);
-	}
-
-	.panel {
-		border-radius: 0 4px 4px 4px;
-		background: var(--color-navy-lift);
 	}
 
 	/* Hero: a short, centred headline (one block per line) and the three ticket-shaped shortcuts. */
@@ -1803,13 +1781,6 @@
 	.on-sky .eyebrow,
 	.on-sky .eyebrow span:first-child {
 		color: var(--color-on-sky);
-	}
-
-	/* Inside the navy panel of the sky section: the .on-sky colours above would be navy on navy (dark) or white on white (light). */
-	.eyebrow-light,
-	.on-sky .eyebrow-light,
-	.on-sky .eyebrow-light span:first-child {
-		color: var(--color-sky);
 	}
 
 	.lead {

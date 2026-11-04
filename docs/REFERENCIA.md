@@ -126,11 +126,10 @@ threads, render on every build with a "demo" tag until they are approved or repl
 
 ### Forum teaser
 
-The *Foro* section (`src/components/Forum.astro`, after Actividades) is a door to the forum, which lives on the admin, not a
-forum. It shows example threads that category chips filter (`src/scripts/forum-tabs.ts`; without JS the chip bar stays hidden and
-every thread shows), a live feed of example activity (`src/scripts/forum-feed.ts`; static under reduced motion or without JS)
-and "Entrar con Google", the only way in. The threads and the feed are invented, `forum.demo: true` in `src/data/site.ts`,
-tagged "demo" (`STRICT_FORUM` in `src/data/content.ts` makes production refuse them once it is turned on). The button
+The *Foro* section (`src/components/Forum.astro`, after Novedades) is a door to the forum, which lives on the admin, not a
+forum. It shows three example thread titles (category and title, no tabs, no feed and no script), each a link to the forum, a
+"Ver todos los hilos" button and the sign-in card with "Entrar con Google", the only way in. The threads are invented,
+`forum.demo: true` in `src/data/site.ts`, tagged "demo" (`STRICT_FORUM` in `src/data/content.ts` makes production refuse them once it is turned on). The button
 opens `<admin>/foro` in a new tab (`forumUrl` in `src/lib/admin-content/forum.ts`, built from the admin's origin in
 `src/data/content.ts`); with no known or safe admin origin the button is left out (fail closed, like the registration links).
 The landing sends nothing to the forum and holds no sign-in.
@@ -165,16 +164,18 @@ The landing sends nothing to the forum and holds no sign-in.
   Lighthouse runs) never show Aliados; `e2e/built-from-admin.spec.ts` builds against a mock admin to cover it. The
   section is static (no scroll animation), so reduced motion needs nothing; only the hover lift of a linked logo sits
   behind `prefers-reduced-motion`. It has no header link.
-- **FAQ**: each `faqs[]` item may carry a `command` (the topic of `git help <command>`); without one the topic is the
-  question as a slug, cut at 28 characters (`TOPIC_MAX` in `map.ts`). The payload's `commands` (id, `command`, one-line `description`, multi-line `output`, at most 50) are
-  *free commands* of the FAQ terminal: the shell runs the command and prints its output. A name that collides with a topic
-  or with `help`, `ayuda`, `ls` or `clear` is renamed with a numeric suffix (`src/lib/admin-content/map.ts`). The FAQ
-  section (and its nav link) is left out only when there are neither items nor commands.
+- **FAQ**: the home shows the FAQ as a plain accordion (`src/components/Faq.astro`, one `<details>` per question), so the
+  section, and its nav link, are left out when there are no items. Each `faqs[]` item may still carry a `command` (without
+  one the topic is the question as a slug, cut at 28 characters, `TOPIC_MAX` in `map.ts`) and the payload's `commands` (id,
+  `command`, one-line `description`, multi-line `output`, at most 50) are still validated and mapped
+  (`src/lib/admin-content/map.ts`), but nothing renders them since the FAQ terminal left the home: commands alone no longer
+  keep the section or its link.
 - **Registration, calendar and structured data** (`registration`, `calendarUrl`, `structuredData` on each event, S8) add the
   ticket's action, its live seats, the `.ics` link and the Event JSON-LD to upcoming events. See "Event registration" below.
   The keys are additive to `version` 1: an event from an admin that predates them reads as `null` in all three and shows
   none of it.
-- **Settings** `tagline`, `description` and `about` replace the landing copy when present.
+- **Settings** `tagline` and `description` replace the landing copy when present. `about` is validated and kept, but the
+  home's Nosotros prints its own short statement (`aboutStatement` in `src/data/site.ts`) instead of that text.
 - **Photos**: admin images are plain `<img>` tags served by Cloudinary. The build inserts a
   delivery transformation after `/image/upload/` (`f_auto,q_auto,c_limit,w_<n>`, see
   `src/lib/admin-content/cloudinary.ts`) and writes a `srcset` with two or three widths, the
@@ -303,11 +304,9 @@ invalid, so the build falls back:
 
 Where it shows up:
 
-- **Home**: a "Novedades" section between Inscripciones and Actividades, drawn as a terminal (`git log` rows, each linking to
-  its post, and a `git show` pane that follows the row under the pointer or focus; `src/components/News.astro`,
-  `src/scripts/news-visor.ts`; without JS the pane shows the newest item). It holds the 3 most recent items
-  (`HOME_NEWS_COUNT` in `news.ts`; the landing sorts by `publishedAt`, newest first, ties keep the API order) and a link to
-  `/novedades`. It is left out when there are no news, and so is the "Novedades" nav link.
+- **Home**: a "Novedades" section after Actividades, a teaser (`src/components/News.astro`): the 3 most recent items as a
+  plain list (date, title and arrow, each row linking to its post; `HOME_NEWS_COUNT` in `news.ts`; the landing sorts by
+  `publishedAt`, newest first, ties keep the API order) and one button to `/novedades`, which has the rest. It is left out when there are no news, and so is the "Novedades" nav link.
 - **`/novedades`**: every item. **`/novedades/<slug>`**: one static page per item, built by
   `getStaticPaths` from the resolved content, with its own `<title>`, meta description (the
   summary) and share image (the cover). The post ends with "Sigue leyendo" / "Keep reading": up to 3
@@ -347,12 +346,14 @@ pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of
   violation fails, and the failure prints the rule and the offending elements.
 - `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download; also that
   the ribbon and every looping animation stop off screen.
-- `home-layout.spec.ts`, `activities-opener.spec.ts` and `home-terminals.spec.ts`: the task-first section order and that the
+- `home-layout.spec.ts`, `activities-opener.spec.ts` and `home-terminals.spec.ts`: the story-first section order and that the
   nav links follow it, the type scale (one size for every section title, no split words, no sideways scroll at 320 px, 44 px
-  targets), the short hero (headline, shortcuts and ribbon, no pin), the opener of Actividades with its split trunk, the old
-  activities folded behind a disclosure, and the news and forum terminals. The news cases skip on a fallback build (it has no news).
+  targets), the polish rules (plain kicker and statement in Nosotros, no role chips, no Redes sticker, titles-only Ideas steps,
+  upcoming cards without hora/lugar/para, no empty filter), the short hero (headline, shortcuts and ribbon, no pin), the opener
+  of Actividades with its split trunk, the old activities folded behind a disclosure, and the news and forum teasers. The news
+  cases skip on a fallback build (it has no news).
 - `audit-landing.spec.ts`: the 2026-10-29 platform audit on the built site: four widths (320, 390, 768, 1440) on the four
-  home and news pages, keyboard and focus, reduced motion, the 404, a clean console, links that leave the page, the FAQ terminal
+  home and news pages, keyboard and focus, reduced motion, the 404, a clean console, links that leave the page, the FAQ accordion,
   the language switch and the forum links (only the admin's `/foro`). With `AUDIT_LIVE_URL` set it also visits a running dev
   server or deploy.
 
@@ -371,8 +372,8 @@ These build the site again against a mock admin (`e2e/support/admin-site.ts`, in
   singular, full, closed, no capacity, an answer that is not the contract, offline, slow, no change of height), the `.ics`
   links, the `Event` JSON-LD and its offers, an admin without the S8 keys, links on another origin (left out, build warning)
   and axe in both themes with live, full and closed seats. Events are dated relative to the day of the run.
-- `moments.spec.ts`: the three small moments (networks in the hero, languages in Inscripciones, the decrypting Novedades
-  title), which need an admin with tickets and news; each is still under reduced motion and none shifts the page.
+- `moments.spec.ts`: the two small moments (networks in the hero, the decrypting Novedades title), which need an admin with
+  tickets and news; each is still under reduced motion and none shifts the page.
 - `audit-landing-content.spec.ts`: content a real admin could send: the longest values the validator accepts, text with no
   break point, images that never load, empty lists and failing seats.
 - `audit-landing-dev.spec.ts`: `astro dev` started while the admin is down serves the fallback, then the admin's content on
@@ -400,22 +401,25 @@ are `src/views/NewsIndexPage.astro` and `src/views/NewsPostPage.astro`.
 
 ## The home page
 
-The home is task first: what a student came to do (sign up, read the news, see the activities, ask in the forum) comes
-before who we are. The order is fixed in `src/views/HomePage.astro` and checked by `e2e/home-layout.spec.ts`; a section marked
-\* is left out when it has nothing to show, and the header links follow the same order (`navLinks` in `src/data/site.ts`).
+The home is story first: who we are comes right after the hero, then the agenda (sign up, activities, news), then the forum
+and the board, and the questions and ways to take part last. The order is fixed in `src/views/HomePage.astro` and checked by
+`e2e/home-layout.spec.ts`; a section marked \* is left out when it has nothing to show, and the header links follow the same
+order (`navLinks` in `src/data/site.ts`). Section kickers are plain words ("Nosotros", "Próximas fechas", ...); the
+terminal voice stays in three places: the hero's `ping`, the Actividades opener and its `git log --grep=` filters, and the
+`git show` panels of the board.
 
 | # | Section (id) | Source |
 |---|--------------|--------|
 | 1 | Hero (`top`): headline, lede, three ticket-shaped shortcuts and the network moment | `site.ts` (the shortcuts point at sections that render) |
-| 2 | Ribbon | `site.ts` |
-| 3 | Inscripciones (`inscripciones`)\*: one ticket per upcoming activity, live seats | admin events |
-| 4 | Novedades (`novedades`)\*: the news terminal | admin news |
-| 5 | Actividades (`actividades`): opener, then the planned lane and the history | admin events + `site.ts` anchors |
-| 6 | Foro (`foro`): the forum teaser | `site.ts`, link to the admin |
-| 7 | Nosotros (`nosotros`): manifesto and about | `site.ts`, admin settings and pillars |
+| 2 | Ribbon: next activities, the forum and Instagram, built from the tickets | `site.ts`, admin events |
+| 3 | Nosotros (`nosotros`): manifesto, a one-sentence statement with a facts line, and the pillars | `site.ts` (`aboutStatement`), admin pillars |
+| 4 | Inscripciones (`inscripciones`)\*: one ticket per upcoming activity, live seats | admin events |
+| 5 | Actividades (`actividades`): opener, then the planned lane and the history; filters only for types that have entries | admin events + `site.ts` anchors |
+| 6 | Novedades (`novedades`)\*: the three latest posts and a button to `/novedades` | admin news |
+| 7 | Foro (`foro`): the forum teaser | `site.ts`, link to the admin |
 | 8 | Directiva (`directiva`)\*: the board | admin board |
-| 9 | Ideas (`ideas`): the contribute section | `site.ts` (demo until approved) |
-| 10 | FAQ (`faq`)\*: a `git help` terminal | admin FAQ and commands |
+| 9 | FAQ (`faq`)\*: a plain accordion | admin FAQ |
+| 10 | Ideas (`ideas`): the contribute section, the four steps by title | `site.ts` (demo until approved) |
 | 11 | Redes (`redes`)\*: socials | admin socials |
 | 12 | Aliados (`aliados`)\*: sponsors | admin sponsors |
 
@@ -432,9 +436,8 @@ the planned lane (dotted) and the history (solid; stacked on phones). There is n
 the browser bars cannot make it jump. Without motion (reduced motion, or the script failing) it is its static end state.
 The older entries of the history fold into a plain `<details>` that opens without JS.
 
-**Three small moments** (`src/scripts/moments.ts`, imported by `ui.ts` only on a page that has one): a network graph behind the
-hero shortcuts (screens of 1180 px and wider), a rotating language snippet in Inscripciones and a decrypting Novedades title.
-Each is its calm end state under reduced motion.
+**Two small moments** (`src/scripts/moments.ts`, imported by `ui.ts` only on a page that has one): a network graph behind the
+hero shortcuts (screens of 1180 px and wider) and a decrypting Novedades title. Each is its calm end state under reduced motion.
 
 ## Themes and languages
 
@@ -456,10 +459,9 @@ Where the strings live:
 | What | Where |
 |------|-------|
 | Short UI words (buttons, labels, aria texts, countdown, filters) | `src/i18n/ui.ts` (`es` and `en`; the type forces `en` to have every key) |
-| Section copy (hero, manifesto, ribbon, nav, contribute, FAQ intro) | `copy` in `src/data/site.ts` |
+| Section copy (hero, manifesto, Nosotros statement, ribbon, nav, contribute, FAQ intro) | `copy` in `src/data/site.ts` |
 | Routes, `localizedPath`, `alternatePath` | `src/i18n/locales.ts` |
 | Content in a language | `getContent(locale)` in `src/data/content.ts` |
-| Terminal messages of the FAQ | `src/scripts/faq-shell.ts` |
 
 To add a UI word: add the key to `es` and to `en` in `src/i18n/ui.ts`, then `t('your.key')` in the component
 (`const t = useTranslations(toLocale(Astro.currentLocale))`). Client scripts read the language from
@@ -553,7 +555,7 @@ src/
 ├── lib/share.ts          # share links and which controls to show (+ test); lib/analytics.ts: Cloudflare beacon
 ├── i18n/                 # locales, localized paths, nav routing, UI dictionary (es/en)
 ├── components/           # one Astro component per section (Hero, Registrations, News, ActivityGraph, Forum, ...), Photo, Ticket, ShareBar
-├── scripts/              # client scripts: motion (+ policy), ui, theme, seats, ticket-deadline, share, forum-*, news-visor, faq-shell, moments
+├── scripts/              # client scripts: motion (+ policy), ui, theme, seats, ticket-deadline, share, moments (network, decrypt)
 ├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical, social meta and JSON-LD
 ├── middleware.ts         # dev only: asks the admin again when the server started with the fallback
 ├── views/                # the pages' bodies, shared by both languages (HomePage, NewsIndexPage, NewsPostPage, newsFeed)
