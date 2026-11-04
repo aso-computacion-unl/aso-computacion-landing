@@ -256,8 +256,11 @@ test.describe('registration from the admin', () => {
 		}) => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'taller-libre');
-			await expect(item).toContainText('Pase libre');
+			// Free entry is said once, in the stub: no "Sin inscripción" chip and no separate free-pass label.
 			await expect(item).toContainText('Entrada libre');
+			await expect(item).toContainText('Llega y ya.');
+			await expect(item).not.toContainText('Pase libre');
+			await expect(item.locator('.tk-chip')).toHaveCount(0);
 			await expect(item.locator('[data-reg], [data-reg-action], [data-seat-num]')).toHaveCount(0);
 			await expect(item.getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
 				'href',
@@ -284,8 +287,15 @@ test.describe('registration from the admin', () => {
 			const past = page.locator('li.commit', { hasText: 'Taller pasado' });
 			await expect(past).toHaveCount(1);
 			await expect(past.locator('.reg, .reg-calendar')).toHaveCount(0);
-			await expect(card(page, 'sin-extras').locator('.reg')).toHaveCount(0);
-			await expect(ticket(page, 'sin-extras')).toContainText('Pase libre');
+			// No extras: the card holds only the way to its free pass, with no action and no calendar.
+			const bare = card(page, 'sin-extras');
+			await expect(bare.locator('.reg a')).toHaveCount(1);
+			await expect(bare.getByRole('link', { name: /Ver el boleto/ })).toHaveAttribute(
+				'href',
+				'#inscripciones-sin-extras',
+			);
+			await expect(bare.locator('.reg-calendar, [data-reg-action]')).toHaveCount(0);
+			await expect(ticket(page, 'sin-extras')).toContainText('Entrada libre');
 		});
 
 		test('a registration that expired after the build closes in the browser', async ({ page }) => {
@@ -328,15 +338,10 @@ test.describe('registration from the admin', () => {
 				'inscripciones-sin-extras',
 			]);
 			const labels = await page.locator('#inscripciones .tk-no').allTextContents();
-			expect(labels).toEqual(['Boleto 001', 'Boleto 002', 'Pase libre', 'Boleto 003', 'Pase libre']);
+			expect(labels).toEqual(['Boleto 001', 'Boleto 002', 'Boleto 003', 'Boleto 004', 'Boleto 005']);
+			// Only the tickets that take a registration say how; a free one says it once, in its stub.
 			const modes = await page.locator('#inscripciones .tk-chip').allTextContents();
-			expect(modes).toEqual([
-				'Con formulario',
-				'Con cuenta UNL',
-				'Sin inscripción',
-				'Con formulario',
-				'Sin inscripción',
-			]);
+			expect(modes).toEqual(['Con formulario', 'Con cuenta UNL', 'Con formulario']);
 		});
 
 		test('shows the facts the admin gave and only those', async ({ page }) => {
@@ -351,10 +356,19 @@ test.describe('registration from the admin', () => {
 			await expect(facts).toContainText('Para');
 		});
 
-		test('is in the header menu, and its legend lists how people sign up', async ({ page }) => {
+		test('is in the header menu, and its head has one button to the admin list of every event', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			await expect(page.locator('header nav a[href="#inscripciones"]')).toHaveText('inscripciones');
-			await expect(page.locator('#inscripciones .tk-key li')).toHaveCount(3);
+			const head = page.locator('#inscripciones header.section-head');
+			await expect(head.getByRole('link')).toHaveCount(1);
+			await expect(head.getByRole('link', { name: /Ver todas las inscripciones/ })).toHaveAttribute(
+				'href',
+				`${admin.url}/foro/eventos`,
+			);
+			// No legend and no code window: the tickets say how each one signs up.
+			await expect(page.locator('#inscripciones .tk-key')).toHaveCount(0);
+			await expect(page.locator('#inscripciones [data-lang]')).toHaveCount(0);
+			await expect(page.locator('#inscripciones .tk-desc')).toHaveCount(0);
 		});
 
 		test('the activity cards link to their ticket instead of holding a form', async ({ page }) => {
@@ -365,8 +379,10 @@ test.describe('registration from the admin', () => {
 					`#inscripciones-${slug}`,
 				);
 			}
-			// A free activity has no ticket to send people to.
-			await expect(card(page, 'taller-libre').getByRole('link', { name: /Ver el boleto/ })).toHaveCount(0);
+			// A free activity's card points to its free pass too, where its hora, lugar and para are, without saying sign-up.
+			const free = card(page, 'taller-libre').getByRole('link', { name: /Ver el boleto/ });
+			await expect(free).toHaveAttribute('href', '#inscripciones-taller-libre');
+			await expect(free).not.toContainText('inscripción');
 			await card(page, 'taller-abierto')
 				.getByRole('link', { name: /Ver el boleto/ })
 				.click();
@@ -381,11 +397,15 @@ test.describe('registration from the admin', () => {
 			await expect(page.locator('#evento-viejo')).toHaveCount(0);
 		});
 
-		test('the forum door is the only way in: one link, to the admin forum', async ({ page }) => {
+		test('every forum link goes to the admin forum', async ({ page }) => {
 			await open(page, `${site.url}/`);
-			const links = page.locator(`#foro a[href^="${admin.url}"]`);
-			await expect(links).toHaveCount(1);
-			await expect(links).toHaveAttribute('href', `${admin.url}/foro`);
+			// The threads, the "see all" button and the door all lead to the forum home, and nowhere else on the admin.
+			const hrefs = await page
+				.locator(`#foro a[href^="${admin.url}"]`)
+				.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+			expect(hrefs.length).toBeGreaterThan(0);
+			for (const href of hrefs) expect(href).toBe(`${admin.url}/foro`);
+			await expect(page.locator('#foro .forum-door').getByRole('link')).toHaveAttribute('href', `${admin.url}/foro`);
 		});
 
 		test('the landing ships no registration form, script or Turnstile reference', async () => {

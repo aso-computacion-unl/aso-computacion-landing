@@ -43,13 +43,15 @@ const hash = entry.kind === 'next' || entry.kind === 'upcoming' ? undefined : sh
 const deco = entry.branch ? `Merge ${entry.branch.name}` : decoration[entry.kind];
 const upcoming = entry.kind === 'next' || entry.kind === 'upcoming' || entry.kind === 'head';
 const external = entry.href ? /^https?:/.test(entry.href) : false;
-const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
+// An upcoming card does not repeat the hora / lugar / para of its ticket: the ticket is the place for them.
+const metaEntries = entry.meta && entry.kind !== 'upcoming' ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
-// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity has no ticket to point to.
+// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity points to its
+// free pass, which holds the hora, lugar and para the card leaves out.
 const mode = entry.kind === 'upcoming' ? ticketMode(entry) : undefined;
-const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
+const ticketLink = !compact && mode !== undefined ? `#${ticketAnchor(entry.id)}` : undefined;
 const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 // The hash line is decoration (aria-hidden, derived from the id): a dense card leaves it out.
 const showRef = !dense && Boolean(hash || deco);
@@ -88,7 +90,6 @@ const showRef = !dense && Boolean(hash || deco);
 				</p>
 			)}
 			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
-			{entry.msg && <p class="msg">{entry.msg}</p>}
 			{!compact && entry.description && (
 				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
 			)}
@@ -127,7 +128,7 @@ const showRef = !dense && Boolean(hash || deco);
 			<div class="reg">
 				{ticketLink && (
 					<a class="reg-ticket" href={ticketLink}>
-						{t('ticket.link')}
+						{t(mode === 'free' ? 'ticket.linkFree' : 'ticket.link')}
 						<span class="sr-only">: {entry.title}</span>
 						<span aria-hidden="true"> →</span>
 					</a>

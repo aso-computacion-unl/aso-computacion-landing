@@ -20,7 +20,7 @@ Sitio de la Asociación de Estudiantes de la carrera de Computación de la Unive
 
 ## Qué es
 
-El sitio donde los estudiantes de Computación se enteran de lo que pasa en la carrera y hacen lo que vinieron a hacer. La página va en este orden: **inscripciones** a las próximas actividades (un boleto por actividad, con los cupos que quedan en vivo), **novedades**, las **actividades** como una línea de tiempo al estilo de un historial de git, una puerta al **foro** de estudiantes, quiénes somos, la **directiva** vigente, cómo aportar ideas, preguntas frecuentes, redes y aliados. Tiene modo oscuro y claro, y está en español (`/`) y en inglés (`/en/`); el contenido cargado en el admin no se traduce (ver [docs/REFERENCIA.md](docs/REFERENCIA.md#themes-and-languages)).
+El sitio donde los estudiantes de Computación se enteran de lo que pasa en la carrera y hacen lo que vinieron a hacer. La página va en este orden: quiénes somos, **inscripciones** a las próximas actividades (un boleto por actividad, con los cupos que quedan en vivo), las **actividades** como una línea de tiempo al estilo de un historial de git, las **novedades**, una puerta al **foro** de estudiantes, la **directiva** vigente, preguntas frecuentes, cómo aportar ideas, redes y aliados. Tiene modo oscuro y claro, y está en español (`/`) y en inglés (`/en/`); el contenido cargado en el admin no se traduce (ver [docs/REFERENCIA.md](docs/REFERENCIA.md#themes-and-languages)).
 
 La inscripción y el foro **no viven aquí**: el sitio muestra los boletos y enlaza a la página del evento (`/foro/eventos/<slug>`) y al foro (`/foro`) en el panel de administración, que es quien guarda las inscripciones y las cuentas. El sitio no envía ni guarda nada de lo que escribe una persona.
 

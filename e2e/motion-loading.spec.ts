@@ -62,7 +62,7 @@ test.describe('motion loading', () => {
 						.flatMap((animation) => {
 							const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
 							// A cursor under the fold of a block that is half on screen still belongs to what is showing.
-							const shown = target?.closest('[data-lang], .forum-live, .tk-list') ?? target;
+							const shown = target?.closest('.tk-list') ?? target;
 							const box = shown?.getBoundingClientRect();
 							const away = box && (box.bottom < 0 || box.top > window.innerHeight);
 							return away ? [`${animation.constructor.name} ${target?.className}`] : [];

@@ -356,15 +356,6 @@
 		color: var(--color-ink);
 	}
 
-	/* Commit message: the playful line of the entry. */
-	.msg {
-		margin-top: 0.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.4;
-		color: color-mix(in srgb, var(--color-ink) 72%, transparent);
-	}
-
 	/* The stamp overhangs the card edge so the date sits on the same line as its node. */
 	.stamp {
 		display: inline-flex;
@@ -496,10 +487,6 @@
 		min-width: 0;
 	}
 
-	.card-dense .msg {
-		margin-top: 0;
-	}
-
 	.card-dense .card-meta {
 		gap: 0 1.25rem;
 	}
@@ -531,10 +518,6 @@
 
 		.card-dense .card-main > h3 {
 			flex: 0 1 auto;
-		}
-
-		.card-dense .card-main > .msg {
-			flex: 1 1 14rem;
 		}
 
 		.card-dense .card-main > a {
@@ -1085,23 +1068,6 @@
 		--bg: var(--color-navy-deep);
 	}
 
-	/* Flat file-tab panels (README.md, CONTRIBUTING.md, git remote -v). */
-	.file-tab {
-		display: inline-block;
-		border-radius: 4px 4px 0 0;
-		background: var(--color-navy-lift);
-		padding: 0.5rem 1rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 600;
-		color: var(--color-sky);
-	}
-
-	.panel {
-		border-radius: 0 4px 4px 4px;
-		background: var(--color-navy-lift);
-	}
-
 	/* Hero: a short, centred headline (one block per line) and the three ticket-shaped shortcuts. */
 	.hero {
 		--notch: var(--color-navy);
@@ -1302,146 +1268,6 @@
 		line-height: 1.4;
 		color: var(--color-mist);
 		text-align: right;
-	}
-
-	/* Languages (Inscripciones): the association's line typed in five syntaxes, in a small code window. */
-	.tk-aside {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 1.5rem;
-		justify-items: start;
-	}
-
-	.lang {
-		--well: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
-		width: min(100%, 25rem);
-		padding: 1.25rem 1.5rem 1.125rem;
-		border-radius: 6px;
-		background: var(--well);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-sky) 32%, transparent);
-	}
-
-	.lang-stack {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.lg {
-		grid-area: 1 / 1;
-		opacity: 0;
-		transition: opacity 0.3s;
-	}
-
-	.lg.on {
-		opacity: 1;
-	}
-
-	.lg-h {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		padding-bottom: 0.875rem;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-sky) 22%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		font-weight: 500;
-		line-height: 1;
-		color: var(--color-mist);
-	}
-
-	.lg-h b {
-		font-weight: 500;
-		color: var(--color-sky);
-	}
-
-	.lg-c {
-		position: relative;
-		display: block;
-		width: max-content;
-		max-width: 100%;
-		margin-top: 1rem;
-		overflow: hidden;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.5;
-		color: var(--color-mist);
-		white-space: nowrap;
-	}
-
-	@media (min-width: 40rem) {
-		.lg-c {
-			font-size: var(--text-label);
-		}
-	}
-
-	.lg-c .k {
-		color: var(--color-sky);
-	}
-
-	.lg-c .s {
-		color: var(--color-ink);
-	}
-
-	.lg-c .cur {
-		display: inline-block;
-		width: 0.6em;
-		height: 1em;
-		margin-left: 2px;
-		vertical-align: -0.15em;
-		background: var(--color-sky);
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.lg-c .cur {
-			animation: forum-blink 1s steps(1) infinite;
-		}
-
-		.lg:not(.on) .cur {
-			animation: none;
-		}
-
-		/* The code is typed in by a cover that slides off to the right, one step per character. */
-		.lg-c::after {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: var(--well);
-			border-left: 2px solid var(--color-sky);
-		}
-
-		.lg.st .lg-c::after {
-			display: none;
-		}
-
-		.lg.leaving .lg-c::after {
-			transform: translateX(100%);
-		}
-
-		.lg.on:not(.st) .lg-c::after {
-			animation: lg-type calc(var(--n) * 32ms) steps(var(--n), end) 0.12s forwards;
-		}
-	}
-
-	@keyframes lg-type {
-		to {
-			transform: translateX(100%);
-		}
-	}
-
-	.lang-dots {
-		display: flex;
-		gap: 0.5rem;
-		margin-top: 0.875rem;
-	}
-
-	.lang-dots i {
-		width: 0.5rem;
-		height: 0.5rem;
-		background: color-mix(in srgb, var(--color-sky) 30%, transparent);
-	}
-
-	.lang-dots i.on {
-		background: var(--color-sky);
 	}
 
 	/* Hacking (Novedades): the title's letters resolve out of symbols, each in the width it will have. */
@@ -1655,19 +1481,36 @@
 		padding-top: 1.25rem;
 	}
 
-	.about-block .eyebrow {
-		margin-bottom: 1rem;
+	/* One display-type sentence, ragged right with balanced lines (never justified), then the facts as a mono line. */
+	.about-statement {
+		max-width: 24ch;
+		font-family: var(--font-display);
+		font-size: var(--text-lead);
+		font-weight: 650;
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		text-wrap: balance;
+		color: var(--color-ink);
 	}
 
-	.about-text {
-		font-family: var(--font-sans);
+	@media (min-width: 64rem) {
+		.about-statement {
+			font-size: var(--text-title);
+		}
+	}
+
+	.about-statement.is-long {
+		max-width: 60ch;
 		font-size: var(--text-lead);
-		font-stretch: 108%;
-		font-weight: 440;
-		line-height: 1.5;
-		letter-spacing: -0.012em;
-		color: var(--color-ink);
-		max-width: 52ch;
+		overflow-wrap: anywhere;
+	}
+
+	.about-facts {
+		margin-top: 1.5rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-label);
+		line-height: 1.6;
+		color: var(--color-mist);
 	}
 
 	/* Bento grid: three pillars, flat tiles of different weight. */
@@ -1946,13 +1789,6 @@
 		color: var(--color-on-sky);
 	}
 
-	/* Inside the navy panel of the sky section: the .on-sky colours above would be navy on navy (dark) or white on white (light). */
-	.eyebrow-light,
-	.on-sky .eyebrow-light,
-	.on-sky .eyebrow-light span:first-child {
-		color: var(--color-sky);
-	}
-
 	.lead {
 		margin-top: 1rem;
 		max-width: 56ch;
@@ -2019,18 +1855,6 @@
 		color: var(--color-ink);
 	}
 
-	.role-chip {
-		min-width: 0;
-		padding: 0.375rem 0.625rem;
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-sky) 55%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1;
-		color: var(--color-mist);
-	}
-
 	/* Join: the four reasons as a big numbered list. */
 	.reasons {
 		display: grid;
@@ -2039,7 +1863,7 @@
 	.reason {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
-		align-items: start;
+		align-items: center;
 		gap: 1.25rem;
 		border-top: 2px solid var(--color-on-sky);
 		padding-block: 1.25rem 1.5rem;
@@ -2069,13 +1893,6 @@
 		color: var(--color-on-sky);
 	}
 
-	.reason-text {
-		margin-top: 0.5rem;
-		font-size: var(--text-body);
-		line-height: 1.45;
-		color: var(--color-on-sky);
-	}
-
 	.tile-iso {
 		position: absolute;
 		z-index: 0;
@@ -2099,7 +1916,7 @@
 		z-index: 1;
 	}
 
-	/* FAQ: native <details>. Each question reads like a `git help <topic>` entry. */
+	/* FAQ: native <details>, one question per summary with the plus/minus mark on the title row. */
 	.faq-list {
 		display: grid;
 		align-items: start;
@@ -2121,7 +1938,7 @@
 
 	.faq-item summary {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 1rem;
 		padding: 1.125rem 1.25rem;
@@ -2133,31 +1950,8 @@
 		display: none;
 	}
 
-	.faq-mark {
-		display: grid;
-		place-items: center;
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 4px;
-		background: var(--color-sky);
-		color: var(--color-on-sky);
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	.faq-topic {
-		display: block;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.2;
-		color: var(--color-sky);
-	}
-
 	.faq-title {
 		display: block;
-		margin-top: 0.25rem;
 		font-size: var(--text-lead);
 		font-stretch: 118%;
 		font-weight: 700;
@@ -2200,7 +1994,7 @@
 	}
 
 	.faq-a {
-		padding: 0 1.25rem 1.5rem 4.75rem;
+		padding: 0 1.25rem 1.5rem;
 		font-size: var(--text-body);
 		line-height: 1.55;
 		color: var(--color-mist);
@@ -2224,718 +2018,32 @@
 		}
 	}
 
-	/* FAQ prompt: a big prompt, the answer as a manual page, and a card per topic. Enhances the <details> list above, which
-	   stays as the no-JS view. */
-	.faq-list[hidden],
-	.faq-term[hidden],
-	.faq-man[hidden] {
-		display: none;
-	}
-
-	/* The darker well the prompt and the free commands sit in (follows the theme's surfaces). */
-	.faq-prompt {
-		--well: color-mix(in oklab, var(--color-navy-deep) 72%, var(--color-shade));
-	}
-
-	.faq-forum {
-		margin-top: 0.75rem;
-	}
-
-	.faq-forum a {
-		color: var(--color-ink);
-		text-decoration: underline;
-		text-decoration-color: var(--color-signal);
-		text-decoration-thickness: 3px;
-		text-underline-offset: 5px;
-	}
-
-	.faq-prompt {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem 1rem;
-		padding: 0.875rem 0.875rem 0.875rem 1.75rem;
-		border: 2px solid color-mix(in oklab, var(--color-sky) 50%, transparent);
-		border-radius: 4px;
-		background: var(--well);
-		font-family: var(--font-mono);
-	}
-
-	.faq-prompt:focus-within {
-		border-color: var(--color-ink);
-	}
-
-	.faq-prompt-sign {
-		flex: none;
-		font-size: var(--text-lead);
-		color: var(--color-sky);
-	}
-
-	.faq-input {
-		flex: 1;
-		min-width: 0;
-		background: transparent;
-		color: var(--color-ink);
-		font: inherit;
-		font-size: var(--text-lead);
-		font-weight: 500;
-		line-height: 1.4;
-		caret-color: var(--color-sky);
-	}
-
-	.faq-input::placeholder {
-		color: color-mix(in oklab, var(--color-mist) 75%, transparent);
-		opacity: 1;
-	}
-
-	.faq-input:focus-visible {
-		outline: none;
-	}
-
-	.faq-run {
-		--lift: 4px;
-		flex: none;
-	}
-
-	.faq-run .btn-face {
-		height: 3rem;
-		padding-inline: 1.25rem;
-		font-size: var(--text-secondary);
-		cursor: pointer;
-	}
-
-	.faq-hint {
-		margin: 0.75rem 0 1.75rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.6;
-		color: var(--color-mist);
-	}
-
-	.faq-hint code {
-		color: var(--color-ink);
-	}
-
-	/* The manual page: title bar, then name / question / answer as a definition list. */
-	.faq-man {
-		margin-bottom: 2rem;
-		padding: 1.75rem 2.5rem 2.25rem;
-		border: 1px solid color-mix(in oklab, var(--color-sky) 32%, transparent);
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		/* Clears the sticky header when a tap scrolls the page into view. */
-		scroll-margin-top: 5rem;
-	}
-
-	.faq-man-top > span {
-		min-width: 0;
-	}
-
-	.faq-man-top {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.875rem;
-		border-bottom: 1px dashed color-mix(in oklab, var(--color-ink) 30%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.faq-man-clear {
-		min-height: 2.75rem;
-		padding: 0.25rem 0.625rem;
-		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 50%, transparent);
-		color: var(--color-ink);
-		font-family: var(--font-mono);
-		cursor: pointer;
-	}
-
-	.faq-man-clear:hover,
-	.faq-man-topic:hover,
-	.faq-card:hover {
-		background: color-mix(in srgb, var(--color-sky) 18%, var(--color-navy-lift));
-	}
-
-	.faq-man-sections {
-		display: grid;
-		grid-template-columns: 9.375rem minmax(0, 1fr);
-		gap: 1.375rem 1.5rem;
-		margin-top: 1.375rem;
-	}
-
-	.faq-man-sections dt {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 600;
-		line-height: 1.9;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--color-sky);
-	}
-
-	.faq-man-sections dd {
-		min-width: 0;
-		font-size: var(--text-body);
-		color: var(--color-mist);
-	}
-
-	.faq-man-name {
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 500;
-		line-height: 1.6;
-		color: var(--color-ink);
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-question {
-		font-size: var(--text-lead);
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.3;
-		color: var(--color-ink);
-	}
-
-	.faq-man-answer {
-		max-width: 46ch;
-		font-size: var(--text-lead);
-		font-stretch: 112%;
-		font-weight: 560;
-		line-height: 1.35;
-		letter-spacing: -0.012em;
-		color: var(--color-ink);
-		white-space: pre-line;
-	}
-
-	/* Signal as a bar over the answer, never as text. */
-	.faq-man-answer::before {
-		content: '';
-		display: block;
-		width: 3.5rem;
-		height: 4px;
-		margin-bottom: 1rem;
-		background: var(--color-signal);
-	}
-
-	.faq-man-output {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		font-weight: 500;
-		line-height: 1.5;
-		color: var(--color-ink);
-		white-space: pre-wrap;
-	}
-
-	/* Signal fails contrast as text on navy, so errors use a light tint of it. */
-	.faq-man-error {
-		font-family: var(--font-mono);
-		font-size: var(--text-body);
-		line-height: 1.5;
-		color: color-mix(in oklab, var(--color-signal) 40%, var(--color-ink));
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-topics {
-		display: grid;
-		gap: 0.125rem;
-	}
-
-	.faq-man-topic {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0 1rem;
-		margin-left: -0.625rem;
-		padding: 0.375rem 0.625rem;
-		border-radius: 2px;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.5;
-		text-align: left;
-		cursor: pointer;
-	}
-
-	.faq-man-cmd {
-		color: var(--color-sky);
-		overflow-wrap: break-word;
-	}
-
-	.faq-man-note {
-		color: var(--color-mist);
-	}
-
-	.faq-cards {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.625rem;
-	}
-
-	@media (min-width: 30rem) {
-		.faq-cards {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	/* Four across only where a whole slug still fits in a card. */
-	@media (min-width: 80rem) {
-		.faq-cards {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 1rem;
-		}
-	}
-
-	.faq-cards > li {
-		display: grid;
-		min-width: 0;
-	}
-
-	.faq-card {
-		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		align-content: start;
-		gap: 0.5rem;
-		width: 100%;
-		height: 100%;
-		min-height: 5.5rem;
-		padding: 0.875rem 0.875rem 1rem;
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		text-align: left;
-		cursor: pointer;
-	}
-
-	@media (min-width: 48rem) {
-		.faq-card {
-			min-height: 9.375rem;
-			padding: 1.25rem 1.25rem 1.375rem;
-		}
-	}
-
-	/* A slug (command topic, address segment) moves to the next line whole; it only breaks when it is wider than the box. */
-	.slug,
+	/* An address segment moves to the next line whole; it only breaks when it is wider than the box. */
 	.url-seg {
 		display: inline-block;
 		max-width: 100%;
 		overflow-wrap: break-word;
 	}
 
-	/* Commands are shown whole: a long topic wraps instead of being cut. */
-	.faq-card-cmd {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.3;
-		color: var(--color-sky);
-		overflow-wrap: break-word;
-	}
-
-	.faq-card-q {
-		font-size: var(--text-body);
-		font-stretch: 118%;
-		font-weight: 750;
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-		color: var(--color-ink);
-	}
-
-	.faq-card.is-free {
-		min-height: 0;
-		background: transparent;
-		box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--color-ink) 35%, transparent);
-	}
-
-	.faq-card.is-free .faq-card-q {
-		font-size: var(--text-secondary);
-		font-weight: 650;
-	}
-
-	.faq-card-tag {
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.3;
+	/* The question for a missing answer goes after the list; the link is a 44px target. */
+	.faq-after {
+		margin-top: 2rem;
+		font-size: var(--text-lead);
 		color: var(--color-mist);
 	}
 
-	/* The open topic: the action surface, with a signal bar on top. */
-	.faq-card[aria-current] {
-		background: var(--color-action);
-	}
-
-	.faq-card[aria-current]::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 auto;
-		height: 5px;
-		background: var(--color-signal);
-	}
-
-	.faq-card[aria-current] .faq-card-cmd {
-		font-weight: 700;
-		color: color-mix(in oklab, var(--color-sky) 60%, var(--color-on-action));
-	}
-
-	.faq-card[aria-current] .faq-card-q {
-		color: var(--color-on-action);
-	}
-
-	.faq-card[aria-current] .faq-card-tag {
-		color: color-mix(in oklab, var(--color-on-action) 78%, var(--color-action));
-	}
-
-	@media (max-width: 47.99rem) {
-		.faq-prompt {
-			flex-wrap: wrap;
-			padding: 0.875rem 1rem;
-		}
-
-		.faq-prompt-sign {
-			font-size: var(--text-body);
-		}
-
-		.faq-input {
-			flex: 1 1 9rem;
-			font-size: var(--text-body);
-		}
-
-		.faq-run {
-			flex: 1 1 100%;
-		}
-
-		.faq-run .btn-face {
-			justify-content: center;
-		}
-
-		.faq-man {
-			padding: 1.25rem 1.125rem 1.625rem;
-		}
-
-		.faq-man-sections {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 0.25rem;
-		}
-
-		.faq-man-sections dt {
-			padding-top: 0.875rem;
-		}
-
-		.faq-man-sections dt:first-child {
-			padding-top: 0;
-		}
-
-		.faq-man-sections dd {
-			margin-bottom: 0.375rem;
-		}
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.faq-card {
-			transition:
-				background-color 150ms ease,
-				transform 150ms ease;
-		}
-
-		.faq-man-sections {
-			animation: man-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
-		}
-	}
-
-	@keyframes man-in {
-		from {
-			opacity: 0;
-			transform: translateY(0.5rem);
-		}
-	}
-
-	/* Terminal window shared by the news and forum sections: a title bar with three square lights, then panes. */
-	.term-win {
-		--term-bg: color-mix(in oklab, var(--color-navy-deep) 70%, var(--color-shade));
-		--term-line: color-mix(in oklab, var(--color-sky) 24%, transparent);
-		min-width: 0;
-		overflow: hidden;
-		border: 1px solid color-mix(in oklab, var(--color-sky) 32%, transparent);
-		border-radius: 4px;
-		background: var(--term-bg);
-	}
-
-	.term-bar {
-		display: flex;
-		align-items: center;
-		gap: 0.875rem;
-		padding: 0.75rem 1.25rem;
-		border-bottom: 1px solid var(--term-line);
-		background: var(--color-navy-lift);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.term-dots {
-		display: flex;
-		gap: 0.375rem;
-	}
-
-	.term-dots i {
-		width: 0.625rem;
-		height: 0.625rem;
-		background: var(--color-sky);
-	}
-
-	.term-dots i:first-child {
-		background: var(--color-signal);
-	}
-
-	.term-dots i:nth-child(2) {
-		background: var(--color-mist);
-	}
-
-	.term-prompt {
-		padding: 1.375rem 1.5rem 0.75rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-secondary);
-		line-height: 1.4;
-		color: var(--color-mist);
-	}
-
-	.term-prompt span {
-		color: var(--color-sky);
-	}
-
-	/* Forum: one terminal with the category tabs over example threads and the way in beside them, then three steps. */
-	/* The forum: one lifted panel of example threads, the door card and the live feed beside it, the steps as a strip below. */
-	.forum-grid {
-		--term-line: color-mix(in oklab, var(--color-sky) 24%, transparent);
-		display: grid;
-		gap: 1.25rem;
-	}
-
-	@media (min-width: 64rem) {
-		.forum-grid {
-			grid-template-columns: minmax(0, 1fr) 23.75rem;
-			gap: 1.75rem;
-			align-items: stretch;
-		}
-	}
-
-	.forum-panel {
-		min-width: 0;
-		overflow: hidden;
-		border-radius: 6px;
-		background: var(--color-navy-lift);
-	}
-
-	.forum-bar {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.625rem;
-		padding: 1rem 1.5rem;
-		border-bottom: 1px solid var(--term-line);
-	}
-
-	.forum-grep {
-		margin-right: 0.375rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-secondary);
-		color: var(--color-sky);
-	}
-
-	/* Without JS the chips stay hidden, and so does the command that names them. */
-	.forum-grep:has(+ .forum-tabs[hidden]) {
-		display: none;
-	}
-
-	.forum-tabs {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.forum-tabs[hidden] {
-		display: none;
-	}
-
-	.forum-tab {
+	.faq-after a {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
 		min-height: 2.75rem;
-		padding: 0.5625rem 1rem;
-		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 40%, transparent);
-		color: var(--color-ink);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 500;
-		line-height: 1.2;
-		cursor: pointer;
-	}
-
-	.forum-tab:hover {
-		background: color-mix(in srgb, var(--color-sky) 18%, var(--color-navy-lift));
-	}
-
-	.forum-tab[aria-selected='true'] {
-		background: var(--color-action);
-		color: var(--color-on-action);
-		box-shadow: none;
-	}
-
-	.forum-count {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 600;
-		line-height: 1;
-		opacity: 0.85;
-	}
-
-	.forum-example {
-		margin-left: auto;
-		padding: 1px 0.5rem;
-		border: 1px dashed color-mix(in oklab, var(--color-ink) 40%, transparent);
-		border-radius: 2px;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		font-weight: 500;
-		line-height: 1.4;
-		color: var(--color-mist);
-	}
-
-	.forum-row {
-		display: grid;
-		grid-template-columns: 1.25rem minmax(0, 1fr) auto;
-		gap: 0.125rem 0.875rem;
-		padding: 1.375rem 1.5rem;
-		border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
-		transition: background-color 0.15s;
-	}
-
-	.forum-row:hover {
-		background: color-mix(in srgb, var(--color-sky) 10%, var(--color-navy-lift));
-	}
-
-	.forum-row[hidden] {
-		display: none;
-	}
-
-	.forum-row:last-child {
-		border-bottom: 0;
-	}
-
-	.forum-icon {
-		grid-row: span 2;
-		padding-top: 0.1875rem;
-	}
-
-	.forum-icon svg {
-		display: block;
-	}
-
-	.forum-icon .ring,
-	.forum-icon .tick {
-		fill: none;
-		stroke-width: 2;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-	}
-
-	.forum-icon.is-open .ring {
-		stroke: var(--color-sky);
-	}
-
-	.forum-icon.is-open .dot {
-		fill: var(--color-sky);
-	}
-
-	.forum-icon.is-solved .dot {
-		fill: var(--color-ink);
-	}
-
-	.forum-icon.is-solved .tick {
-		stroke: var(--color-navy-lift);
-	}
-
-	.forum-icon.is-locked .dot {
-		fill: var(--color-mist);
-	}
-
-	.forum-icon.is-locked .ring {
-		stroke: var(--color-mist);
-	}
-
-	.forum-thread {
-		font-size: var(--text-body);
-		font-stretch: 104%;
-		font-weight: 650;
-		line-height: 1.35;
 		color: var(--color-ink);
 	}
 
-	.forum-replies {
-		grid-row: span 2;
-		align-self: center;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.375rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1;
-		color: color-mix(in oklab, var(--color-ink) 78%, transparent);
-	}
-
-	.forum-replies svg {
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 1.6;
-		stroke-linejoin: round;
-	}
-
-	.forum-meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.375rem 0.75rem;
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.forum-chip {
-		padding: 0.1875rem 0.625rem;
-		border-radius: 2px;
-		background: var(--color-navy-deep);
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 28%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 500;
-		line-height: 1.4;
-		color: var(--color-ink);
-	}
-
-	.forum-status {
-		padding: 0.75rem 1.5rem;
-		border-top: 1px solid var(--term-line);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.4;
-		color: var(--color-mist);
-	}
-
-	.forum-status:empty {
-		display: none;
-	}
-
-	.forum-side {
-		display: flex;
-		flex-direction: column;
-		gap: 1.25rem;
-		min-width: 0;
-	}
-
-	@media (min-width: 64rem) {
-		.forum-side {
-			gap: 1.75rem;
-		}
+	.faq-after-text {
+		text-decoration: underline;
+		text-decoration-color: var(--color-signal);
+		text-decoration-thickness: 3px;
+		text-underline-offset: 5px;
 	}
 
 	/* The door is a paper ticket like the ones in Inscripciones: the way in is the only action, on a sky stub. */
@@ -3059,210 +2167,12 @@
 		background: #fff;
 	}
 
-	/* The feed: example lines in the style of `tail -f`, anchored to the bottom so the newest one always shows. */
-	.forum-live {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		min-height: 15rem;
-		overflow: hidden;
-		border-radius: 6px;
-		background: var(--color-navy-deep);
-		box-shadow: inset 0 0 0 1px var(--term-line);
-	}
-
-	.forum-live-head {
-		display: flex;
-		align-items: center;
-		gap: 0.625rem;
-		padding: 0.875rem 1.25rem;
-		border-bottom: 1px solid var(--term-line);
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 400;
-		line-height: 1;
-		color: var(--color-sky);
-	}
-
-	.forum-live-head .forum-example {
-		margin-left: auto;
-	}
-
-	.forum-live-dot {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 50%;
-		background: var(--color-signal);
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.forum-live-dot {
-			animation: forum-pulse 1.6s ease-in-out infinite;
-		}
-	}
-
-	@keyframes forum-pulse {
-		50% {
-			opacity: 0.35;
-		}
-	}
-
-	.forum-feed {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		justify-content: flex-end;
-		gap: 0.75rem;
-		min-height: 0;
-		padding: 1rem 1.25rem 1.125rem;
-		overflow: hidden;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.5;
-		color: var(--color-mist);
-	}
-
-	.forum-feed li {
-		display: grid;
-		flex: none;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 0 0.625rem;
-	}
-
-	.forum-feed b {
-		font-weight: 500;
-		color: var(--color-ink);
-	}
-
-	.forum-feed em {
-		font-style: normal;
-		color: var(--color-sky);
-	}
-
-	/* The cursor sits at the end of the newest line. */
-	.forum-feed li:last-child span::after {
-		content: '';
-		display: inline-block;
-		width: 0.6em;
-		height: 1em;
-		margin-left: 0.375rem;
-		vertical-align: -0.15em;
-		background: var(--color-sky);
-	}
-
-	@media (prefers-reduced-motion: no-preference) {
-		.forum-feed li:last-child span::after {
-			animation: forum-blink 1s steps(1) infinite;
-		}
-
-		.forum-feed li.is-new {
-			animation: forum-feed-in 0.45s var(--ease-expo) both;
-		}
-	}
-
-	@keyframes forum-feed-in {
-		from {
-			opacity: 0;
-			transform: translateY(0.625rem);
-		}
-	}
-
-	@keyframes forum-blink {
-		50% {
-			opacity: 0;
-		}
-	}
-
 	/* src/scripts/idle-motion.ts marks a block that is off screen: its loops wait there. */
 	[data-idle],
 	[data-idle] *,
 	[data-idle] *::before,
 	[data-idle] *::after {
 		animation-play-state: paused !important;
-	}
-
-	/* The steps: a strip under the panel, each with its big numeral. */
-	.forum-steps {
-		display: grid;
-		gap: 1.5rem;
-		margin-top: var(--spacing-head);
-		padding-top: 2rem;
-		border-top: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
-	}
-
-	@media (min-width: 48rem) {
-		.forum-steps {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 2rem;
-		}
-	}
-
-	.forum-step {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		align-items: baseline;
-		gap: 0.25rem 1rem;
-	}
-
-	.forum-step-n {
-		grid-row: span 2;
-		font-family: var(--font-display);
-		font-stretch: 125%;
-		font-weight: 800;
-		font-size: var(--text-title);
-		line-height: 1;
-		color: var(--color-sky);
-	}
-
-	.forum-step strong {
-		font-size: var(--text-body);
-		font-stretch: 108%;
-		font-weight: 700;
-		line-height: 1.3;
-		color: var(--color-ink);
-	}
-
-	.forum-step p {
-		font-size: var(--text-secondary);
-		line-height: 1.45;
-		color: var(--color-mist);
-	}
-
-	@media (max-width: 47.99rem) {
-		.forum-bar {
-			padding: 0.75rem;
-		}
-
-		/* The example tag shares the command's line, so the chips get a row of their own under both. */
-		.forum-example {
-			order: -1;
-			margin-left: auto;
-		}
-
-		.forum-live-head .forum-example {
-			order: 0;
-		}
-
-		.forum-tabs {
-			gap: 0.375rem;
-		}
-
-		.forum-row {
-			padding: 0.625rem 1rem;
-		}
-
-		.forum-chip {
-			padding-block: 0.0625rem;
-		}
-
-		.forum-status {
-			padding: 0.5rem 1rem;
-		}
-
-		.forum-steps {
-			gap: 1rem;
-			padding-top: 1.5rem;
-		}
 	}
 
 	/* Preview build: a bar fixed to the bottom edge, so no layout or scroll measurement moves, and room under the footer. */
@@ -3488,14 +2398,6 @@
 
 	.social-instagram .social-go {
 		color: var(--color-on-sky);
-	}
-
-	.social-sticker {
-		top: auto;
-		right: 2rem;
-		bottom: 2rem;
-		left: auto;
-		transform: rotate(-4deg);
 	}
 
 	.social-link:focus-visible {
@@ -3900,15 +2802,15 @@
 		}
 	}
 
-	/* The boxes that print what the admin wrote (activity cards, tickets, news tiles, FAQ cards and manual): a word longer
+	/* The boxes that print what the admin wrote (activity cards, tickets, news tiles, FAQ): a word longer
 	   than the box wraps inside it instead of pushing the page sideways. Not `main`: on the whole page it split
 	   "Vicepresidente" in the board cards. */
 	.card-main,
 	.card-meta,
 	.count,
 	.tile-body,
-	.faq-card,
-	.faq-man {
+	.faq-title,
+	.faq-a {
 		overflow-wrap: break-word;
 	}
 }
@@ -3966,10 +2868,6 @@ html.motion [data-j-in] {
 }
 
 /* Phones get the same entrances as desktop, with shorter travel so nothing leaves the narrow column. */
-html.motion .w {
-	opacity: 0.22;
-}
-
 html.motion [data-member] {
 	opacity: 0;
 	transform: translateY(3rem) rotate(2deg);
@@ -4121,20 +3019,6 @@ html.motion .hero-mark-svg {
 		background: var(--color-navy);
 	}
 
-	.tk-key {
-		display: grid;
-		gap: 0.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.4;
-		color: var(--color-mist);
-	}
-
-	.tk-key b {
-		font-weight: 500;
-		color: var(--color-ink);
-	}
-
 	/* One column on a phone, as many 19.5rem tickets as fit otherwise. Few tickets keep their width instead of stretching. */
 	.tk-list {
 		display: grid;
@@ -4225,6 +3109,8 @@ html.motion .hero-mark-svg {
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem 0.75rem;
+		/* A free ticket has no mode chip: keep the chip's height so its date lines up with its neighbours. */
+		min-height: 1.5rem;
 	}
 
 	.tk-top .demo-tag {
@@ -4292,12 +3178,6 @@ html.motion .hero-mark-svg {
 		letter-spacing: -0.025em;
 		color: var(--color-on-paper);
 		overflow-wrap: anywhere;
-	}
-
-	.tk-desc {
-		font-size: var(--text-secondary);
-		line-height: 1.45;
-		color: var(--color-paper-soft);
 	}
 
 	.tk-facts {

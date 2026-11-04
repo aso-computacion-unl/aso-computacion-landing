@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adminOriginOf, eventUrl, forumUrl } from './forum';
+import { adminOriginOf, eventUrl, eventsUrl, forumUrl } from './forum';
 
 describe('adminOriginOf', () => {
 	it('reduces the content URL to its origin', () => {
@@ -31,6 +31,16 @@ describe('forumUrl', () => {
 
 	it('leaves the link out when the origin is unknown', () => {
 		expect(forumUrl(undefined)).toBeUndefined();
+	});
+});
+
+describe('eventsUrl', () => {
+	it('puts the list of events under the forum, on the admin origin', () => {
+		expect(eventsUrl('https://admin.example.test')).toBe('https://admin.example.test/foro/eventos');
+	});
+
+	it('leaves the link out when the origin is unknown', () => {
+		expect(eventsUrl(undefined)).toBeUndefined();
 	});
 });
 

@@ -155,7 +155,7 @@ export function composeSiteContent(options: {
 
 	const hasContent: Record<string, boolean> = {
 		[NEWS_PATH]: news.length > 0,
-		'#faq': faqItems.length > 0 || faqCommands.length > 0,
+		'#faq': faqItems.length > 0,
 		'#directiva': team.length > 0,
 		'#redes': socials.length > 0,
 	};

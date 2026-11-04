@@ -1,18 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The home is task first (sign up, news, activities, forum, then who we are), says its sizes once (one type scale, one
+// The home opens with who we are, then the agenda (sign up, activities, news), then the forum and the board; it says its sizes once (one type scale, one
 // size for every section title), never breaks a word across lines, and folds the old activities behind a disclosure.
 // The sections that hide when empty (Inscripciones, Novedades, Directiva, Redes) are checked only when they render.
 
 const ORDER = [
-	'inscripciones',
-	'novedades',
-	'actividades',
-	'foro',
 	'nosotros',
+	'inscripciones',
+	'actividades',
+	'novedades',
+	'foro',
 	'directiva',
-	'ideas',
 	'faq',
+	'ideas',
 	'redes',
 	'aliados',
 ];
@@ -20,7 +20,7 @@ const ORDER = [
 const sectionIds = (page: Page) => page.evaluate((ids) => ids.filter((id) => document.getElementById(id)), ORDER);
 
 test.describe('section order', () => {
-	test('follows the task-first order, and the nav links follow the page', async ({ page }) => {
+	test('follows the story-first order, and the nav links follow the page', async ({ page }) => {
 		await page.goto('/');
 		const ids = await page.evaluate(() =>
 			[...document.querySelectorAll('main > section[id]')].map((section) => section.id),
@@ -34,10 +34,10 @@ test.describe('section order', () => {
 		const positions = anchors.map((anchor) => ids.indexOf(anchor));
 		expect(positions.every((position) => position > 0)).toBe(true);
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		// Novedades points to its own page: it sits between the sign-ups and the activities, where the section is.
+		// Novedades points to its own page: it sits between the activities and the forum, where the section is.
 		if (hrefs.includes('/novedades')) {
-			expect(hrefs.indexOf('/novedades')).toBeGreaterThan(hrefs.indexOf('#inscripciones'));
-			expect(hrefs.indexOf('/novedades')).toBeLessThan(hrefs.indexOf('#actividades'));
+			expect(hrefs.indexOf('/novedades')).toBeGreaterThan(hrefs.indexOf('#actividades'));
+			expect(hrefs.indexOf('/novedades')).toBeLessThan(hrefs.indexOf('#foro'));
 		}
 	});
 
@@ -109,6 +109,79 @@ for (const width of [390, 768, 1440]) {
 		});
 	});
 }
+
+test.describe('polish', () => {
+	test('Nosotros has one plain kicker and a statement that is neither justified nor scrubbed word by word', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		const about = page.locator('#nosotros');
+		await expect(about.locator('.eyebrow')).toHaveText('Nosotros');
+		await expect(about.locator('.file-tab')).toHaveCount(0);
+		await expect(about.locator('[data-statement]')).toHaveCount(0);
+		const statement = about.locator('.about-statement');
+		await expect(statement).toHaveText(
+			'Representamos a quienes estudian Computación en la Universidad Nacional de Loja.',
+		);
+		await expect(statement).not.toHaveCSS('text-align', 'justify');
+		await expect(about.locator('.about-facts')).toHaveText('Organización estudiantil · ASO Computación – UNL');
+	});
+
+	test('the English page says the same sentence', async ({ page }) => {
+		await page.goto('/en/');
+		await expect(page.locator('#nosotros .eyebrow')).toHaveText('About');
+		await expect(page.locator('#nosotros .about-statement')).toHaveText(
+			'We represent the students of Computer Science at the Universidad Nacional de Loja.',
+		);
+	});
+
+	test('the board does not list the roles twice, and Redes has no sticker', async ({ page }) => {
+		await page.goto('/');
+		await expect(page.locator('#directiva .role-chip')).toHaveCount(0);
+		await expect(page.locator('#redes .social-sticker')).toHaveCount(0);
+	});
+
+	test('Ideas lists the four steps by title only', async ({ page }) => {
+		await page.goto('/');
+		const reasons = page.locator('#ideas [data-reason]');
+		await expect(reasons).toHaveCount(4);
+		for (const reason of await reasons.all()) await expect(reason.locator('p:not(.reason-num)')).toHaveCount(0);
+	});
+
+	test('an upcoming card leaves hora / lugar / para to its ticket and shows its whole description', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		const cards = page.locator('#actividades .plan .commit:has(.node-upcoming)');
+		test.skip((await cards.count()) === 0, 'the build has no upcoming activities');
+		await expect(cards.locator('.card-meta')).toHaveCount(0);
+		// The card may be the only place the description can be read: its link can go anywhere, and the ticket drops it.
+		for (const card of await cards.all()) {
+			const description = card.locator('.card-main > p.text-mist');
+			if ((await description.count()) === 0) continue;
+			expect(await description.evaluate((node) => getComputedStyle(node).webkitLineClamp)).toBe('none');
+		}
+	});
+
+	test('the ribbon band is filled end to end on a wide screen', async ({ page }) => {
+		await page.setViewportSize({ width: 1920, height: 900 });
+		await page.goto('/');
+		const { band, group } = await page.evaluate(() => ({
+			band: document.querySelector('.ribbon-band')!.getBoundingClientRect().width,
+			group: document.querySelector('.ribbon-group')!.getBoundingClientRect().width,
+		}));
+		// The track slides one group to the left, so each group alone must cover the band.
+		expect(group).toBeGreaterThanOrEqual(band);
+	});
+
+	test('every filter chip has something to filter', async ({ page }) => {
+		await page.goto('/');
+		const counts = await page
+			.locator('#actividades [data-filter]:not([data-filter="all"]) .chip-count')
+			.allTextContents();
+		expect(counts.filter((count) => count.trim() === '0')).toEqual([]);
+	});
+});
 
 test.describe('activities history', () => {
 	test('folds the older entries and always shows the root commit', async ({ page }) => {

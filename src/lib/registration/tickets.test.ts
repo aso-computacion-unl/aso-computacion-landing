@@ -41,13 +41,13 @@ describe('chooseTickets', () => {
 		]);
 	});
 
-	it('numbers only the tickets that take a registration, in the order shown', () => {
+	it('numbers every ticket in the order shown, free ones too: a free pass is a ticket like the rest', () => {
 		const tickets = chooseTickets([
 			entry('a', { date: '2026-11-01', registration: unl }),
 			entry('b', { date: '2026-11-02' }),
 			entry('c', { date: '2026-11-03', registration: open }),
 		]);
-		expect(tickets.map((ticket) => ticket.number)).toEqual([1, undefined, 2]);
+		expect(tickets.map((ticket) => ticket.number)).toEqual([1, 2, 3]);
 	});
 
 	it('is empty when nothing is upcoming', () => {

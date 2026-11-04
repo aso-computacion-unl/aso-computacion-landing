@@ -30,27 +30,26 @@ export const site: SiteCopy = {
 	heroCue: 'Baja por la rama: este es nuestro historial.',
 	description:
 		'Somos la asociación de estudiantes de Computación de la UNL: talleres, charlas y eventos, y tu voz ante la facultad.',
-	// Verbatim from the ASO's own LinkedIn page.
-	about:
-		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
+	// Nosotros' statement when the admin sends no about text of its own (the admin's text always wins).
+	about: 'Representamos a quienes estudian Computación en la Universidad Nacional de Loja.',
 };
 
 // The address people can write to. Shown in the footer and published as the organization's contact in the structured
 // data: change it here only.
 export const contactEmail = 'aso.computacion@gmail.com';
 
-// Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
-export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
+// Nosotros statement: the about text (the admin's `about`, or the short fallback in `site.about`) set as a statement,
+// with the `accents` phrases in sky blue, plus a mono line of facts.
+export interface AboutStatement {
+	// Phrases of the about text painted in sky, wherever they appear (the admin's text included).
+	accents: string[];
+	facts: string;
+}
 
-// Text of the diagonal ribbon: ASO verbs written as commit messages. Playful, no claims or numbers.
-export const ribbon = [
-	'feat: representar a los estudiantes',
-	'fix: aprender en equipo',
-	'chore: construir comunidad',
-	'docs: compartir lo que sabemos',
-	'feat: primer ciclo, bienvenido',
-	'refactor: hacer la carrera más llevadera',
-];
+export const aboutStatement: AboutStatement = {
+	accents: ['Computación', 'Universidad Nacional de Loja'],
+	facts: 'Organización estudiantil · ASO Computación – UNL',
+};
 
 // Nosotros manifesto: two static lines plus one rotating word. Screen readers get `sr` instead of the animation.
 export const manifesto = {
@@ -93,11 +92,11 @@ export const demoPillars: Pillar[] = [
 ];
 
 export const navLinks = [
-	{ label: 'Inscripciones', href: '#inscripciones' },
-	{ label: 'Novedades', href: '/novedades' },
-	{ label: 'Actividades', href: '#actividades' },
-	{ label: 'Foro', href: '#foro' },
 	{ label: 'Nosotros', href: '#nosotros' },
+	{ label: 'Inscripciones', href: '#inscripciones' },
+	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Novedades', href: '/novedades' },
+	{ label: 'Foro', href: '#foro' },
 	{ label: 'Directiva', href: '#directiva' },
 	{ label: 'FAQ', href: '#faq' },
 	{ label: 'Redes', href: '#redes' },
@@ -107,7 +106,6 @@ export const navLinks = [
 export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initial: TimelineEntry } = {
 	next: {
 		id: 'proxima-actividad',
-		msg: 'chore: pronto en tu feed',
 		kind: 'next',
 		stamp: 'Lo que sigue',
 		title: 'La próxima actividad se anuncia primero en Instagram',
@@ -118,7 +116,6 @@ export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initia
 	// The description is rewritten from the real board size (see compose.ts).
 	head: {
 		id: 'directiva-actual',
-		msg: 'docs(directiva): conoce a quienes hacen que esto pase',
 		kind: 'head',
 		stamp: 'HEAD',
 		title: 'Directiva actual',
@@ -128,7 +125,6 @@ export const timelineAnchors: { next: TimelineEntry; head: TimelineEntry; initia
 	},
 	initial: {
 		id: 'fundacion',
-		msg: 'init: hola, mundo',
 		kind: 'initial',
 		stamp: '2020',
 		title: 'Nace ASO Computación',
@@ -143,7 +139,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'feria-de-proyectos',
 		date: '2026-12-11',
 		type: 'evento',
-		msg: 'feat(feria): demo day, esta vez sin demo en vivo que falle (ojalá)',
 		demo: true,
 		stamp: '11 dic 2026',
 		title: 'Feria de proyectos y cierre de ciclo',
@@ -155,7 +150,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'hackaton',
 		date: '2026-11-28',
 		type: 'evento',
-		msg: 'feat(hackaton): mucho café, cero bugs (ojalá)',
 		demo: true,
 		stamp: '28 nov 2026',
 		title: 'Hackatón ASO Computación',
@@ -167,7 +161,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'taller-python',
 		date: '2026-11-12',
 		type: 'taller',
-		msg: 'feat(taller): print("hola, primer ciclo")',
 		demo: true,
 		stamp: '12 nov 2026',
 		title: 'Taller de Python para primer ciclo',
@@ -180,7 +173,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'charla-ciberseguridad',
 		date: '2026-09-18',
 		type: 'charla',
-		msg: 'fix(charla): no, "123456" no es una contraseña segura',
 		demo: true,
 		stamp: '18 sep 2026',
 		title: 'Charla: introducción a la ciberseguridad',
@@ -196,7 +188,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'torneo-programacion',
 		date: '2026-06-25',
 		type: 'evento',
-		msg: 'feat(torneo): resolver, equivocarse, resolver otra vez',
 		demo: true,
 		stamp: '25 jun 2026',
 		title: 'Torneo de programación',
@@ -212,7 +203,6 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 		id: 'taller-git',
 		date: '2026-05-20',
 		type: 'taller',
-		msg: 'chore(taller): git commit -m "ahora sí guardé"',
 		demo: true,
 		stamp: '20 may 2026',
 		title: 'Taller de Git y GitHub',
@@ -227,26 +217,22 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 // certificates. Replace with the board's own words, then drop `demo`.
 export const join = {
 	demo: true,
-	eyebrow: 'CONTRIBUTING.md',
+	eyebrow: 'Participa',
 	headline: ['Tus ideas', 'también hacen', 'commit'],
-	lead: 'La carrera la mejoramos entre todos. Cuéntanos qué cambiarías y ayúdanos a fortalecer la comunidad.',
+	lead: 'Cuéntanos qué cambiarías y ayúdanos a mejorar la carrera.',
 	stickers: ['¡propón!', 'ideas de todos los ciclos'],
 	reasons: [
 		{
 			title: 'Propón un taller o una charla',
-			text: 'Si hay algo que quieres aprender o enseñar, escríbenos y lo armamos juntos.',
 		},
 		{
 			title: 'Cuéntanos qué mejorar en la carrera',
-			text: 'Lo que ves desde tu ciclo ayuda a que la ASO lleve mejor la voz de todos.',
 		},
 		{
 			title: 'Ayúdanos a difundir y participa',
-			text: 'Ven a las actividades, comparte los anuncios y trae a tus compañeros.',
 		},
 		{
 			title: 'Comparte lo que sabes con otros ciclos',
-			text: 'Lo que aprendiste hace un año le sirve a quien está empezando.',
 		},
 	],
 	cta: 'Envíanos tu idea',
@@ -271,107 +257,23 @@ export const demoCollage: Photo[] = [
 ];
 
 // The forum section. The forum itself lives on the admin's origin (`/foro`, see ../lib/admin-content/forum.ts); this is
-// its door on the landing: the categories as they exist there, three steps, and a few example threads.
+// its door on the landing: the categories as they exist there and a few example threads.
 export type ForumCategoryId = 'general' | 'materias' | 'propuestas';
-export type ForumThreadStatus = 'open' | 'solved' | 'locked';
 
 export interface ForumThread {
 	id: string;
-	status: ForumThreadStatus;
 	title: string;
 	category: ForumCategoryId;
-	// Age as the forum shows it ("hace 2 h"): fixed text, since the page is built ahead of time.
-	when: string;
-	replies: number;
 }
 
-// The "languages" moment of Inscripciones: the association's own line (the message of the "Bienvenida" commit) written in
-// five syntaxes. Code is code, so it is the same on the English page. Each part says how to colour it: keyword, string
-// or plain punctuation.
-export const motto = 'aquí nadie empieza solo';
-
-export type CodeKind = 'k' | 's' | 'p';
-export interface Snippet {
-	file: string;
-	name: string;
-	parts: readonly (readonly [CodeKind, string])[];
-}
-
-export const snippets: readonly Snippet[] = [
-	{
-		file: 'hola.py',
-		name: 'Python',
-		parts: [
-			['k', 'print'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ')'],
-		],
-	},
-	{
-		file: 'hola.js',
-		name: 'JavaScript',
-		parts: [
-			['k', 'console'],
-			['p', '.'],
-			['k', 'log'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.c',
-		name: 'C',
-		parts: [
-			['k', 'printf'],
-			['p', '('],
-			['s', `"${motto}\\n"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.rs',
-		name: 'Rust',
-		parts: [
-			['k', 'println!'],
-			['p', '('],
-			['s', `"${motto}"`],
-			['p', ');'],
-		],
-	},
-	{
-		file: 'hola.hs',
-		name: 'Haskell',
-		parts: [
-			['k', 'putStrLn'],
-			['p', ' '],
-			['s', `"${motto}"`],
-		],
-	},
-];
-
-// A line of the example activity feed: what is happening in the forum "right now". Invented, like the threads.
-export type ForumFeedKind = 'reply' | 'thanks' | 'open' | 'solved' | 'join';
-
-export interface ForumFeedLine {
-	// "14:02": fixed text, since the page is built ahead of time.
-	time: string;
-	kind: ForumFeedKind;
-	// The thread it is about, in the forum's own (Spanish) words.
-	topic: string;
-	who?: string;
-	count?: number;
-}
-
-// DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
+// DEMO: the example threads (invented titles; they are not read from the forum, which has no
 // public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
 // feed, or with the board's own words, then drop `demo`.
 export const forum = {
 	demo: true,
-	eyebrow: '$ git log foro --oneline',
+	eyebrow: 'Entre estudiantes',
 	title: 'El foro de Computación',
-	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL.',
+	lead: 'Pregunta sobre materias, propón talleres y arma equipo.',
 	// Names and descriptions as the forum has them.
 	categories: [
 		{ id: 'general', name: 'General', description: 'Todo lo que no cabe en otra categoría.' },
@@ -381,87 +283,44 @@ export const forum = {
 	threads: [
 		{
 			id: 'estructuras-de-datos',
-			status: 'open',
 			title: '¿Cómo preparo el examen de Estructuras de Datos?',
 			category: 'materias',
-			when: 'hace 2 h',
-			replies: 6,
 		},
 		{
 			id: 'postgres-docker',
-			status: 'solved',
 			title: 'Error al conectar Postgres desde Docker en el laboratorio',
 			category: 'materias',
-			when: 'hace 5 h',
-			replies: 9,
 		},
 		{
 			id: 'taller-docker',
-			status: 'open',
 			title: 'Propuesta: taller de Docker para primeros ciclos',
 			category: 'propuestas',
-			when: 'ayer',
-			replies: 14,
 		},
 		{
 			id: 'equipo-hackathon',
-			status: 'open',
 			title: 'Busco equipo para el hackathon (backend con Node)',
 			category: 'general',
-			when: 'ayer',
-			replies: 3,
 		},
 		{
 			id: 'electivas',
-			status: 'solved',
 			title: '¿Qué electivas recomiendan para 7.º ciclo?',
 			category: 'general',
-			when: 'hace 3 días',
-			replies: 21,
 		},
 		{
 			id: 'laboratorio-sabados',
-			status: 'locked',
 			title: 'Horario del laboratorio abierto los sábados',
 			category: 'general',
-			when: 'hace 1 semana',
-			replies: 4,
 		},
 	] as ForumThread[],
-	// The feed that scrolls beside the threads: made-up lines in the style of `tail -f`.
-	feed: [
-		{ time: '14:02', kind: 'reply', who: 'María', topic: 'Estructuras de Datos' },
-		{ time: '14:03', kind: 'thanks', count: 1, topic: 'Postgres desde Docker' },
-		{ time: '14:05', kind: 'open', who: 'Diego', topic: '¿Alguien tiene apuntes de Redes?' },
-		{ time: '14:06', kind: 'solved', topic: '¿Qué electivas para 7.º ciclo?' },
-		{ time: '14:08', kind: 'join', who: 'Ana', topic: 'hackathon' },
-		{ time: '14:09', kind: 'thanks', count: 3, topic: 'Taller de Docker' },
-		{ time: '14:11', kind: 'reply', who: 'Luis', topic: 'Busco equipo (Node)' },
-	] as ForumFeedLine[],
-	steps: [
-		{
-			title: 'Pregunta o responde',
-			text: 'Abre un hilo en Materias, Propuestas o General, o responde el de otra persona.',
-		},
-		{
-			title: 'Dile “me sirvió”',
-			text: 'Reacciona a las respuestas útiles para que las vea más gente.',
-		},
-		{
-			title: 'Marca la mejor respuesta',
-			text: 'Quien abrió el hilo la marca y el hilo queda resuelto. La directiva modera y puedes reportar cualquier mensaje.',
-		},
-	],
 };
 
 // Section copy of the FAQ. The items come from the admin; `demoFaqItems` fills the section while the fallback has none.
 export const faqCopy = {
 	title: 'Preguntas frecuentes',
-	lead: 'Escribe un tema o toca una tarjeta: la respuesta se abre aquí mismo, como una página de manual.',
+	lead: 'Lo que más nos preguntan.',
 };
 
-// DEMO: frequently asked questions (invented answers; the Instagram DM channel is real). `topic` is the slug shown as
-// `git help <topic>`.
+// DEMO: frequently asked questions (invented answers; the Instagram DM channel is real).
 export const demoFaqItems: FaqItem[] = [
 	{
 		topic: 'participar',
@@ -514,8 +373,7 @@ type Anchors = typeof timelineAnchors;
 
 export interface LandingCopy {
 	site: SiteCopy;
-	aboutHighlights: string[];
-	ribbon: string[];
+	aboutStatement: AboutStatement;
 	manifesto: typeof manifesto;
 	navLinks: typeof navLinks;
 	timelineAnchors: Anchors;
@@ -523,15 +381,6 @@ export interface LandingCopy {
 	forum: typeof forum;
 	faqCopy: typeof faqCopy;
 }
-
-const enThreadAge: Record<string, string> = {
-	'estructuras-de-datos': '2 h ago',
-	'postgres-docker': '5 h ago',
-	'taller-docker': 'yesterday',
-	'equipo-hackathon': 'yesterday',
-	electivas: '3 days ago',
-	'laboratorio-sabados': '1 week ago',
-};
 
 const enCopy: LandingCopy = {
 	site: {
@@ -542,30 +391,24 @@ const enCopy: LandingCopy = {
 		heroCue: 'Scroll down the branch: this is our history.',
 		description:
 			'We are the Computer Science student association at the UNL: workshops, talks and events, and your voice before the faculty.',
-		about:
-			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
+		about: 'We represent the students of Computer Science at the Universidad Nacional de Loja.',
 	},
-	// The admin's about text stays in Spanish, so its phrases are highlighted too.
-	aboutHighlights: ['student organization', 'Universidad Nacional de Loja', ...aboutHighlights],
-	ribbon: [
-		'feat: represent the students',
-		'fix: learn as a team',
-		'chore: build community',
-		'docs: share what we know',
-		'feat: first semester, welcome',
-		'refactor: make the degree lighter',
-	],
+	aboutStatement: {
+		// The admin's about text stays in Spanish, so its phrases are painted too.
+		accents: ['Computer Science', 'Computación', 'Universidad Nacional de Loja'],
+		facts: 'Student organization · ASO Computación – UNL',
+	},
 	manifesto: {
 		lines: ['We are the ASO', 'of Computer Science'],
 		rotor: ['students', 'community', 'your voice'],
 		sr: 'We are the Computer Science ASO: students, community and your voice.',
 	},
 	navLinks: [
-		{ label: 'Sign-ups', href: '#inscripciones' },
-		{ label: 'News', href: '/novedades' },
-		{ label: 'Activities', href: '#actividades' },
-		{ label: 'Forum', href: '#foro' },
 		{ label: 'About', href: '#nosotros' },
+		{ label: 'Sign-ups', href: '#inscripciones' },
+		{ label: 'Activities', href: '#actividades' },
+		{ label: 'News', href: '/novedades' },
+		{ label: 'Forum', href: '#foro' },
 		{ label: 'Board', href: '#directiva' },
 		{ label: 'FAQ', href: '#faq' },
 		{ label: 'Socials', href: '#redes' },
@@ -573,7 +416,6 @@ const enCopy: LandingCopy = {
 	timelineAnchors: {
 		next: {
 			...timelineAnchors.next,
-			msg: 'chore: soon in your feed',
 			stamp: 'Up next',
 			title: 'The next activity is announced first on Instagram',
 			description: 'Follow us to hear about it as soon as it is posted.',
@@ -581,14 +423,12 @@ const enCopy: LandingCopy = {
 		},
 		head: {
 			...timelineAnchors.head,
-			msg: 'docs(board): meet the people who make this happen',
 			title: 'Current board',
 			description: 'Seven members represent the students of the program today.',
 			hrefLabel: 'Meet the board',
 		},
 		initial: {
 			...timelineAnchors.initial,
-			msg: 'init: hello, world',
 			title: 'ASO Computación is born',
 			description: 'The student association of the Computer Science program is founded.',
 		},
@@ -596,24 +436,21 @@ const enCopy: LandingCopy = {
 	join: {
 		...join,
 		headline: ['Your ideas', 'make a', 'commit too'],
-		lead: 'We make the program better together. Tell us what you would change and help us make the community stronger.',
+		eyebrow: 'Get involved',
+		lead: 'Tell us what you would change and help us improve the program.',
 		stickers: ['pitch it!', 'ideas from every semester'],
 		reasons: [
 			{
 				title: 'Pitch a workshop or a talk',
-				text: 'If there is something you want to learn or teach, write to us and we will put it together.',
 			},
 			{
 				title: 'Tell us what to improve in the program',
-				text: 'What you see from your semester helps the ASO carry everyone’s voice better.',
 			},
 			{
 				title: 'Help spread the word and take part',
-				text: 'Come to the activities, share the announcements and bring your classmates.',
 			},
 			{
 				title: 'Share what you know with other semesters',
-				text: 'What you learned a year ago helps someone who is just starting.',
 			},
 		],
 		cta: 'Send us your idea',
@@ -633,29 +470,21 @@ const enCopy: LandingCopy = {
 	forum: {
 		...forum,
 		title: 'The Computer Science forum',
-		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students.',
+		eyebrow: 'Student to student',
+		lead: 'Ask about your courses, pitch workshops and build a team.',
 		categories: [
 			{ ...forum.categories[0], description: 'Everything that does not fit another category.' },
 			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
 			{ ...forum.categories[2], description: 'Ideas for workshops, talks and events for the association.' },
 		],
-		threads: forum.threads.map((thread) => ({ ...thread, when: enThreadAge[thread.id] ?? thread.when })),
-		steps: [
-			{ title: 'Ask or answer', text: 'Open a thread in Materias, Propuestas or General, or answer someone else’s.' },
-			{ title: 'Say “it helped”', text: 'React to the useful answers so more people see them.' },
-			{
-				title: 'Mark the best answer',
-				text: 'Whoever opened the thread marks it and the thread is solved. The board moderates and you can report any message.',
-			},
-		],
 	},
 	faqCopy: {
 		title: 'Frequently asked questions',
-		lead: 'Type a topic or tap a card: the answer opens right here, like a manual page.',
+		lead: 'What we get asked the most.',
 	},
 };
 
 export const copy: Record<Locale, LandingCopy> = {
-	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
+	es: { site, aboutStatement, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
 	en: enCopy,
 };

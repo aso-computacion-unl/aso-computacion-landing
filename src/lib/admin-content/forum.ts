@@ -26,6 +26,10 @@ export function adminOriginOf(url: string | undefined): string | undefined {
 export const forumUrl = (origin: string | undefined): string | undefined =>
 	origin ? `${origin}${FORUM_PATH}` : undefined;
 
+// The list of every event (and its sign-up) on that origin; undefined (no link) when the origin is not known.
+export const eventsUrl = (origin: string | undefined): string | undefined =>
+	origin ? `${origin}${EVENTS_PATH}` : undefined;
+
 // The page of one event on that origin (`/foro/eventos/<slug>`): where both registration modes sign up, and the only
 // place the landing sends a visitor who wants a seat. The slug is encoded, so it can never leave its path segment.
 export const eventUrl = (origin: string | undefined, slug: string): string | undefined =>

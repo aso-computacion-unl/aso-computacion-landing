@@ -1,345 +1,109 @@
 ---
-// Home section: the latest news as a terminal. The rows are `git log` lines (each one links to its post) and the pane
-// beside them is `git show` of the row under the pointer or focus. Without JS the pane shows the newest item and every
-// row still links to its post. The pane swap lives in src/scripts/news-visor.ts. Hidden by the page when there is
-// nothing to show.
+// Home section: a teaser for the news. The three latest posts as a plain list (date, title, arrow; each row links to its
+// post) and one button to the news page, which has the rest. The title decrypts once (src/scripts/moments.ts). Hidden
+// by the page when there is nothing to show.
 import { getContent } from '../data/content';
 import { localizedPath, toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import Button from './Button.astro';
-import Photo from './Photo.astro';
 import SectionHead from './SectionHead.astro';
-import { shortHash } from './shortHash';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { latestNews, news } = getContent(locale);
-const count = latestNews.length;
-const items = latestNews.map((item) => {
-	// "25 oct 2026": the day is the big number of the plate, the rest its caption.
-	const [day, ...rest] = item.stamp.split(' ');
-	return { ...item, hash: shortHash(item.slug), day, rest: rest.join(' ') };
-});
+const { latestNews } = getContent(locale);
 ---
 
-<section id="novedades" class="bg-navy py-section">
+<section id="novedades" class="deep bg-navy-deep py-section">
 	<div class="wrap">
-		<SectionHead eyebrow="$ git tag --sort=-creatordate" title={t('news.title')} lead={t('news.lead')} decrypt>
+		<SectionHead eyebrow={t('news.eyebrow')} title={t('news.title')} lead={t('news.lead')} decrypt>
 			<div slot="aside" class="flex lg:justify-end">
-				<Button href={localizedPath('/novedades', locale)} variant="ghost">
-					{news.length > count ? t('news.seeCount', { count: news.length }) : t('news.seeAll')}
-				</Button>
+				<Button href={localizedPath('/novedades', locale)}>{t('news.seeAll')}</Button>
 			</div>
 		</SectionHead>
 
-		<div class="term-win news-term mt-head" data-news-visor data-tile>
-			<p class="term-bar" aria-hidden="true">
-				<span class="term-dots">
-					<i></i>
-					<i></i>
-					<i></i>
-				</span>
-				<span>aso-computacion — git log</span>
-			</p>
-			<div class="news-split">
-				<div class="news-log">
-					<p class="term-prompt" aria-hidden="true">
-						<span>$</span> git log --oneline -n {count}
-					</p>
-					<ul class="news-rows">
-						{items.map((item, index) => (
-							<li>
-								<a class="news-row" href={item.href} data-news-row data-active={index === 0 ? 'true' : 'false'}>
-									<span class="news-node" aria-hidden="true" />
-									<span class="news-row-meta">
-										<span class="news-hash" aria-hidden="true">
-											{item.hash}
-										</span>
-										<time class="stamp stamp-past news-stamp" datetime={item.date}>
-											{item.stamp}
-										</time>
-									</span>
-									<span class="news-row-title">{item.title}</span>
-								</a>
-							</li>
-						))}
-					</ul>
-				</div>
-
-				<div class="news-shows">
-					{items.map((item, index) => (
-						<article class="news-show" data-news-show hidden={index > 0}>
-							<p class="term-prompt news-cmd" aria-hidden="true">
-								<span>$</span> git show {item.hash}
-							</p>
-							<div class="news-media">
-								{item.cover ? (
-									<Photo
-										photo={item.cover}
-										box={{ width: 960, height: 384 }}
-										widths={[480, 960]}
-										sizes="(min-width: 1024px) 44rem, 92vw"
-										fit="cover"
-										alt=""
-										class="news-media-img"
-									/>
-								) : (
-									<p class="news-plate" aria-hidden="true">
-										<b>{item.day}</b>
-										<span>{item.rest}</span>
-									</p>
-								)}
-							</div>
-							<p class="news-lines" aria-hidden="true">
-								<b>commit</b> {item.hash}
-								<br />
-								<b>Date:</b>&nbsp;&nbsp; {item.stamp}
-							</p>
-							<h3 class="news-show-title">{item.title}</h3>
-							<p class="news-show-summary">{item.summary}</p>
-							<div class="news-show-cta">
-								<Button href={item.href}>{t('news.read')}</Button>
-							</div>
-						</article>
-					))}
-				</div>
-			</div>
-		</div>
+		<ul class="news-list mt-head">
+			{latestNews.map((item) => (
+				<li>
+					<a class="news-link" href={item.href}>
+						<time datetime={item.date}>{item.stamp}</time>
+						<span class="news-title">{item.title}</span>
+						<span class="news-arrow" aria-hidden="true">
+							→
+						</span>
+					</a>
+				</li>
+			))}
+		</ul>
 	</div>
 </section>
 
 <style>
-	.news-split {
-		display: grid;
-	}
-
-	@media (min-width: 64rem) {
-		.news-split {
-			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-		}
-	}
-
-	.news-log {
-		display: flex;
-		flex-direction: column;
-		padding-bottom: 0.75rem;
-	}
-
-	.news-rows {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
+	.news-list {
 		list-style: none;
+		border-top: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
 	}
 
-	.news-rows li {
-		display: flex;
-		flex: 1;
+	.news-list li {
+		border-bottom: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
 	}
 
-	/* One commit: node on the rail, hash and date, title. The rail runs from the first node to the last. */
-	.news-row {
-		position: relative;
+	.news-link {
 		display: grid;
-		flex: 1;
-		align-content: start;
-		gap: 0.625rem;
-		padding: 1.5rem 1.5rem 1.5rem 4.125rem;
+		grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+		gap: 1.5rem;
+		align-items: baseline;
+		padding: 1.25rem 0;
 		color: var(--color-ink);
 		text-decoration: none;
-		transition: background-color 0.15s;
 	}
 
-	.news-row::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 1.875rem;
-		width: 2px;
-		background: var(--color-sky);
-	}
-
-	.news-rows li:first-child .news-row::before {
-		top: 2.25rem;
-	}
-
-	.news-rows li:last-child .news-row::before {
-		bottom: auto;
-		height: 2.25rem;
-	}
-
-	.news-rows li:only-child .news-row::before {
-		display: none;
-	}
-
-	.news-node {
-		position: absolute;
-		top: 1.8125rem;
-		left: 1.5rem;
-		width: 0.875rem;
-		height: 0.875rem;
-		background: var(--term-bg);
-		box-shadow: inset 0 0 0 2px var(--color-sky);
-	}
-
-	.news-row:hover,
-	.news-row[data-active='true'] {
-		background: var(--color-navy-lift);
-	}
-
-	.news-row[data-active='true'] .news-node {
-		background: var(--color-sky);
-	}
-
-	.news-row:focus-visible {
-		outline: 2px solid var(--color-sky);
-		outline-offset: -2px;
-	}
-
-	.news-row-meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.news-hash {
+	.news-link time {
 		font-family: var(--font-mono);
 		font-size: var(--text-label);
-		font-weight: 500;
-		color: var(--color-sky);
-		font-variant-numeric: tabular-nums;
+		color: var(--color-mist);
 	}
 
-	/* The stamp's default overhang is for timeline cards; here it sits in line. */
-	.news-stamp {
-		margin-left: 0;
-	}
-
-	.news-row-title {
+	.news-title {
 		font-size: var(--text-lead);
 		font-stretch: 112%;
 		font-weight: 700;
-		line-height: 1.2;
+		line-height: 1.25;
 		letter-spacing: -0.01em;
-		text-wrap: balance;
+		overflow-wrap: anywhere;
 	}
 
-	.news-row:hover .news-row-title,
-	.news-row:focus-visible .news-row-title {
+	.news-arrow {
+		color: var(--color-mist);
+		transition: color 0.15s;
+	}
+
+	.news-link:hover .news-title,
+	.news-link:focus-visible .news-title {
 		text-decoration: underline;
 		text-decoration-color: var(--color-sky);
 		text-decoration-thickness: 2px;
 		text-underline-offset: 0.22em;
 	}
 
-	.news-shows {
-		display: grid;
-		border-top: 1px solid var(--term-line);
-	}
-
-	@media (min-width: 64rem) {
-		.news-shows {
-			border-top: 0;
-			border-left: 1px solid var(--term-line);
-		}
-	}
-
-	.news-show {
-		display: flex;
-		flex-direction: column;
-		padding: 1.5rem 1.25rem 1.75rem;
-	}
-
-	@media (min-width: 64rem) {
-		.news-show {
-			padding: 1.75rem 2rem 2rem;
-		}
-	}
-
-	.news-show[hidden] {
-		display: none;
-	}
-
-	.news-cmd {
-		padding: 0 0 1.125rem;
-	}
-
-	.news-media {
-		aspect-ratio: 2.5 / 1;
-		overflow: hidden;
-		border-radius: 2px;
-		background: var(--color-navy-lift);
-	}
-
-	.news-media :global(.news-media-img) {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	/* No cover: the date is the picture. */
-	.news-plate {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		gap: 0.375rem;
-		height: 100%;
-		padding: clamp(0.875rem, 4%, 1.75rem);
-	}
-
-	.news-plate b {
-		font-size: var(--text-display);
-		font-stretch: 125%;
-		font-weight: 800;
-		line-height: 0.82;
-		letter-spacing: -0.04em;
-		color: var(--color-ink);
-	}
-
-	.news-plate span {
-		font-family: var(--font-mono);
-		font-size: var(--text-secondary);
-		font-weight: 500;
+	.news-link:hover .news-arrow,
+	.news-link:focus-visible .news-arrow {
 		color: var(--color-sky);
 	}
 
-	.news-lines {
-		margin-top: 1.25rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.6;
-		color: var(--color-mist);
+	.news-link:focus-visible {
+		outline: 2px solid var(--color-sky);
+		outline-offset: 2px;
 	}
 
-	.news-lines b {
-		font-weight: 500;
-		color: var(--color-sky);
-	}
+	/* On a phone the date sits above the title instead of beside it. */
+	@media (max-width: 39.9375rem) {
+		.news-link {
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 0.25rem 1rem;
+		}
 
-	.news-show-title {
-		margin-top: 0.875rem;
-		font-size: var(--text-title);
-		font-stretch: 125%;
-		font-weight: 800;
-		line-height: 1.1;
-		letter-spacing: -0.02em;
-		color: var(--color-ink);
-		text-wrap: balance;
-	}
-
-	.news-show-summary {
-		max-width: 58ch;
-		margin-top: 0.75rem;
-		font-size: var(--text-body);
-		line-height: 1.5;
-		color: var(--color-mist);
-	}
-
-	.news-show-cta {
-		margin-top: auto;
-		padding-top: 1.5rem;
+		.news-link time {
+			grid-column: 1 / -1;
+		}
 	}
 </style>

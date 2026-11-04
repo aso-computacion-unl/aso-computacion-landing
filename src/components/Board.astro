@@ -36,7 +36,7 @@ const handle = (name: string) =>
 		.toLowerCase();
 ---
 
-<section id="directiva" class="bg-navy py-section">
+<section id="directiva" class="deep bg-navy-deep py-section">
 	<div class="wrap">
 		<SectionHead eyebrow="$ git shortlog" title={t('board.title')} lead={t('board.lead')}>
 			<div slot="aside" class="count">
@@ -45,11 +45,6 @@ const handle = (name: string) =>
 				</p>
 				<div>
 					<p class="count-label">{t('board.count')}</p>
-					<ul class="mt-4 flex flex-wrap gap-2" aria-label={t('board.roles')}>
-						{team.map((member) => (
-							<li class="role-chip">{member.role}</li>
-						))}
-					</ul>
 				</div>
 			</div>
 		</SectionHead>

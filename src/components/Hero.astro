@@ -22,13 +22,13 @@ const gates = [
 		label: t('hero.quick.registrations'),
 		note: signUpsNote,
 	},
-	{ href: '#foro', name: 'foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
 	latestNews.length > 0 && {
 		href: '#novedades',
 		name: 'novedades',
 		label: t('hero.quick.news'),
 		note: t('hero.gate.news', { date: latestNews[0].stamp }),
 	},
+	{ href: '#foro', name: 'foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
 ].filter((gate) => gate !== false);
 ---
 
