@@ -2,7 +2,7 @@
 // are paused through `data-idle`, which the stylesheet reads. Without JS they simply keep looping, and under reduced
 // motion there is nothing to pause.
 
-const HOSTS = '[data-lang], .forum-live, .tk-list';
+const HOSTS = '.tk-list';
 
 const hosts = Array.from(document.querySelectorAll<HTMLElement>(HOSTS));
 if (hosts.length > 0) {

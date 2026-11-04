@@ -9,14 +9,12 @@ import {
 	type ManualSection,
 } from './faq-shell';
 import './idle-motion';
-import { initForumFeed } from './forum-feed';
-import { initForumTabs } from './forum-tabs';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
 const t = useTranslations(locale);
 
-// Small interactions that work with or without motion: activity filters, board cards on touch, forum tabs.
+// Small interactions that work with or without motion: activity filters and board cards on touch.
 // Every one of them has a complete static fallback in the HTML.
 
 // Filters: dim the entries that do not match; the rail stays intact. Entries without a type are never dimmed.
@@ -81,14 +79,6 @@ if (history && rootNode && mainRail) {
 history
 	?.querySelector('[data-history-more]')
 	?.addEventListener('toggle', () => window.dispatchEvent(new Event('aso:relayout')));
-
-// Forum tabs: pick a category and the example threads filter to it (the bar stays hidden without JS, which shows them all).
-const forum = document.querySelector<HTMLElement>('[data-forum]');
-if (forum) initForumTabs(forum, t);
-
-// The forum's example feed scrolls in line by line, except under reduced motion, where it keeps the lines it was drawn with.
-const feed = document.querySelector<HTMLElement>('[data-forum-feed]');
-if (feed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) initForumFeed(feed);
 
 // FAQ prompt: replaces the static <details> list with a big prompt (help, git help <tema>, clear, history, Tab), the
 // answer as a manual page and a card per topic. The <details> entries stay the single source of questions and answers,

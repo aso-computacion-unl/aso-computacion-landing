@@ -261,7 +261,7 @@ export const demoCollage: Photo[] = [
 ];
 
 // The forum section. The forum itself lives on the admin's origin (`/foro`, see ../lib/admin-content/forum.ts); this is
-// its door on the landing: the categories as they exist there, three steps, and a few example threads.
+// its door on the landing: the categories as they exist there and a few example threads.
 export type ForumCategoryId = 'general' | 'materias' | 'propuestas';
 export type ForumThreadStatus = 'open' | 'solved' | 'locked';
 
@@ -341,19 +341,6 @@ export const snippets: readonly Snippet[] = [
 	},
 ];
 
-// A line of the example activity feed: what is happening in the forum "right now". Invented, like the threads.
-export type ForumFeedKind = 'reply' | 'thanks' | 'open' | 'solved' | 'join';
-
-export interface ForumFeedLine {
-	// "14:02": fixed text, since the page is built ahead of time.
-	time: string;
-	kind: ForumFeedKind;
-	// The thread it is about, in the forum's own (Spanish) words.
-	topic: string;
-	who?: string;
-	count?: number;
-}
-
 // DEMO: the example threads (invented titles, ages and reply counts; they are not read from the forum, which has no
 // public API for them yet) and the intro copy. The categories are the forum's real ones. Replace the threads with a real
 // feed, or with the board's own words, then drop `demo`.
@@ -418,30 +405,6 @@ export const forum = {
 			replies: 4,
 		},
 	] as ForumThread[],
-	// The feed that scrolls beside the threads: made-up lines in the style of `tail -f`.
-	feed: [
-		{ time: '14:02', kind: 'reply', who: 'María', topic: 'Estructuras de Datos' },
-		{ time: '14:03', kind: 'thanks', count: 1, topic: 'Postgres desde Docker' },
-		{ time: '14:05', kind: 'open', who: 'Diego', topic: '¿Alguien tiene apuntes de Redes?' },
-		{ time: '14:06', kind: 'solved', topic: '¿Qué electivas para 7.º ciclo?' },
-		{ time: '14:08', kind: 'join', who: 'Ana', topic: 'hackathon' },
-		{ time: '14:09', kind: 'thanks', count: 3, topic: 'Taller de Docker' },
-		{ time: '14:11', kind: 'reply', who: 'Luis', topic: 'Busco equipo (Node)' },
-	] as ForumFeedLine[],
-	steps: [
-		{
-			title: 'Pregunta o responde',
-			text: 'Abre un hilo en Materias, Propuestas o General, o responde el de otra persona.',
-		},
-		{
-			title: 'Dile “me sirvió”',
-			text: 'Reacciona a las respuestas útiles para que las vea más gente.',
-		},
-		{
-			title: 'Marca la mejor respuesta',
-			text: 'Quien abrió el hilo la marca y el hilo queda resuelto. La directiva modera y puedes reportar cualquier mensaje.',
-		},
-	],
 };
 
 // Section copy of the FAQ. The items come from the admin; `demoFaqItems` fills the section while the fallback has none.
@@ -623,14 +586,6 @@ const enCopy: LandingCopy = {
 			{ ...forum.categories[2], description: 'Ideas for workshops, talks and events for the association.' },
 		],
 		threads: forum.threads.map((thread) => ({ ...thread, when: enThreadAge[thread.id] ?? thread.when })),
-		steps: [
-			{ title: 'Ask or answer', text: 'Open a thread in Materias, Propuestas or General, or answer someone else’s.' },
-			{ title: 'Say “it helped”', text: 'React to the useful answers so more people see them.' },
-			{
-				title: 'Mark the best answer',
-				text: 'Whoever opened the thread marks it and the thread is solved. The board moderates and you can report any message.',
-			},
-		],
 	},
 	faqCopy: {
 		title: 'Frequently asked questions',
