@@ -48,9 +48,10 @@ const metaEntries = entry.meta && entry.kind !== 'upcoming' ? Object.entries(ent
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
-// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity has no ticket to point to.
+// The registration lives in its ticket (Registrations.astro); the card only points to it. A free activity points to its
+// free pass, which holds the hora, lugar and para the card leaves out.
 const mode = entry.kind === 'upcoming' ? ticketMode(entry) : undefined;
-const ticketLink = !compact && mode !== undefined && mode !== 'free' ? `#${ticketAnchor(entry.id)}` : undefined;
+const ticketLink = !compact && mode !== undefined ? `#${ticketAnchor(entry.id)}` : undefined;
 const hasRegistration = !compact && Boolean(ticketLink || entry.calendarHref);
 // The hash line is decoration (aria-hidden, derived from the id): a dense card leaves it out.
 const showRef = !dense && Boolean(hash || deco);
@@ -135,7 +136,7 @@ const showRef = !dense && Boolean(hash || deco);
 			<div class="reg">
 				{ticketLink && (
 					<a class="reg-ticket" href={ticketLink}>
-						{t('ticket.link')}
+						{t(mode === 'free' ? 'ticket.linkFree' : 'ticket.link')}
 						<span class="sr-only">: {entry.title}</span>
 						<span aria-hidden="true"> →</span>
 					</a>

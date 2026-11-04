@@ -38,8 +38,8 @@ export const site: SiteCopy = {
 // data: change it here only.
 export const contactEmail = 'aso.computacion@gmail.com';
 
-// Nosotros statement: one display-type sentence (the `accent` words in sky blue) and a mono line of facts. It is the
-// landing's own copy, not the admin's `about` text, which is too long to read as a headline.
+// Nosotros statement: the about text (the admin's `about`, or the short fallback in `site.about`) set as a statement,
+// with the `accents` phrases in sky blue, plus a mono line of facts.
 export interface AboutStatement {
 	// Phrases of the about text painted in sky, wherever they appear (the admin's text included).
 	accents: string[];

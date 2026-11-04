@@ -42,6 +42,12 @@ describe('ribbonItems', () => {
 		]);
 	});
 
+	it('says only the month of an activity dated to the month, never an unconfirmed day', () => {
+		const tickets = chooseTickets([entry('m', { title: 'Feria', date: '2026-11-01', datePrecision: 'month' })]);
+		expect(ribbonItems(tickets, 'es')[0]).toBe('Próximo: Feria · nov');
+		expect(ribbonItems(tickets, 'en')[0]).toBe('Next: Feria · Nov');
+	});
+
 	it('leaves the date out of an undated activity and keeps only the way out when nothing is coming', () => {
 		expect(ribbonItems(chooseTickets([entry('x', { title: 'Sin fecha', date: undefined })]), 'es')[0]).toBe(
 			'Próximo: Sin fecha',

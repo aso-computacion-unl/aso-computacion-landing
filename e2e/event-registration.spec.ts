@@ -287,7 +287,14 @@ test.describe('registration from the admin', () => {
 			const past = page.locator('li.commit', { hasText: 'Taller pasado' });
 			await expect(past).toHaveCount(1);
 			await expect(past.locator('.reg, .reg-calendar')).toHaveCount(0);
-			await expect(card(page, 'sin-extras').locator('.reg')).toHaveCount(0);
+			// No extras: the card holds only the way to its free pass, with no action and no calendar.
+			const bare = card(page, 'sin-extras');
+			await expect(bare.locator('.reg a')).toHaveCount(1);
+			await expect(bare.getByRole('link', { name: /Ver el boleto/ })).toHaveAttribute(
+				'href',
+				'#inscripciones-sin-extras',
+			);
+			await expect(bare.locator('.reg-calendar, [data-reg-action]')).toHaveCount(0);
 			await expect(ticket(page, 'sin-extras')).toContainText('Entrada libre');
 		});
 
@@ -372,8 +379,10 @@ test.describe('registration from the admin', () => {
 					`#inscripciones-${slug}`,
 				);
 			}
-			// A free activity has no ticket to send people to.
-			await expect(card(page, 'taller-libre').getByRole('link', { name: /Ver el boleto/ })).toHaveCount(0);
+			// A free activity's card points to its free pass too, where its hora, lugar and para are, without saying sign-up.
+			const free = card(page, 'taller-libre').getByRole('link', { name: /Ver el boleto/ });
+			await expect(free).toHaveAttribute('href', '#inscripciones-taller-libre');
+			await expect(free).not.toContainText('inscripción');
 			await card(page, 'taller-abierto')
 				.getByRole('link', { name: /Ver el boleto/ })
 				.click();
