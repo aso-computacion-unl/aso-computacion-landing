@@ -172,6 +172,17 @@ test.describe('polish', () => {
 		}
 	});
 
+	test('the ribbon band is filled end to end on a wide screen', async ({ page }) => {
+		await page.setViewportSize({ width: 1920, height: 900 });
+		await page.goto('/');
+		const { band, group } = await page.evaluate(() => ({
+			band: document.querySelector('.ribbon-band')!.getBoundingClientRect().width,
+			group: document.querySelector('.ribbon-group')!.getBoundingClientRect().width,
+		}));
+		// The track slides one group to the left, so each group alone must cover the band.
+		expect(group).toBeGreaterThanOrEqual(band);
+	});
+
 	test('every filter chip has something to filter', async ({ page }) => {
 		await page.goto('/');
 		const counts = await page

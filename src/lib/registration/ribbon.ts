@@ -31,3 +31,14 @@ export function ribbonItems(tickets: readonly Ticket[], locale: Locale): string[
 	});
 	return [...activities, t('ribbon.forum'), t('ribbon.instagram')];
 }
+
+// The band is about 1.2 viewports wide and its track slides one group to the left, so one group has to cover it: a short
+// list (few activities, or none) is repeated whole until it has enough text for a 2560px screen.
+const RIBBON_MIN_CHARS = 260;
+
+export function ribbonLoop(items: readonly string[]): string[] {
+	if (items.length === 0) return [];
+	const loop = [...items];
+	while (loop.join('').length < RIBBON_MIN_CHARS) loop.push(...items);
+	return loop;
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TimelineEntry } from '../admin-content/model';
-import { ribbonItems } from './ribbon';
+import { ribbonItems, ribbonLoop } from './ribbon';
 import { chooseTickets } from './tickets';
 
 const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x', capacity: 40 };
@@ -73,5 +73,21 @@ describe('ribbonItems', () => {
 			'Próximo: Sin fecha',
 		);
 		expect(ribbonItems([], 'es')).toEqual(['Pregunta en el foro', 'Todo se anuncia primero en Instagram']);
+	});
+});
+
+describe('ribbonLoop', () => {
+	const chars = (items: string[]) => items.join('').length;
+
+	it('repeats a short list, whole, until it is long enough to fill a wide band', () => {
+		const loop = ribbonLoop(['Pregunta en el foro', 'Todo se anuncia primero en Instagram']);
+		expect(chars(loop)).toBeGreaterThanOrEqual(260);
+		expect(loop.length % 2).toBe(0);
+		expect(loop.slice(0, 2)).toEqual(['Pregunta en el foro', 'Todo se anuncia primero en Instagram']);
+	});
+
+	it('leaves a list that is already long enough as it is', () => {
+		const long = Array.from({ length: 6 }, (_, i) => `Actividad ${i} con un nombre bastante largo y su fecha`);
+		expect(ribbonLoop(long)).toEqual(long);
 	});
 });
