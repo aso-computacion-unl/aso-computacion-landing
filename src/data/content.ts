@@ -5,7 +5,7 @@
 import type { ImageMetadata } from 'astro';
 import { locales, type Locale } from '../i18n/locales';
 import { composeSiteContent } from '../lib/admin-content/compose';
-import { adminOriginOf, forumUrl } from '../lib/admin-content/forum';
+import { adminOriginOf, eventsUrl, forumUrl } from '../lib/admin-content/forum';
 import { detectDemoContent, evaluateContentGate } from '../lib/admin-content/gate';
 import { loadPublicContent } from '../lib/admin-content/load';
 import { loadPreviewContent, readPreviewConfig } from '../lib/admin-content/preview';
@@ -40,6 +40,7 @@ let triedAt = Date.now();
 const adminOrigin = adminOriginOf(preview ? preview.url : adminUrl);
 const forumLink = forumUrl(adminOrigin);
 const seatsLink = seatsUrl(adminOrigin);
+const eventsLink = eventsUrl(adminOrigin);
 
 // A registration link the payload put on another origin was left out (validate.ts): say which, once per build.
 for (const warning of loaded.warnings ?? []) console.warn(`[registration] ${warning}`);
@@ -81,6 +82,8 @@ function build(locale: Locale) {
 		forum: { ...landing.forum, url: forumLink },
 		// The admin's public seats endpoint, when its origin is known.
 		seatsUrl: seatsLink,
+		// The admin's list of every event and its sign-up: where the section's one button goes.
+		eventsUrl: eventsLink,
 		faq: { ...landing.faqCopy, demo: resolved.faqIsDemo, items: resolved.faqItems, commands: resolved.faqCommands },
 		team: resolved.team,
 		socials: resolved.socials,

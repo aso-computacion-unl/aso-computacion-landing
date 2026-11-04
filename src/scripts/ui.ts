@@ -11,7 +11,6 @@ import {
 import './idle-motion';
 import { initForumFeed } from './forum-feed';
 import { initForumTabs } from './forum-tabs';
-import { initNewsVisor } from './news-visor';
 
 // The page's language (<html lang>, set by Layout.astro) decides the words these scripts write.
 const locale = toLocale(document.documentElement.lang);
@@ -90,10 +89,6 @@ if (forum) initForumTabs(forum, t);
 // The forum's example feed scrolls in line by line, except under reduced motion, where it keeps the lines it was drawn with.
 const feed = document.querySelector<HTMLElement>('[data-forum-feed]');
 if (feed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) initForumFeed(feed);
-
-// News terminal: the row under the pointer or focus shows its post in the pane beside it.
-const newsVisor = document.querySelector<HTMLElement>('[data-news-visor]');
-if (newsVisor) initNewsVisor(newsVisor);
 
 // FAQ prompt: replaces the static <details> list with a big prompt (help, git help <tema>, clear, history, Tab), the
 // answer as a manual page and a card per topic. The <details> entries stay the single source of questions and answers,
@@ -259,5 +254,5 @@ if (faqStatic && faqTerm && faqMan && faqForm && faqInput && (faqEntries.length 
 	faqTerm.hidden = false;
 }
 
-// The three moments from the degree (networks, languages, hacking) load only on a page that has one.
-if (document.querySelector('[data-net], [data-lang], [data-decrypt]')) void import('./moments');
+// The two moments from the degree (networks, hacking) load only on a page that has one.
+if (document.querySelector('[data-net], [data-decrypt]')) void import('./moments');

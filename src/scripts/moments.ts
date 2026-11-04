@@ -1,10 +1,9 @@
 import { initDecrypt } from './decrypt';
-import { initLanguages } from './languages';
 import { initNetwork } from './network';
 
-// Three small moments from the degree, one per section: networks (the hero), languages (Inscripciones) and hacking (the
-// Novedades title). Loaded by ui.ts only on a page that has one. Under reduced motion each is its calm end state: the
-// graph is drawn without packets, the snippet stays still and the title is already written.
+// Two small moments from the degree, one per section: networks (the hero) and hacking (the Novedades title). Loaded by
+// ui.ts only on a page that has one. Under reduced motion each is its calm end state: the graph is drawn without
+// packets and the title is already written.
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,8 +16,5 @@ if (net && gates.length > 0) {
 	if (wide.matches) start();
 	else wide.addEventListener('change', (event) => event.matches && start(), { once: true });
 }
-
-const lang = document.querySelector<HTMLElement>('[data-lang]');
-if (lang && !reduced) initLanguages(lang);
 
 initDecrypt();

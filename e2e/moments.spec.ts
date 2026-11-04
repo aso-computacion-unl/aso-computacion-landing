@@ -15,9 +15,8 @@ import {
 	type StaticSite,
 } from './support/admin-site';
 
-// The three small moments from the degree (networks in the hero, languages in Inscripciones, hacking in the Novedades
-// title). They need an admin with tickets and news, so the build is a real one against a mock. Each one is quiet:
-// nothing runs under reduced motion, and the page never shifts while one plays.
+// The two small moments from the degree (networks in the hero, hacking in the Novedades title). They need an admin
+// with tickets and news, so the build is a real one against a mock. Each one is quiet: nothing runs under reduced motion, and the page never shifts while one plays.
 test.describe.configure({ mode: 'serial' });
 
 const DAY = 86_400_000;
@@ -132,28 +131,6 @@ test.describe('moments from the degree', () => {
 			await open(page, `${site.url}/`);
 			await expect(page.locator('[data-net]')).toBeHidden();
 			await expect(page.locator('[data-net] svg')).toHaveCount(0);
-		});
-	});
-
-	test.describe('languages (Inscripciones)', () => {
-		test('types the line in turn, and says in one sentence what the window shows', async ({ page }) => {
-			await open(page, `${site.url}/`);
-			const box = page.locator('#inscripciones [data-lang]');
-			await expect(box).toHaveAttribute('role', 'img');
-			await expect(box).toHaveAttribute('aria-label', /aquí nadie empieza solo.*Python.*Haskell/);
-			await box.scrollIntoViewIfNeeded();
-			await expect(box.locator('.lg.on .lg-h b')).toHaveText('hola.py');
-			await expect(box.locator('.lg.on .lg-h b')).toHaveText('hola.js', { timeout: 8000 });
-		});
-
-		test('with reduced motion the first language stays as it was drawn', async ({ browser }) => {
-			const context = await browser.newContext({ reducedMotion: 'reduce' });
-			const page = await context.newPage();
-			await open(page, `${site.url}/`);
-			await page.locator('#inscripciones [data-lang]').scrollIntoViewIfNeeded();
-			await page.waitForTimeout(4500);
-			await expect(page.locator('#inscripciones .lg.on .lg-h b')).toHaveText('hola.py');
-			await context.close();
 		});
 	});
 

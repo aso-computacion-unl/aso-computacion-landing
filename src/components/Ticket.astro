@@ -70,7 +70,6 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 			<h3 class="tk-title" id={`${id}-heading`}>
 				{entry.title}
 			</h3>
-			{entry.description && <p class="tk-desc">{entry.description}</p>}
 			{facts.length > 0 && (
 				<dl class="tk-facts">
 					{facts.map((fact) => (

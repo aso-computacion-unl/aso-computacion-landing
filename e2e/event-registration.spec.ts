@@ -349,10 +349,19 @@ test.describe('registration from the admin', () => {
 			await expect(facts).toContainText('Para');
 		});
 
-		test('is in the header menu, and its legend lists how people sign up', async ({ page }) => {
+		test('is in the header menu, and its head has one button to the admin list of every event', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			await expect(page.locator('header nav a[href="#inscripciones"]')).toHaveText('inscripciones');
-			await expect(page.locator('#inscripciones .tk-key li')).toHaveCount(3);
+			const head = page.locator('#inscripciones header.section-head');
+			await expect(head.getByRole('link')).toHaveCount(1);
+			await expect(head.getByRole('link', { name: /Ver todas las inscripciones/ })).toHaveAttribute(
+				'href',
+				`${admin.url}/foro/eventos`,
+			);
+			// No legend and no code window: the tickets say how each one signs up.
+			await expect(page.locator('#inscripciones .tk-key')).toHaveCount(0);
+			await expect(page.locator('#inscripciones [data-lang]')).toHaveCount(0);
+			await expect(page.locator('#inscripciones .tk-desc')).toHaveCount(0);
 		});
 
 		test('the activity cards link to their ticket instead of holding a form', async ({ page }) => {

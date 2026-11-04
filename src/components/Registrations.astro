@@ -2,43 +2,42 @@
 // The Inscripciones section (S1, S2): one ticket per upcoming activity, nearest date first, for any number of activities
 // and any dates. Which activities get one, and how each signs up, is decided in src/lib/registration/tickets.ts; the
 // section is left out when there is none. The seats left are painted by src/scripts/seats.ts when the admin's origin
-// is known (`data-seats-url`); signing up happens on the admin's event page, which each ticket links to.
+// is known (`data-seats-url`); signing up happens on the admin's event page, which each ticket links to, and the head's
+// one button goes to the admin's list of every event (left out when the origin is unknown).
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
-import LanguagesMoment from './LanguagesMoment.astro';
+import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 import Ticket from './Ticket.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { seatsUrl, timeline } = getContent(locale);
+const { eventsUrl, seatsUrl, timeline } = getContent(locale);
 const tickets = chooseTickets(timeline);
-const modes = (['unl', 'open', 'free'] as const).filter((mode) => tickets.some((ticket) => ticket.mode === mode));
+const head = {
+	eyebrow: t('ticket.eyebrow'),
+	title: t('ticket.title'),
+	lead: t('ticket.lead'),
+	demo: tickets.some((ticket) => ticket.entry.demo),
+};
 const live = tickets.some((ticket) => ticket.mode !== 'free');
 ---
 
 {tickets.length > 0 && (
 	<section id="inscripciones" class="tk-section py-section" data-seats-url={live ? seatsUrl : undefined}>
 		<div class="wrap">
-			<SectionHead
-				eyebrow={t('ticket.eyebrow')}
-				title={t('ticket.title')}
-				lead={t('ticket.lead')}
-				demo={tickets.some((ticket) => ticket.entry.demo)}
-			>
-				<div slot="aside" class="tk-aside">
-					<ul class="tk-key" aria-label={t('ticket.key')}>
-						{modes.map((mode) => (
-							<li>
-								<b>{t(`ticket.key.${mode}`)}</b> · {t(`ticket.key.${mode}Text`)}
-							</li>
-						))}
-					</ul>
-					<LanguagesMoment />
-				</div>
-			</SectionHead>
+			{/* Without the button there is no aside at all: an empty slot would still reserve the head's second column. */}
+			{eventsUrl ? (
+				<SectionHead {...head}>
+					<div slot="aside" class="flex lg:justify-end">
+						<Button href={eventsUrl}>{t('ticket.seeAll')}</Button>
+					</div>
+				</SectionHead>
+			) : (
+				<SectionHead {...head} />
+			)}
 			<ol class="tk-list" aria-label={t('ticket.list')}>
 				{tickets.map((ticket) => (
 					<Ticket ticket={ticket} />
