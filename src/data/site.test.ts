@@ -8,14 +8,15 @@ describe('contactEmail', () => {
 });
 
 describe('Nosotros statement', () => {
-	const sentence = (locale: 'es' | 'en') => copy[locale].aboutStatement.parts.map((part) => part.text).join('');
-
-	it('is one sentence per language, with the university highlighted', () => {
-		expect(sentence('es')).toBe('Representamos a quienes estudian Computación en la Universidad Nacional de Loja.');
-		expect(sentence('en')).toBe('We represent the students of Computer Science at the Universidad Nacional de Loja.');
+	it('falls back to one sentence per language when the admin sends no about text, with the university highlighted', () => {
+		expect(copy.es.site.about).toBe('Representamos a quienes estudian Computación en la Universidad Nacional de Loja.');
+		expect(copy.en.site.about).toBe(
+			'We represent the students of Computer Science at the Universidad Nacional de Loja.',
+		);
 		for (const locale of ['es', 'en'] as const) {
-			const accents = copy[locale].aboutStatement.parts.filter((part) => part.accent).map((part) => part.text);
-			expect(accents).toContain('Universidad Nacional de Loja');
+			expect(copy[locale].aboutStatement.accents).toContain('Universidad Nacional de Loja');
+			for (const accent of copy[locale].aboutStatement.accents.filter((a) => a !== 'Computación' || locale === 'es'))
+				expect(copy[locale].site.about).toContain(accent);
 		}
 	});
 });

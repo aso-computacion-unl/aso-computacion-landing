@@ -189,6 +189,16 @@ test.describe('hostile content', () => {
 		});
 	}
 
+	test("Nosotros says the admin's about text, in the statement's place, in a smaller size when it is long", async ({
+		page,
+	}) => {
+		await open(page, `${site.url}/`);
+		const statement = page.locator('#nosotros .about-statement');
+		await expect(statement).toContainText(sentence(TEXT).slice(0, 80));
+		await expect(statement).not.toContainText('Representamos a quienes estudian');
+		await expect(statement).toHaveClass(/is-long/);
+	});
+
 	test('images that never load do not break the layout or the console contract', async ({ page }) => {
 		const failures: string[] = [];
 		page.on('pageerror', (error) => failures.push(error.message));

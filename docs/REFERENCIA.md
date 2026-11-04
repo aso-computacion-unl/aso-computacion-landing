@@ -174,8 +174,9 @@ The landing sends nothing to the forum and holds no sign-in.
   ticket's action, its live seats, the `.ics` link and the Event JSON-LD to upcoming events. See "Event registration" below.
   The keys are additive to `version` 1: an event from an admin that predates them reads as `null` in all three and shows
   none of it.
-- **Settings** `tagline` and `description` replace the landing copy when present. `about` is validated and kept, but the
-  home's Nosotros prints its own short statement (`aboutStatement` in `src/data/site.ts`) instead of that text.
+- **Settings** `tagline`, `description` and `about` replace the landing copy when present. `about` is Nosotros' statement:
+  its key phrases (`aboutStatement.accents` in `src/data/site.ts`) are painted in sky, and a text over 120 characters drops
+  from display type to the lead size. Without it the statement is the short fallback sentence in `site.about`.
 - **Photos**: admin images are plain `<img>` tags served by Cloudinary. The build inserts a
   delivery transformation after `/image/upload/` (`f_auto,q_auto,c_limit,w_<n>`, see
   `src/lib/admin-content/cloudinary.ts`) and writes a `srcset` with two or three widths, the
@@ -412,7 +413,7 @@ terminal voice stays in three places: the hero's `ping`, the Actividades opener 
 |---|--------------|--------|
 | 1 | Hero (`top`): headline, lede, three ticket-shaped shortcuts and the network moment | `site.ts` (the shortcuts point at sections that render) |
 | 2 | Ribbon: next activities, the forum and Instagram, built from the tickets | `site.ts`, admin events |
-| 3 | Nosotros (`nosotros`): manifesto, a one-sentence statement with a facts line, and the pillars | `site.ts` (`aboutStatement`), admin pillars |
+| 3 | Nosotros (`nosotros`): manifesto, a statement with a facts line, and the pillars | admin `settings.about` (fallback `site.about`), `site.ts` (`aboutStatement`), admin pillars |
 | 4 | Inscripciones (`inscripciones`)\*: one ticket per upcoming activity, live seats | admin events |
 | 5 | Actividades (`actividades`): opener, then the planned lane and the history; filters only for types that have entries | admin events + `site.ts` anchors |
 | 6 | Novedades (`novedades`)\*: the three latest posts and a button to `/novedades` | admin news |

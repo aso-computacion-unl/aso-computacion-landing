@@ -30,9 +30,8 @@ export const site: SiteCopy = {
 	heroCue: 'Baja por la rama: este es nuestro historial.',
 	description:
 		'Somos la asociación de estudiantes de Computación de la UNL: talleres, charlas y eventos, y tu voz ante la facultad.',
-	// Verbatim from the ASO's own LinkedIn page.
-	about:
-		'La Asociación de Estudiantes de la Carrera de Computación (ASO Computación – UNL) es una organización estudiantil que representa a la comunidad de futuros profesionales en tecnologías de la información de la Universidad Nacional de Loja.',
+	// Nosotros' statement when the admin sends no about text of its own (the admin's text always wins).
+	about: 'Representamos a quienes estudian Computación en la Universidad Nacional de Loja.',
 };
 
 // The address people can write to. Shown in the footer and published as the organization's contact in the structured
@@ -42,18 +41,13 @@ export const contactEmail = 'aso.computacion@gmail.com';
 // Nosotros statement: one display-type sentence (the `accent` words in sky blue) and a mono line of facts. It is the
 // landing's own copy, not the admin's `about` text, which is too long to read as a headline.
 export interface AboutStatement {
-	parts: { text: string; accent?: boolean }[];
+	// Phrases of the about text painted in sky, wherever they appear (the admin's text included).
+	accents: string[];
 	facts: string;
 }
 
 export const aboutStatement: AboutStatement = {
-	parts: [
-		{ text: 'Representamos a quienes estudian ' },
-		{ text: 'Computación', accent: true },
-		{ text: ' en la ' },
-		{ text: 'Universidad Nacional de Loja', accent: true },
-		{ text: '.' },
-	],
+	accents: ['Computación', 'Universidad Nacional de Loja'],
 	facts: 'Organización estudiantil · ASO Computación – UNL',
 };
 
@@ -397,17 +391,11 @@ const enCopy: LandingCopy = {
 		heroCue: 'Scroll down the branch: this is our history.',
 		description:
 			'We are the Computer Science student association at the UNL: workshops, talks and events, and your voice before the faculty.',
-		about:
-			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
+		about: 'We represent the students of Computer Science at the Universidad Nacional de Loja.',
 	},
 	aboutStatement: {
-		parts: [
-			{ text: 'We represent the students of ' },
-			{ text: 'Computer Science', accent: true },
-			{ text: ' at the ' },
-			{ text: 'Universidad Nacional de Loja', accent: true },
-			{ text: '.' },
-		],
+		// The admin's about text stays in Spanish, so its phrases are painted too.
+		accents: ['Computer Science', 'Computación', 'Universidad Nacional de Loja'],
 		facts: 'Student organization · ASO Computación – UNL',
 	},
 	manifesto: {

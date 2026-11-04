@@ -8,8 +8,15 @@ import { useTranslations } from '../i18n/ui';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { pillars } = getContent(locale);
+const { pillars, site } = getContent(locale);
 const { aboutStatement, manifesto } = copy[locale];
+
+// The statement is the admin's about text (or the fallback sentence), with its key phrases in sky. A long text keeps
+// the statement's place but drops to the lead size, so a paragraph never sets in display type.
+const escape = (phrase: string) => phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const accents = new RegExp(`(${aboutStatement.accents.map(escape).join('|')})`);
+const parts = site.about.split(accents).filter(Boolean);
+const long = site.about.length > 120;
 ---
 
 <section id="nosotros" class="bg-navy py-section">
@@ -42,8 +49,8 @@ const { aboutStatement, manifesto } = copy[locale];
 			</h2>
 
 			<div class="about-block">
-				<p class="about-statement">
-					{aboutStatement.parts.map((part) => (part.accent ? <span class="text-sky">{part.text}</span> : part.text))}
+				<p class:list={['about-statement', { 'is-long': long }]}>
+					{parts.map((part) => (aboutStatement.accents.includes(part) ? <span class="text-sky">{part}</span> : part))}
 				</p>
 				<p class="about-facts">{aboutStatement.facts}</p>
 			</div>
