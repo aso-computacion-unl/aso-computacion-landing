@@ -9,7 +9,7 @@ const { faq } = getContent(locale);
 const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 ---
 
-<section id="faq" class="deep bg-navy-deep py-section" data-faq>
+<section id="faq" class="bg-navy py-section" data-faq>
 	<div class="wrap">
 		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo}>
 			<p class="lead faq-forum">

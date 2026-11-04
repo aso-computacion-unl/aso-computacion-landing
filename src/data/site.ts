@@ -93,11 +93,11 @@ export const demoPillars: Pillar[] = [
 ];
 
 export const navLinks = [
-	{ label: 'Inscripciones', href: '#inscripciones' },
-	{ label: 'Novedades', href: '/novedades' },
-	{ label: 'Actividades', href: '#actividades' },
-	{ label: 'Foro', href: '#foro' },
 	{ label: 'Nosotros', href: '#nosotros' },
+	{ label: 'Inscripciones', href: '#inscripciones' },
+	{ label: 'Actividades', href: '#actividades' },
+	{ label: 'Novedades', href: '/novedades' },
+	{ label: 'Foro', href: '#foro' },
 	{ label: 'Directiva', href: '#directiva' },
 	{ label: 'FAQ', href: '#faq' },
 	{ label: 'Redes', href: '#redes' },
@@ -561,11 +561,11 @@ const enCopy: LandingCopy = {
 		sr: 'We are the Computer Science ASO: students, community and your voice.',
 	},
 	navLinks: [
-		{ label: 'Sign-ups', href: '#inscripciones' },
-		{ label: 'News', href: '/novedades' },
-		{ label: 'Activities', href: '#actividades' },
-		{ label: 'Forum', href: '#foro' },
 		{ label: 'About', href: '#nosotros' },
+		{ label: 'Sign-ups', href: '#inscripciones' },
+		{ label: 'Activities', href: '#actividades' },
+		{ label: 'News', href: '/novedades' },
+		{ label: 'Forum', href: '#foro' },
 		{ label: 'Board', href: '#directiva' },
 		{ label: 'FAQ', href: '#faq' },
 		{ label: 'Socials', href: '#redes' },

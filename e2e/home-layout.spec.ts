@@ -1,18 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The home is task first (sign up, news, activities, forum, then who we are), says its sizes once (one type scale, one
+// The home opens with who we are, then the agenda (sign up, activities, news), then the forum and the board; it says its sizes once (one type scale, one
 // size for every section title), never breaks a word across lines, and folds the old activities behind a disclosure.
 // The sections that hide when empty (Inscripciones, Novedades, Directiva, Redes) are checked only when they render.
 
 const ORDER = [
-	'inscripciones',
-	'novedades',
-	'actividades',
-	'foro',
 	'nosotros',
+	'inscripciones',
+	'actividades',
+	'novedades',
+	'foro',
 	'directiva',
-	'ideas',
 	'faq',
+	'ideas',
 	'redes',
 	'aliados',
 ];
@@ -20,7 +20,7 @@ const ORDER = [
 const sectionIds = (page: Page) => page.evaluate((ids) => ids.filter((id) => document.getElementById(id)), ORDER);
 
 test.describe('section order', () => {
-	test('follows the task-first order, and the nav links follow the page', async ({ page }) => {
+	test('follows the story-first order, and the nav links follow the page', async ({ page }) => {
 		await page.goto('/');
 		const ids = await page.evaluate(() =>
 			[...document.querySelectorAll('main > section[id]')].map((section) => section.id),
@@ -34,10 +34,10 @@ test.describe('section order', () => {
 		const positions = anchors.map((anchor) => ids.indexOf(anchor));
 		expect(positions.every((position) => position > 0)).toBe(true);
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		// Novedades points to its own page: it sits between the sign-ups and the activities, where the section is.
+		// Novedades points to its own page: it sits between the activities and the forum, where the section is.
 		if (hrefs.includes('/novedades')) {
-			expect(hrefs.indexOf('/novedades')).toBeGreaterThan(hrefs.indexOf('#inscripciones'));
-			expect(hrefs.indexOf('/novedades')).toBeLessThan(hrefs.indexOf('#actividades'));
+			expect(hrefs.indexOf('/novedades')).toBeGreaterThan(hrefs.indexOf('#actividades'));
+			expect(hrefs.indexOf('/novedades')).toBeLessThan(hrefs.indexOf('#foro'));
 		}
 	});
 
