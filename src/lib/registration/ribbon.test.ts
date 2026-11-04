@@ -22,7 +22,7 @@ const upcoming = chooseTickets([
 describe('ribbonItems', () => {
 	it('names the next three activities, then sends to the forum and to Instagram', () => {
 		expect(ribbonItems(upcoming, 'es')).toEqual([
-			'Próximo: Taller de Python · 12 nov',
+			'Próximo: Taller de Python para primer ciclo · 12 nov',
 			'Hackatón · 28 nov · cupos limitados',
 			'Feria de proyectos y cierre de ciclo · 5 dic · entrada libre',
 			'Pregunta en el foro',
@@ -30,9 +30,15 @@ describe('ribbonItems', () => {
 		]);
 	});
 
-	it('drops only who an activity is for: a title joined by "y" keeps both of its parts', () => {
-		const tickets = chooseTickets([entry('git', { title: 'Taller de Git y GitHub para primer ciclo' })]);
-		expect(ribbonItems(tickets, 'es')[0]).toBe('Próximo: Taller de Git y GitHub · 10 nov');
+	it('keeps every title whole: a word like "para" or "y" can be part of what the activity is', () => {
+		const tickets = chooseTickets([
+			entry('web', { title: 'Herramientas para desarrollo web', date: '2026-11-10' }),
+			entry('git', { title: 'Taller de Git y GitHub', date: '2026-11-11' }),
+		]);
+		expect(ribbonItems(tickets, 'es').slice(0, 2)).toEqual([
+			'Próximo: Herramientas para desarrollo web · 10 nov',
+			'Taller de Git y GitHub · 11 nov · entrada libre',
+		]);
 	});
 
 	it('speaks English on the English page', () => {
@@ -41,7 +47,7 @@ describe('ribbonItems', () => {
 			'en',
 		);
 		expect(items).toEqual([
-			'Next: Python workshop · Nov 12',
+			'Next: Python workshop for first years · Nov 12',
 			'Ask in the forum',
 			'Everything is announced first on Instagram',
 		]);

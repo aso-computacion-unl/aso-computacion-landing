@@ -6,10 +6,6 @@ import type { Ticket } from './tickets';
 
 const RIBBON_ACTIVITIES = 3;
 
-// "Taller de Python para primer ciclo" -> "Taller de Python": the band has room for the name, not the audience. Only the
-// audience goes: "Taller de Git y GitHub" keeps both of its parts.
-const shortTitle = (title: string): string => title.split(/ (?:para|for) /)[0];
-
 // "12 nov"; a month-only activity says just "nov": its date is the first of the month for ordering, not a real day.
 const shortDate = (date: string, locale: Locale, monthOnly: boolean): string =>
 	new Intl.DateTimeFormat(locale, { ...(monthOnly ? {} : { day: 'numeric' }), month: 'short', timeZone: 'UTC' }).format(
@@ -21,10 +17,9 @@ export function ribbonItems(tickets: readonly Ticket[], locale: Locale): string[
 	// A demo activity carries a "demo" tag on its ticket; the band has no room for one, so it never names it.
 	const real = tickets.filter(({ entry }) => !entry.demo);
 	const activities = real.slice(0, RIBBON_ACTIVITIES).map(({ entry, mode }, index) => {
-		const parts = [
-			shortTitle(entry.title),
-			entry.date && shortDate(entry.date, locale, entry.datePrecision === 'month'),
-		].filter(Boolean);
+		const parts = [entry.title, entry.date && shortDate(entry.date, locale, entry.datePrecision === 'month')].filter(
+			Boolean,
+		);
 		if (index === 0) return t('ribbon.next', { item: parts.join(' · ') });
 		// "cupos limitados" only when the admin set a capacity; without one nothing is said about seats.
 		const access = mode === 'free' ? t('ribbon.free') : entry.registration?.capacity ? t('ribbon.seats') : undefined;
