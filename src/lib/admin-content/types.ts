@@ -31,7 +31,8 @@ export interface PublicEventRegistration {
 	deadline: string | null;
 	// `unl` only: the admin's page where a student signs in with the institutional Google account.
 	url: string | null;
-	// `open` only: where the landing's form POSTs.
+	// `open` only: the admin's registration endpoint. Validated to sit on the admin origin; the landing has no form and
+	// never POSTs to it (sign-up happens on the admin's event page).
 	endpoint: string | null;
 }
 

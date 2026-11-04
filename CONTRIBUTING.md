@@ -6,9 +6,11 @@ Gracias por ayudar con el sitio de ASO Computación. Esta guía es para la direc
 
 | Quiero… | Dónde se hace | ¿Necesito Git? |
 |---|---|---|
-| Publicar un evento, subir fotos, editar la FAQ, la directiva, los pilares o las redes | En el **panel de administración** (repo `aso-computacion-admin`). El sitio se reconstruye solo unos segundos después de guardar. | No |
-| Cambiar textos fijos (hero, manifiesto, menú), el diseño o el código | En **este repositorio**, con un Pull Request | Sí |
+| Publicar un evento y abrir sus inscripciones, subir fotos, publicar una noticia, editar la FAQ (y sus comandos), la directiva, los pilares, los aliados o las redes | En el **panel de administración** (repo `aso-computacion-admin`). El sitio se reconstruye solo unos segundos después de guardar. | No |
+| Cambiar textos fijos (hero, manifiesto, menú, foro, sección de ideas), el diseño o el código | En **este repositorio**, con un Pull Request | Sí |
 | Reportar un error o proponer una idea | Abriendo un **issue** en este repositorio | No |
+
+Las inscripciones y el foro se atienden en el panel, no en este sitio: acá solo se muestran los boletos y se enlaza. Para entender cómo encajan las dos piezas, mirá la [arquitectura del sistema](https://github.com/aso-computacion-unl/aso-computacion-admin/blob/main/docs/ARQUITECTURA.md) y la [referencia técnica del sitio](docs/REFERENCIA.md).
 
 Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
 
@@ -19,7 +21,12 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
 - Nadie empuja directo a `main`: todo cambio entra por un Pull Request.
 - Cada PR necesita **1 aprobación** de otra persona.
 - No se permite `force push` ni borrar `main`.
-- La CI (GitHub Actions) tiene que pasar en verde para mergear: corre auditoría de dependencias de producción (`pnpm audit`, falla con avisos altos o críticos), `pnpm lint`, `pnpm check`, `pnpm format:check`, `pnpm test` y `pnpm build` en cada PR. No usa secretos.
+- La CI (GitHub Actions) tiene que pasar en verde para mergear. En cada PR corre tres trabajos y no usa secretos:
+  - `checks`: auditoría de dependencias de producción (`pnpm audit`, falla con avisos altos o críticos), `pnpm lint`, `pnpm check`, `pnpm format:check`, `pnpm test` y `pnpm build`.
+  - `e2e`: Playwright y axe-core sobre ese build (accesibilidad, orden de las secciones, escala tipográfica, movimiento).
+  - `lighthouse`: presupuestos de rendimiento, accesibilidad, buenas prácticas y SEO.
+- SonarCloud analiza el código de los PRs; sus hallazgos también hay que resolverlos.
+- Se pide la revisión de quien mantiene el proyecto automáticamente (`.github/CODEOWNERS`).
 - Dependabot abre PRs semanales: las actualizaciones menores y de parche llegan agrupadas; las mayores, por separado.
 
 ## Flujo de trabajo
@@ -39,8 +46,9 @@ Si no sabés por dónde empezar, abrí un issue y lo vemos juntos.
    pnpm format:check   # pnpm format lo arregla
    pnpm test
    pnpm build
+   pnpm test:e2e       # sobre el build de recién; la primera vez: pnpm exec playwright install chromium
    ```
-   Si tocaste algo visual, revisalo con `pnpm dev` en celular (390 px) y escritorio.
+   Prettier no formatea los `.md`, pero sí el resto del repositorio. Si tocaste algo visual, revisalo con `pnpm dev` en celular (390 px) y escritorio, también con movimiento reducido y en el tema claro. Los detalles de las pruebas y de Lighthouse están en [docs/REFERENCIA.md](docs/REFERENCIA.md#tests).
 5. **Abrí el PR** contra `main`, completá la plantilla y enlazá el issue (`Closes #12`).
 6. **Revisión.** Respondé los comentarios con commits nuevos en la misma rama; no reescribas la historia de una rama que ya está en revisión.
 7. **Merge.** Quien aprueba (o quien abrió el PR, una vez aprobado) hace el merge y borra la rama.

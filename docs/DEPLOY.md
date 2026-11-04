@@ -7,6 +7,10 @@ in this repo runs at request time.
 > None of the Cloudflare or GitHub steps below has been exercised against the real accounts yet.
 > Treat the first deploy as the test, and use the [checklist](#first-deploy-checklist).
 
+For how the landing and the admin fit together (data flow, who triggers a build, the public API, registration), see the system
+architecture in the admin repository:
+[docs/ARQUITECTURA.md](https://github.com/aso-computacion-unl/aso-computacion-admin/blob/main/docs/ARQUITECTURA.md).
+
 ## Cloudflare Pages project
 
 Create the project with **Workers & Pages → Create → Pages → Connect to Git** and pick this repo.
@@ -81,12 +85,19 @@ continue, but print a multi-line warning:
   - Not a production build, so it continues. Production would fail here.
 ```
 
-The join section copy is still marked `demo` in `src/data/site.ts`, pending the board's approval,
-so it renders a "demo" tag on every build. It is reported as a separate note in the build log
-and does not fail production yet. Once the copy is approved, drop its `demo` flag and set
-`STRICT_JOIN` to `true` in `src/data/content.ts`. Once the admin is back, the next build (hook
-or daily) restores the live content. Details: the "Content from the admin" section of the
+Two blocks of landing-owned copy are still marked `demo` in `src/data/site.ts`: the join section (pending the board's
+approval) and the forum teaser's example threads. Each renders a "demo" tag on every build and is reported as a separate
+`[content-gate] Note` in the build log; neither fails production yet. Once the join copy is approved, drop its `demo` flag and
+set `STRICT_JOIN` to `true` in `src/data/content.ts`; for the forum teaser, drop `forum.demo` and set `STRICT_FORUM`. Once the
+admin is back, the next build (hook or daily) restores the live content. Details: the "Content from the admin" section of the
 [reference](REFERENCIA.md#content-from-the-admin).
+
+## What CI checks before a merge
+
+Pull requests and `main` run `.github/workflows/ci.yml`: `checks` (dependency audit, ESLint, `astro check`, Prettier, unit tests,
+a build), `e2e` (Playwright and axe on that build) and `lighthouse` (category budgets). It needs no secret and builds without
+`ADMIN_CONTENT_URL`, so it never reaches the admin; it is not the production build, which only Cloudflare runs. The jobs are
+listed in the [reference](REFERENCIA.md#quality-gates).
 
 ## How a build gets triggered
 
@@ -225,7 +236,7 @@ Instagram.
 - [ ] Admin deployed and healthy: `GET <admin>/api/public/content` answers 200 with `"version": 1`.
 - [ ] `pnpm build` works locally without any env (fallback path) and with `ADMIN_CONTENT_URL` set.
 - [ ] Cloudflare Pages project created with the settings above (`pnpm build`, `dist`, `NODE_VERSION`).
-- [ ] `ADMIN_CONTENT_URL` set in Cloudflare; the first build log has **no** `[content-gate]` line other than the join copy note.
+- [ ] `ADMIN_CONTENT_URL` set in Cloudflare; the first build log has **no** `[content-gate]` line other than the join and forum copy notes.
 - [ ] Nothing to add to the admin's `PUBLIC_CORS_ORIGINS` for the landing: the content is read at build time and the seats endpoint answers any origin.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
