@@ -6,8 +6,9 @@
 
 <!-- La CI corre estas comprobaciones en cada PR y tiene que pasar para mergear. Correlas también localmente para no esperar. -->
 
+- [ ] `pnpm lint`, `pnpm format:check` y `pnpm check`
 - [ ] `pnpm test`
-- [ ] `pnpm build`
+- [ ] `pnpm build` (y `pnpm test:e2e` si toca páginas, contenido del admin o build)
 - [ ] Revisé el cambio con `pnpm dev` en celular (390 px) y escritorio (si es visual)
 
 ## Antes de pedir revisión
