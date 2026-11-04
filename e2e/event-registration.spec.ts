@@ -388,11 +388,15 @@ test.describe('registration from the admin', () => {
 			await expect(page.locator('#evento-viejo')).toHaveCount(0);
 		});
 
-		test('the forum door is the only way in: one link, to the admin forum', async ({ page }) => {
+		test('every forum link goes to the admin forum', async ({ page }) => {
 			await open(page, `${site.url}/`);
-			const links = page.locator(`#foro a[href^="${admin.url}"]`);
-			await expect(links).toHaveCount(1);
-			await expect(links).toHaveAttribute('href', `${admin.url}/foro`);
+			// The threads, the "see all" button and the door all lead to the forum home, and nowhere else on the admin.
+			const hrefs = await page
+				.locator(`#foro a[href^="${admin.url}"]`)
+				.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+			expect(hrefs.length).toBeGreaterThan(0);
+			for (const href of hrefs) expect(href).toBe(`${admin.url}/foro`);
+			await expect(page.locator('#foro .forum-door').getByRole('link')).toHaveAttribute('href', `${admin.url}/foro`);
 		});
 
 		test('the landing ships no registration form, script or Turnstile reference', async () => {
