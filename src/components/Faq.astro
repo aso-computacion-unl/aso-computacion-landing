@@ -29,10 +29,11 @@ const { faq } = getContent(locale);
 		</div>
 
 		<p class="faq-after">
-			{t('faq.forumBefore')}
+			{t('faq.forumBefore')}{' '}
 			<a href="#foro">
-				{t('faq.forumLink')}
-				<span aria-hidden="true">→</span>
+				<span class="faq-after-text">
+					{t('faq.forumLink')} <span aria-hidden="true">→</span>
+				</span>
 			</a>
 		</p>
 	</div>

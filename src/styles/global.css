@@ -2078,9 +2078,11 @@
 	.faq-after a {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.375rem;
 		min-height: 2.75rem;
 		color: var(--color-ink);
+	}
+
+	.faq-after-text {
 		text-decoration: underline;
 		text-decoration-color: var(--color-signal);
 		text-decoration-thickness: 3px;
