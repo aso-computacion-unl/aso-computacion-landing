@@ -91,21 +91,11 @@ const showRef = !dense && Boolean(hash || deco);
 			)}
 			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
 			{!compact && entry.description && (
-				<p
-					class:list={[
-						'max-w-[60ch] text-mist',
-						dense ? 'text-secondary' : 'mt-2',
-						// Shortened only when the card links to the activity's page, where the full text is.
-						{ 'line-clamp-2': dense && entry.kind === 'upcoming' && Boolean(entry.href) },
-					]}
-				>
-					{entry.description}
-				</p>
+				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
 			)}
 			{!compact && entry.href && (
 				<a
 					href={entry.href}
-					data-card-link
 					class:list={[
 						'inline-flex min-h-11 items-center text-label font-semibold text-sky underline decoration-2 underline-offset-4 hover:text-ink',
 						{ 'mt-1': !dense },

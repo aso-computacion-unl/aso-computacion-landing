@@ -6,8 +6,9 @@ import type { Ticket } from './tickets';
 
 const RIBBON_ACTIVITIES = 3;
 
-// "Taller de Python para primer ciclo" -> "Taller de Python": the band has room for the name, not the audience.
-const shortTitle = (title: string): string => title.split(/ (?:para|y|for|and) /)[0];
+// "Taller de Python para primer ciclo" -> "Taller de Python": the band has room for the name, not the audience. Only the
+// audience goes: "Taller de Git y GitHub" keeps both of its parts.
+const shortTitle = (title: string): string => title.split(/ (?:para|for) /)[0];
 
 // "12 nov"; a month-only activity says just "nov": its date is the first of the month for ordering, not a real day.
 const shortDate = (date: string, locale: Locale, monthOnly: boolean): string =>

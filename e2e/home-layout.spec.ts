@@ -148,27 +148,18 @@ test.describe('polish', () => {
 		for (const reason of await reasons.all()) await expect(reason.locator('p:not(.reason-num)')).toHaveCount(0);
 	});
 
-	test('an upcoming card leaves hora / lugar / para to its ticket, and shortens its description only when it links on', async ({
+	test('an upcoming card leaves hora / lugar / para to its ticket and shows its whole description', async ({
 		page,
 	}) => {
 		await page.goto('/');
 		const cards = page.locator('#actividades .plan .commit:has(.node-upcoming)');
 		test.skip((await cards.count()) === 0, 'the build has no upcoming activities');
 		await expect(cards.locator('.card-meta')).toHaveCount(0);
+		// The card may be the only place the description can be read: its link can go anywhere, and the ticket drops it.
 		for (const card of await cards.all()) {
 			const description = card.locator('.card-main > p.text-mist');
 			if ((await description.count()) === 0) continue;
-			const { clamp, height, line } = await description.evaluate((node) => {
-				const style = getComputedStyle(node);
-				return { clamp: style.webkitLineClamp, height: node.clientHeight, line: parseFloat(style.lineHeight) };
-			});
-			// Without a link to the activity's page the card is the only place the full description can be read.
-			if ((await card.locator('[data-card-link]').count()) === 0) {
-				expect(clamp).not.toBe('2');
-				continue;
-			}
-			expect(clamp).toBe('2');
-			expect(height).toBeLessThanOrEqual(line * 2 + 1);
+			expect(await description.evaluate((node) => getComputedStyle(node).webkitLineClamp)).toBe('none');
 		}
 	});
 

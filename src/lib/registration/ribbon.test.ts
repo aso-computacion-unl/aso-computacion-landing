@@ -24,10 +24,15 @@ describe('ribbonItems', () => {
 		expect(ribbonItems(upcoming, 'es')).toEqual([
 			'Próximo: Taller de Python · 12 nov',
 			'Hackatón · 28 nov · cupos limitados',
-			'Feria de proyectos · 5 dic · entrada libre',
+			'Feria de proyectos y cierre de ciclo · 5 dic · entrada libre',
 			'Pregunta en el foro',
 			'Todo se anuncia primero en Instagram',
 		]);
+	});
+
+	it('drops only who an activity is for: a title joined by "y" keeps both of its parts', () => {
+		const tickets = chooseTickets([entry('git', { title: 'Taller de Git y GitHub para primer ciclo' })]);
+		expect(ribbonItems(tickets, 'es')[0]).toBe('Próximo: Taller de Git y GitHub · 10 nov');
 	});
 
 	it('speaks English on the English page', () => {
