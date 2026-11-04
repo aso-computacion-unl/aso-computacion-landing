@@ -6,18 +6,27 @@ Landing page for the student association of the Computer Science program.
 
 Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com).
 
+This file covers the landing only. How the landing and the admin fit together (data flow, build triggers, the public API,
+registration, roles) is in the system architecture of the admin repository:
+[docs/ARQUITECTURA.md](https://github.com/aso-computacion-unl/aso-computacion-admin/blob/main/docs/ARQUITECTURA.md).
+
 ## Getting started
 
 ```sh
 pnpm install
 pnpm dev       # http://localhost:4321
 pnpm build     # output in ./dist
-pnpm test
 pnpm preview
+pnpm test          # vitest (unit)
+pnpm test:e2e      # Playwright, against `astro preview` of the last build (see Tests)
+pnpm lighthouse    # Lighthouse CI, same build
 pnpm lint          # ESLint
 pnpm check         # astro check (types)
-pnpm format        # Prettier (format:check in CI)
+pnpm format        # Prettier (format:check in CI; Markdown files are not formatted)
+pnpm verify:dist   # SEO and hosting files of the last build (see SEO and sharing)
 ```
+
+CI runs the same gates on every pull request: see [Quality gates](#quality-gates).
 
 ## Content from the admin
 
@@ -33,15 +42,16 @@ triggers one through a deploy hook, plus a daily rebuild as a safety net).
 | Variable | Where | What |
 | --- | --- | --- |
 | `ADMIN_CONTENT_URL` | build environment | Full URL of the admin's `GET /api/public/content`, for example `https://your-admin.vercel.app/api/public/content`. See `.env.example`. |
+| `PRODUCTION_BRANCH` | build environment | Branch whose builds count as production for the content gate. Defaults to `main`. Compared with `CF_PAGES_BRANCH`, which Cloudflare Pages sets. |
+| `ALLOW_CONTENT_FALLBACK` | build environment | `1` (or `true`) downgrades the production gate failure to a warning, for an emergency deploy. Any other value is ignored. |
+| `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered (`src/lib/analytics.ts`). Not secret: it ends up in the page. Preview builds never carry it. |
 
 ```sh
 ADMIN_CONTENT_URL=https://your-admin.vercel.app/api/public/content pnpm build
 ```
 
-| `PRODUCTION_BRANCH` | build environment | Branch whose builds count as production for the content gate. Defaults to `main`. Compared with `CF_PAGES_BRANCH`, which Cloudflare Pages sets. |
-| `ALLOW_CONTENT_FALLBACK` | build environment | `1` (or `true`) downgrades the production gate failure to a warning, for an emergency deploy. Any other value is ignored. |
-| `PUBLIC_CF_BEACON_TOKEN` | build environment | Token of the site in Cloudflare Web Analytics. Optional: when set, `Layout.astro` adds Cloudflare's cookie-free beacon (`<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"..."}'>`); when unset, nothing is rendered. Not secret: it ends up in the page. |
-
+The preview variables (`PREVIEW_BUILD`, `PREVIEW_TOKEN`, `ADMIN_PREVIEW_URL`, `PUBLIC_PAGES_PROJECT`) are listed under
+"Preview builds" below.
 
 The landing reads no Turnstile variable any more (`PUBLIC_TURNSTILE_SITE_KEY` is gone): the Turnstile keys belong to the
 admin, which hosts the registration form. See "Event registration".
@@ -50,7 +60,11 @@ Alternative to the variable: enable Web Analytics in the Cloudflare Pages projec
 injects the beacon by itself. In that case leave `PUBLIC_CF_BEACON_TOKEN` unset, or visits are counted twice.
 
 On Cloudflare Pages, set them under Settings → Environment variables. They are read once when the
-build (or `pnpm dev`) starts, so restart the dev server to fetch again.
+build (or `pnpm dev`) starts, so restart the dev server after changing one. One exception for content in `pnpm dev`: a
+server that started while the admin was down (or answered an error) keeps the fallback, but asks the admin again, at most every
+5 seconds, on the next request and switches to its content as soon as it answers
+(`src/middleware.ts`, `shouldRetryLoad` in `src/lib/admin-content/refresh.ts`). A build never does this: it resolves the
+content once.
 
 See [DEPLOY.md](DEPLOY.md) for the Cloudflare Pages setup, the deploy hook, the daily
 rebuild workflow and a first-deploy checklist.
@@ -85,10 +99,11 @@ function run once per build from `src/data/content.ts`):
 | Anything else: local, GitHub CI, Pages preview branches | yes | continues, multi-line `[content-gate] WARNING` with the reason |
 
 "Demo content" is what the composed pages would render with a demo flag: events, pillars, FAQ or
-board extras. Only the admin host is ever printed, never the path, query or a token. The join
-section copy is still flagged `demo` pending board approval: it is reported as a separate note and
-does not fail production until `STRICT_JOIN` in `src/data/content.ts` is turned on (see
-[DEPLOY.md](DEPLOY.md#when-the-admin-is-down) for the runbook).
+board extras. Only the admin host is ever printed, never the path, query or a token. Two blocks of
+landing-owned copy are still flagged `demo`: the join section (`join` in `src/data/site.ts`, pending board approval) and the
+forum teaser's example threads (`forum`, see "Forum teaser" below). Each is reported as a separate
+`[content-gate] Note` and does not fail production until its switch, `STRICT_JOIN` or `STRICT_FORUM` in `src/data/content.ts`,
+is turned on (see [DEPLOY.md](DEPLOY.md#when-the-admin-is-down) for the runbook).
 
 Images are never downloaded at build time, so no image can fail the build (see Photos below).
 
@@ -103,10 +118,22 @@ never at remote URLs, so the fallback path needs no network. `settings: null` me
 copy in `src/data/site.ts`". Update the snapshot by hand when real content changes and the
 admin is expected to be down; `pnpm test` checks that it is valid and that its images exist.
 
-Placeholder (demo) content lives in `src/data/site.ts` and is shown **only on the fallback
+Placeholder (demo) content lives in `src/data/site.ts`. The admin-backed placeholders are shown **only on the fallback
 path** (a production build refuses that path, see above): demo events are merged into the timeline by date, and demo FAQ items and pillars fill
 in while the snapshot has none. When the admin answers, its content is the whole truth: a
-section with nothing to show is left out.
+section with nothing to show is left out. The two landing-owned demo blocks, the join section and the forum teaser's example
+threads, render on every build with a "demo" tag until they are approved or replaced (see the gate above).
+
+### Forum teaser
+
+The *Foro* section (`src/components/Forum.astro`, after Actividades) is a door to the forum, which lives on the admin, not a
+forum. It shows example threads that category chips filter (`src/scripts/forum-tabs.ts`; without JS the chip bar stays hidden and
+every thread shows), a live feed of example activity (`src/scripts/forum-feed.ts`; static under reduced motion or without JS)
+and "Entrar con Google", the only way in. The threads and the feed are invented, `forum.demo: true` in `src/data/site.ts`,
+tagged "demo" (`STRICT_FORUM` in `src/data/content.ts` makes production refuse them once it is turned on). The button
+opens `<admin>/foro` in a new tab (`forumUrl` in `src/lib/admin-content/forum.ts`, built from the admin's origin in
+`src/data/content.ts`); with no known or safe admin origin the button is left out (fail closed, like the registration links).
+The landing sends nothing to the forum and holds no sign-in.
 
 ### How the admin content maps to the page
 
@@ -121,23 +148,28 @@ section with nothing to show is left out.
   the countdown panel. The `date` still has to be a full `YYYY-MM-DD`; its day is ignored.
 - **News** (`news`, newest `publishedAt` first) become the Novedades section of the home, the
   `/novedades` list and one page per item. See "News" below.
-- **FAQ** `topic` (`git help <topic>`) is the question as a slug, cut at 28 characters.
 - **Socials** `platform` picks a Simple Icons glyph; an unknown platform gets a generic one.
 - **Pillars** without an image show the isotype tile.
-- **Impact, testimonials and sponsors** (`impact`, `testimonials`, `sponsors`, S9) become three
-  sections of the home: *Impacto* (big numbers: `value` shown as written, `label` under it),
-  *Testimonios* (quote cards: quote, name, role and an optional photo) and *Aliados* (logos on a
-  white tile, wrapped in an external link only when the sponsor has an https `url`). The keys are
-  additive to `version` 1: a payload without them (an admin from before S9) reads as three empty
-  lists, and **each section is left out when its list is empty**. Text is plain text and is escaped
-  on render. A testimonial photo and every logo must have alt text and be Cloudinary images, a
-  sponsor link must be https, and each list holds at most 50 entries; anything else makes the whole
-  payload invalid. Only the documented keys are copied, so nothing else about a person can reach the
-  page. There is **no demo set** for these sections: the fallback snapshot has none, so the fallback
-  build (and CI's axe and Lighthouse runs) never show them; `e2e/built-from-admin.spec.ts` builds
-  against a mock admin to cover them. The sections are static (no scroll animation), so reduced
-  motion needs nothing; only the hover lift of a linked logo sits behind `prefers-reduced-motion`.
-  They have no header link yet.
+- **Social proof** (`impact`, `testimonials`, `sponsors`, S9). All three are validated and mapped
+  (`validate.ts`, `compose.ts`), but **the Taquilla home renders only the sponsors**, as *Aliados* (the
+  last section, `src/components/Sponsors.astro`: logos on a white tile, wrapped in an external link only when
+  the sponsor has an https `url`). The *Impacto* (big numbers) and *Testimonios* (quote cards) sections of the
+  first version are gone from the page: `HomePage.astro` has no component for them, and
+  `e2e/built-from-admin.spec.ts` asserts that `#impacto` and `#testimonios` never exist even when the admin sends
+  both. The keys stay in the contract, so an admin that still sends them keeps working. The keys are additive to
+  `version` 1: a payload without them (an admin from before S9) reads as three empty lists, and **Aliados is left out
+  when the list is empty**. Text is plain text and is escaped on render. A testimonial photo and every logo must have
+  alt text and be Cloudinary images, a sponsor link must be https, and each list holds at most 50 entries; anything
+  else makes the whole payload invalid. Only the documented keys are copied, so nothing else about a person can reach
+  the page. There is **no demo set**: the fallback snapshot has none, so the fallback build (and CI's axe and
+  Lighthouse runs) never show Aliados; `e2e/built-from-admin.spec.ts` builds against a mock admin to cover it. The
+  section is static (no scroll animation), so reduced motion needs nothing; only the hover lift of a linked logo sits
+  behind `prefers-reduced-motion`. It has no header link.
+- **FAQ**: each `faqs[]` item may carry a `command` (the topic of `git help <command>`); without one the topic is the
+  question as a slug, cut at 28 characters (`TOPIC_MAX` in `map.ts`). The payload's `commands` (id, `command`, one-line `description`, multi-line `output`, at most 50) are
+  *free commands* of the FAQ terminal: the shell runs the command and prints its output. A name that collides with a topic
+  or with `help`, `ayuda`, `ls` or `clear` is renamed with a numeric suffix (`src/lib/admin-content/map.ts`). The FAQ
+  section (and its nav link) is left out only when there are neither items nor commands.
 - **Registration, calendar and structured data** (`registration`, `calendarUrl`, `structuredData` on each event, S8) add the
   ticket's action, its live seats, the `.ics` link and the Event JSON-LD to upcoming events. See "Event registration" below.
   The keys are additive to `version` 1: an event from an admin that predates them reads as `null` in all three and shows
@@ -271,8 +303,10 @@ invalid, so the build falls back:
 
 Where it shows up:
 
-- **Home**: a "Novedades" section after the activity graph with the 3 most recent items (the
-  landing sorts by `publishedAt`, newest first, ties keep the API order) and a link to
+- **Home**: a "Novedades" section between Inscripciones and Actividades, drawn as a terminal (`git log` rows, each linking to
+  its post, and a `git show` pane that follows the row under the pointer or focus; `src/components/News.astro`,
+  `src/scripts/news-visor.ts`; without JS the pane shows the newest item). It holds the 3 most recent items
+  (`HOME_NEWS_COUNT` in `news.ts`; the landing sorts by `publishedAt`, newest first, ties keep the API order) and a link to
   `/novedades`. It is left out when there are no news, and so is the "Novedades" nav link.
 - **`/novedades`**: every item. **`/novedades/<slug>`**: one static page per item, built by
   `getStaticPaths` from the resolved content, with its own `<title>`, meta description (the
@@ -302,23 +336,34 @@ in that payload must be Cloudinary ones.
 ## Tests
 
 ```sh
-pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, Markdown, share links, related posts, motion plan, tickets, deadline rules and seats, Event JSON-LD
+pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, content gate, dev refresh, Markdown, share links, related posts, motion plan, tickets, deadline rules and seats, SEO builders, i18n
 pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
 
-`pnpm test:e2e` (CI job `e2e`) runs the suites in `e2e/`; the first two use the fallback build, so they need no secrets:
+`pnpm test:e2e` (CI job `e2e`) runs the suites in `e2e/`. Most use the fallback build, so they need no secrets:
 
 - `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/` (and the first news post
   when the fallback has one), in the dark and the light theme with motion reduced. Any **serious or critical**
   violation fails, and the failure prints the rule and the offending elements.
-- `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download.
-- `built-from-admin.spec.ts`: real builds against a mock admin (`e2e/support/admin-site.ts`, into
-  `node_modules/.cache/aso-e2e/`, never `dist/`). It covers what the fallback build cannot show: the impact,
-  testimonials and sponsors sections (rendering, alt text and links, both languages, hidden when the admin sends none,
-  axe in both themes, nothing animated under reduced motion) and the preview mode (token header, banner, noindex,
-  a draft shows up, the token is in no file, a normal build ignores it, a 401 or a missing `preview: true` fails the
-  build). It runs seven builds, so it adds roughly 40 seconds.
-- `event-registration.spec.ts`: builds against a mock admin that also answers the seats endpoint (`page.route`; no spec
+- `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download; also that
+  the ribbon and every looping animation stop off screen.
+- `home-layout.spec.ts`, `activities-opener.spec.ts` and `home-terminals.spec.ts`: the task-first section order and that the
+  nav links follow it, the type scale (one size for every section title, no split words, no sideways scroll at 320 px, 44 px
+  targets), the short hero (headline, shortcuts and ribbon, no pin), the opener of Actividades with its split trunk, the old
+  activities folded behind a disclosure, and the news and forum terminals. The news cases skip on a fallback build (it has no news).
+- `audit-landing.spec.ts`: the 2026-10-29 platform audit on the built site: four widths (320, 390, 768, 1440) on the four
+  home and news pages, keyboard and focus, reduced motion, the 404, a clean console, links that leave the page, the FAQ terminal
+  the language switch and the forum links (only the admin's `/foro`). With `AUDIT_LIVE_URL` set it also visits a running dev
+  server or deploy.
+
+These build the site again against a mock admin (`e2e/support/admin-site.ts`, into `node_modules/.cache/aso-e2e/`, never
+`dist/`), so they cover what the fallback build cannot show. They run serially because the builds share Astro's cache:
+
+- `built-from-admin.spec.ts`: the Aliados section (rendering, alt text and links, both languages, hidden when the admin sends
+  none or on the fallback build, axe in both themes, nothing animated under reduced motion; `#impacto` and `#testimonios`
+  never exist) and the preview mode (token header, banner, noindex, a draft shows up, the token is in no file, a normal build
+  ignores it, a 401 or a missing `preview: true` fails the build). It runs several builds, so it is one of the slowest suites.
+- `event-registration.spec.ts`: a mock admin that also answers the seats endpoint (`page.route`; no spec
   reaches Cloudflare or a real admin). It covers what each event shows (the ticket for each mode, a free pass, closed at
   build time, expired in the browser via `page.clock`, past, English), that every ticket links to
   `<admin>/foro/eventos/<slug>` and no page carries a form, a Turnstile reference or a script for one, that the links of a
@@ -326,9 +371,15 @@ pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of
   singular, full, closed, no capacity, an answer that is not the contract, offline, slow, no change of height), the `.ics`
   links, the `Event` JSON-LD and its offers, an admin without the S8 keys, links on another origin (left out, build warning)
   and axe in both themes with live, full and closed seats. Events are dated relative to the day of the run.
-- `home-layout.spec.ts`, `activities-opener.spec.ts` and `moments.spec.ts`: the section order, the type scale, no split
-  words, no sideways scroll at 320 px, 44 px targets, the opener of Actividades with its split trunk, and the three
-  subject moments. `motion-loading.spec.ts` also checks that the ribbon and every looping animation stop off screen.
+- `moments.spec.ts`: the three small moments (networks in the hero, languages in Inscripciones, the decrypting Novedades
+  title), which need an admin with tickets and news; each is still under reduced motion and none shifts the page.
+- `audit-landing-content.spec.ts`: content a real admin could send: the longest values the validator accepts, text with no
+  break point, images that never load, empty lists and failing seats.
+- `audit-landing-dev.spec.ts`: `astro dev` started while the admin is down serves the fallback, then the admin's content on
+  the next visit once it answers, without a restart.
+
+When a dev server already holds port 4321, run the same suite on another port:
+`E2E_PORT=4322 pnpm exec playwright test -c e2e/alt-port.config.ts` (`e2e/alt-port.config.ts`).
 
 Lighthouse CI (`lighthouserc.json`, CI job `lighthouse`, `pnpm build && pnpm lighthouse`) audits the same three
 pages three times each on the fallback build, mobile profile, and asserts the median run. Budgets:
@@ -343,9 +394,47 @@ First time: `pnpm exec playwright install chromium`. To see what the home page d
 ## Editing content
 
 Real content is edited in the admin. What stays in code (`src/data/site.ts`): the hero and
-manifesto copy, the nav, the ribbon, the contribute section, the three structural timeline
+manifesto copy, the nav, the ribbon, the contribute section, the forum teaser, the three structural timeline
 entries and the demo placeholders. Sections are rendered in `src/views/HomePage.astro`; the news pages
 are `src/views/NewsIndexPage.astro` and `src/views/NewsPostPage.astro`.
+
+## The home page
+
+The home is task first: what a student came to do (sign up, read the news, see the activities, ask in the forum) comes
+before who we are. The order is fixed in `src/views/HomePage.astro` and checked by `e2e/home-layout.spec.ts`; a section marked
+\* is left out when it has nothing to show, and the header links follow the same order (`navLinks` in `src/data/site.ts`).
+
+| # | Section (id) | Source |
+|---|--------------|--------|
+| 1 | Hero (`top`): headline, lede, three ticket-shaped shortcuts and the network moment | `site.ts` (the shortcuts point at sections that render) |
+| 2 | Ribbon | `site.ts` |
+| 3 | Inscripciones (`inscripciones`)\*: one ticket per upcoming activity, live seats | admin events |
+| 4 | Novedades (`novedades`)\*: the news terminal | admin news |
+| 5 | Actividades (`actividades`): opener, then the planned lane and the history | admin events + `site.ts` anchors |
+| 6 | Foro (`foro`): the forum teaser | `site.ts`, link to the admin |
+| 7 | Nosotros (`nosotros`): manifesto and about | `site.ts`, admin settings and pillars |
+| 8 | Directiva (`directiva`)\*: the board | admin board |
+| 9 | Ideas (`ideas`): the contribute section | `site.ts` (demo until approved) |
+| 10 | FAQ (`faq`)\*: a `git help` terminal | admin FAQ and commands |
+| 11 | Redes (`redes`)\*: socials | admin socials |
+| 12 | Aliados (`aliados`)\*: sponsors | admin sponsors |
+
+**Type scale.** There are eight font sizes and nothing else: Tailwind's defaults are cleared (`--text-*: initial`) and
+`src/styles/global.css` defines `display`, `section`, `title`, `lead`, `body`, `secondary`, `label` and `small` as the only
+`text-*` utilities. Every section title uses `section`. Titles are Mona Sans expanded (`font-display`, 125% width); the
+Audiowide face (`font-brand`) is kept for the wordmark only (header and 404). Body text is Mona Sans at normal width, and dates,
+branch names and hashes use Geist Mono.
+
+**Hero and the Actividades opener.** The hero is about one screen and has no scroll pin. The isotype animation that used to open
+the page now opens Actividades: over a tall run (`html.motion .op`) a CSS-`position: sticky` stage (`.op-stage`) plays the
+isotype growing, its brackets sliding off and its cursor thinning into a stem that lands on the trunk, which then splits into
+the planned lane (dotted) and the history (solid; stacked on phones). There is no JS pin, so touch scrolling stays native and
+the browser bars cannot make it jump. Without motion (reduced motion, or the script failing) it is its static end state.
+The older entries of the history fold into a plain `<details>` that opens without JS.
+
+**Three small moments** (`src/scripts/moments.ts`, imported by `ui.ts` only on a page that has one): a network graph behind the
+hero shortcuts (screens of 1180 px and wider), a rotating language snippet in Inscripciones and a decrypting Novedades title.
+Each is its calm end state under reduced motion.
 
 ## Themes and languages
 
@@ -428,26 +517,50 @@ visitor downloads is decided by `planMotion` in `src/scripts/motion-policy.ts` (
 | Mouse | loaded | loaded |
 
 The libraries are separate chunks fetched with a dynamic `import()` after the first paint, once the browser is
-idle (a second at most), so they never compete with the HTML, CSS and fonts. Everything is visible without them;
-the pre-motion state lives behind `html.motion`, which the layout adds only when motion is allowed and removes
-if the script fails or never starts.
+idle (a second at most, `requestIdleCallback` with `timeout: 1000` in `motion.ts`), so they never compete with the HTML, CSS
+and fonts. Everything is visible without them; the pre-motion state lives behind `html.motion`, which the layout adds only
+when motion is allowed and removes if the script fails or never starts. Looping CSS animations (blinking cursors, live dots)
+are paused while their block is off screen (`src/scripts/idle-motion.ts`). The Actividades opener is described under
+[The home page](#the-home-page).
+
+## Quality gates
+
+What runs on every pull request and on `main` (`.github/workflows/ci.yml`; no secrets, the build has no `ADMIN_CONTENT_URL` and
+uses the fallback):
+
+| Job | Runs | Fails when |
+|-----|------|------------|
+| `checks` | `pnpm audit --prod --audit-level high`, `pnpm lint` (ESLint with `typescript-eslint` and `eslint-plugin-astro`), `pnpm check` (`astro check`), `pnpm format:check` (Prettier with the Astro plugin; `*.md` is in `.prettierignore`), `pnpm test`, `pnpm build` | any step fails, or a production dependency has a high or critical advisory |
+| `e2e` | `pnpm build`, then `pnpm test:e2e` (see Tests) | a spec fails, including serious or critical axe violations |
+| `lighthouse` | `pnpm build`, then `pnpm lighthouse` | a median category score is under budget (see below) |
+
+Also: Dependabot opens weekly pull requests for npm and GitHub Actions, minor and patch updates grouped and majors apart
+(`.github/dependabot.yml`); `.github/CODEOWNERS` requests the maintainer's review; SonarCloud analyses the project and leaves the
+two parallel copy tables out of duplicate detection (`.sonarcloud.properties`: `src/i18n/ui.ts`, `src/data/site.ts`).
 
 ## Structure
 
 ```text
 src/
 ├── data/
-│   ├── content.ts        # resolves the content once per build (API or fallback)
+│   ├── content.ts        # resolves the content once per build (API or fallback), runs the production gate
 │   ├── fallback.json     # committed snapshot of the real content, API shape (news: [])
 │   └── site.ts           # landing-owned copy and demo placeholders
-├── lib/admin-content/    # validate, load (fetch + fallback), preview (build mode), map, news, markdown, compose (+ tests)
-├── i18n/                 # locales, localized paths, UI dictionary (es/en)
-├── lib/seo/              # canonical URL, social meta, JSON-LD (Organization, NewsArticle, Event), robots.txt, RSS items (+ tests)
+├── lib/admin-content/    # validate, load (fetch + fallback), gate, refresh (dev), preview (build mode), map, timeline, forum
+│                         # (admin URLs), news, markdown, cloudinary, compose (+ tests)
 ├── lib/registration/     # event registration: tickets, deadline rules, live seats (+ tests)
-├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical and social meta
-├── views/                # the pages' bodies, shared by both languages
+├── lib/seo/              # canonical URL, social meta, JSON-LD (Organization, NewsArticle, Event), robots.txt, RSS items (+ tests)
+├── lib/share.ts          # share links and which controls to show (+ test); lib/analytics.ts: Cloudflare beacon
+├── i18n/                 # locales, localized paths, nav routing, UI dictionary (es/en)
+├── components/           # one Astro component per section (Hero, Registrations, News, ActivityGraph, Forum, ...), Photo, Ticket, ShareBar
+├── scripts/              # client scripts: motion (+ policy), ui, theme, seats, ticket-deadline, share, forum-*, news-visor, faq-shell, moments
+├── layouts/Layout.astro  # HTML shell, theme script, hreflang, canonical, social meta and JSON-LD
+├── middleware.ts         # dev only: asks the admin again when the server started with the fallback
+├── views/                # the pages' bodies, shared by both languages (HomePage, NewsIndexPage, NewsPostPage, newsFeed)
 ├── pages/                # thin routes: / and /novedades (es), /en/... (en); 404, robots.txt, RSS
-└── styles/global.css     # Tailwind entry point
+└── styles/global.css     # Tailwind entry point, theme tokens, type scale, every component style
+e2e/                      # Playwright suites (see Tests); e2e/support/admin-site.ts builds the site against a mock admin
+scripts/                  # generate-brand-assets, verify-dist, measure-js
 ```
 
 ## Cómo colaborar
@@ -455,7 +568,7 @@ src/
 Este es un proyecto de la comunidad de ASO Computación y la directiva lo mantiene junto con quien quiera aportar.
 
 - **Contenido** (eventos, fotos, FAQ, directiva, pilares, redes): se edita en el panel de administración, sin tocar código.
-- **Código y diseño**: Pull Request contra `main`. `main` está protegida, así que todo cambio entra por PR con una aprobación y la CI tiene que pasar en verde (`pnpm test` y `pnpm build`). Conviene correr lo mismo localmente antes de pedir revisión.
+- **Código y diseño**: Pull Request contra `main`. `main` está protegida, así que todo cambio entra por PR con una aprobación y la CI tiene que pasar en verde (ver [Quality gates](#quality-gates)). Conviene correr lo mismo localmente antes de pedir revisión.
 - **Errores e ideas**: abrí un issue con las plantillas del repositorio.
 
 La guía completa, con el flujo de ramas, las convenciones de commits y las buenas prácticas para la directiva, está en [CONTRIBUTING.md](../CONTRIBUTING.md). Las vulnerabilidades se reportan en privado según [SECURITY.md](../SECURITY.md).
