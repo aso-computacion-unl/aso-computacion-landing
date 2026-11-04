@@ -13,8 +13,8 @@ export type TicketMode = 'unl' | 'open' | 'free';
 export interface Ticket {
 	entry: TimelineEntry;
 	mode: TicketMode;
-	// "Boleto 00N": only the tickets that take a registration are numbered.
-	number?: number;
+	// "Boleto 00N", in the order shown; a free pass is numbered like the rest.
+	number: number;
 }
 
 // The ticket's id on the home page. Prefixed so an activity called "faq" never takes the id of a section.
@@ -31,14 +31,10 @@ const byDate = (a: TimelineEntry, b: TimelineEntry): number => {
 };
 
 export function chooseTickets(entries: readonly TimelineEntry[]): Ticket[] {
-	let number = 0;
 	return entries
 		.filter((entry) => entry.kind === 'upcoming')
 		.sort(byDate)
-		.map((entry): Ticket => {
-			const mode = ticketMode(entry);
-			return mode === 'free' ? { entry, mode } : { entry, mode, number: (number += 1) };
-		});
+		.map((entry, index): Ticket => ({ entry, mode: ticketMode(entry), number: index + 1 }));
 }
 
 const DAY = 86_400_000;

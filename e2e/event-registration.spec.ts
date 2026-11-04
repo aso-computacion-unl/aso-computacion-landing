@@ -256,8 +256,11 @@ test.describe('registration from the admin', () => {
 		}) => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'taller-libre');
-			await expect(item).toContainText('Pase libre');
+			// Free entry is said once, in the stub: no "Sin inscripción" chip and no separate free-pass label.
 			await expect(item).toContainText('Entrada libre');
+			await expect(item).toContainText('Llega y ya.');
+			await expect(item).not.toContainText('Pase libre');
+			await expect(item.locator('.tk-chip')).toHaveCount(0);
 			await expect(item.locator('[data-reg], [data-reg-action], [data-seat-num]')).toHaveCount(0);
 			await expect(item.getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
 				'href',
@@ -285,7 +288,7 @@ test.describe('registration from the admin', () => {
 			await expect(past).toHaveCount(1);
 			await expect(past.locator('.reg, .reg-calendar')).toHaveCount(0);
 			await expect(card(page, 'sin-extras').locator('.reg')).toHaveCount(0);
-			await expect(ticket(page, 'sin-extras')).toContainText('Pase libre');
+			await expect(ticket(page, 'sin-extras')).toContainText('Entrada libre');
 		});
 
 		test('a registration that expired after the build closes in the browser', async ({ page }) => {
@@ -328,15 +331,10 @@ test.describe('registration from the admin', () => {
 				'inscripciones-sin-extras',
 			]);
 			const labels = await page.locator('#inscripciones .tk-no').allTextContents();
-			expect(labels).toEqual(['Boleto 001', 'Boleto 002', 'Pase libre', 'Boleto 003', 'Pase libre']);
+			expect(labels).toEqual(['Boleto 001', 'Boleto 002', 'Boleto 003', 'Boleto 004', 'Boleto 005']);
+			// Only the tickets that take a registration say how; a free one says it once, in its stub.
 			const modes = await page.locator('#inscripciones .tk-chip').allTextContents();
-			expect(modes).toEqual([
-				'Con formulario',
-				'Con cuenta UNL',
-				'Sin inscripción',
-				'Con formulario',
-				'Sin inscripción',
-			]);
+			expect(modes).toEqual(['Con formulario', 'Con cuenta UNL', 'Con formulario']);
 		});
 
 		test('shows the facts the admin gave and only those', async ({ page }) => {

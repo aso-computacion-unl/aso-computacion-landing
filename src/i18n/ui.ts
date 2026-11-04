@@ -28,8 +28,7 @@ const es = {
 	'hero.gate.news': 'Lo último: {date}',
 
 	'activities.title': 'Actividades',
-	'activities.intro':
-		'Dos líneas desde el mismo tronco: la punteada es lo que viene y todavía no ocurre; la continua, lo que ya hicimos, hasta el primer día.',
+	'activities.intro': 'Lo que viene (línea punteada) y lo que ya hicimos (línea continua), desde el primer día.',
 	'activities.past': 'historial',
 	'activities.branch': 'Actividades de {title}',
 	'activities.history.show': 'Ver historial ({count} más)',
@@ -53,10 +52,9 @@ const es = {
 	'meta.lugar': 'lugar',
 	'meta.para': 'para',
 
-	'ticket.eyebrow': '$ git tag --list',
+	'ticket.eyebrow': 'Próximas fechas',
 	'ticket.title': 'Inscripciones',
-	'ticket.lead':
-		'Las próximas actividades. Elige una y apúntate: cada boleto dice cómo inscribirte, cuántos cupos hay y hasta cuándo.',
+	'ticket.lead': 'Elige una actividad y apúntate.',
 	'ticket.list': 'Próximas actividades',
 	'ticket.key': 'Cómo te inscribes',
 	'ticket.key.unl': 'UNL',
@@ -66,7 +64,6 @@ const es = {
 	'ticket.key.free': 'Libre',
 	'ticket.key.freeText': 'sin inscripción',
 	'ticket.no': 'Boleto {n}',
-	'ticket.free': 'Pase libre',
 	'ticket.mode.unl': 'Con cuenta UNL',
 	'ticket.mode.open': 'Con formulario',
 	'ticket.mode.free': 'Sin inscripción',
@@ -89,7 +86,7 @@ const es = {
 	'ticket.closesInOne': 'Cierra en 1 día',
 	'ticket.closesSoon': 'Cierra en menos de un día',
 	'ticket.freeEntry': 'Entrada libre',
-	'ticket.freeHint': 'No pide inscripción: llega y ya.',
+	'ticket.freeHint': 'Llega y ya.',
 	'ticket.link': 'Ver el boleto de inscripción',
 	'ticket.enroll': 'Inscribirme',
 	'ticket.hint.unl': 'Entras con tu cuenta @unl.edu.ec.',
@@ -97,7 +94,8 @@ const es = {
 	'calendar.add': 'Añadir al calendario',
 
 	'news.title': 'Novedades',
-	'news.lead': 'Lo último que anunciamos: avisos, resultados y noticias para quienes estudian Computación.',
+	'news.eyebrow': 'Lo último',
+	'news.lead': 'Avisos y resultados de la carrera.',
 	'news.seeAll': 'Ver todas las novedades',
 	'news.seeCount': 'Ver las {count} novedades',
 	'news.pageDescription':
@@ -123,8 +121,7 @@ const es = {
 	'notFound.home': 'Volver al inicio',
 
 	'board.title': 'Directiva',
-	'board.lead':
-		'Las personas que hoy representan a los estudiantes de Computación. Pasa el cursor o toca una tarjeta para conocerlas.',
+	'board.lead': 'Quienes hoy representan a los estudiantes de Computación.',
 	'board.count': 'personas que te representan',
 	'board.roles': 'Cargos',
 	'board.hint': '¿quién es?',
@@ -132,7 +129,8 @@ const es = {
 	'board.language': 'lenguaje favorito',
 
 	'sponsors.title': 'Aliados',
-	'sponsors.lead': 'Organizaciones y personas que hacen posible lo que hacemos. Gracias.',
+	'sponsors.eyebrow': 'Con el apoyo de',
+	'sponsors.lead': 'Organizaciones y personas que hacen posible lo que hacemos.',
 	'sponsors.list': 'Aliados y auspiciantes',
 
 	'faq.topicWord': 'tema',
@@ -178,7 +176,14 @@ const es = {
 	'forum.step': 'paso {n}',
 
 	'socials.title': 'Síguenos',
-	'socials.lead': 'Todo se anuncia en redes, y por ahí mismo puedes escribirnos por mensaje directo.',
+	'socials.eyebrow': 'Dónde encontrarnos',
+	'socials.lead': 'Escríbenos por mensaje directo.',
+	'faq.eyebrow': 'Antes de preguntar',
+	'ribbon.next': 'Próximo: {item}',
+	'ribbon.seats': 'cupos limitados',
+	'ribbon.free': 'entrada libre',
+	'ribbon.forum': 'Pregunta en el foro',
+	'ribbon.instagram': 'Todo se anuncia primero en Instagram',
 
 	'footer.university': 'Universidad Nacional de Loja',
 	'footer.madeBy': 'Sitio hecho por {name}, estudiante de Computación en la UNL.',
@@ -212,8 +217,7 @@ const en: Record<keyof typeof es, string> = {
 	'hero.gate.news': 'Latest: {date}',
 
 	'activities.title': 'Activities',
-	'activities.intro':
-		'Two lines from the same trunk: the dotted one is what is coming and has not happened yet; the solid one, what we have already done, back to day one.',
+	'activities.intro': 'What is coming (dotted line) and what we have already done (solid line), since day one.',
 	'activities.past': 'history',
 	'activities.branch': 'Activities of {title}',
 	'activities.history.show': 'Show history ({count} more)',
@@ -237,10 +241,9 @@ const en: Record<keyof typeof es, string> = {
 	'meta.lugar': 'place',
 	'meta.para': 'for',
 
-	'ticket.eyebrow': '$ git tag --list',
+	'ticket.eyebrow': 'Upcoming dates',
 	'ticket.title': 'Sign-ups',
-	'ticket.lead':
-		'The upcoming activities. Pick one and sign up: each ticket tells you how to sign up, how many seats there are and until when.',
+	'ticket.lead': 'Pick an activity and sign up.',
 	'ticket.list': 'Upcoming activities',
 	'ticket.key': 'How you sign up',
 	'ticket.key.unl': 'UNL',
@@ -250,7 +253,6 @@ const en: Record<keyof typeof es, string> = {
 	'ticket.key.free': 'Free',
 	'ticket.key.freeText': 'no sign-up',
 	'ticket.no': 'Ticket {n}',
-	'ticket.free': 'Free pass',
 	'ticket.mode.unl': 'With a UNL account',
 	'ticket.mode.open': 'With a form',
 	'ticket.mode.free': 'No sign-up',
@@ -273,7 +275,7 @@ const en: Record<keyof typeof es, string> = {
 	'ticket.closesInOne': 'Closes in 1 day',
 	'ticket.closesSoon': 'Closes in less than a day',
 	'ticket.freeEntry': 'Free entry',
-	'ticket.freeHint': 'No sign-up needed: just show up.',
+	'ticket.freeHint': 'Just show up.',
 	'ticket.link': 'See the sign-up ticket',
 	'ticket.enroll': 'Sign me up',
 	'ticket.hint.unl': 'You sign in with your @unl.edu.ec account.',
@@ -281,7 +283,8 @@ const en: Record<keyof typeof es, string> = {
 	'calendar.add': 'Add to calendar',
 
 	'news.title': 'News',
-	'news.lead': 'The latest we announced: notices, results and news for people studying Computer Science.',
+	'news.eyebrow': 'The latest',
+	'news.lead': 'Notices and results from the program.',
 	'news.seeAll': 'See all news',
 	'news.seeCount': 'See all {count} news items',
 	'news.pageDescription': 'Notices, results and news from {name}, the Computer Science student association at the UNL.',
@@ -306,7 +309,7 @@ const en: Record<keyof typeof es, string> = {
 	'notFound.home': 'Back to the English home',
 
 	'board.title': 'Board',
-	'board.lead': 'The people who represent Computer Science students today. Hover or tap a card to meet them.',
+	'board.lead': 'The people who represent Computer Science students today.',
 	'board.count': 'people who represent you',
 	'board.roles': 'Roles',
 	'board.hint': 'who is it?',
@@ -314,7 +317,8 @@ const en: Record<keyof typeof es, string> = {
 	'board.language': 'favorite language',
 
 	'sponsors.title': 'Allies',
-	'sponsors.lead': 'The organizations and people who make what we do possible. Thank you.',
+	'sponsors.eyebrow': 'Supported by',
+	'sponsors.lead': 'The organizations and people who make what we do possible.',
 	'sponsors.list': 'Allies and sponsors',
 
 	'faq.topicWord': 'topic',
@@ -360,7 +364,14 @@ const en: Record<keyof typeof es, string> = {
 	'forum.step': 'step {n}',
 
 	'socials.title': 'Follow us',
-	'socials.lead': 'Everything is announced on socials, and you can send us a direct message there too.',
+	'socials.eyebrow': 'Where to find us',
+	'socials.lead': 'Send us a direct message.',
+	'faq.eyebrow': 'Before you ask',
+	'ribbon.next': 'Next: {item}',
+	'ribbon.seats': 'limited seats',
+	'ribbon.free': 'free entry',
+	'ribbon.forum': 'Ask in the forum',
+	'ribbon.instagram': 'Everything is announced first on Instagram',
 
 	'footer.university': 'Universidad Nacional de Loja',
 	'footer.madeBy': 'Site built by {name}, a Computer Science student at UNL.',

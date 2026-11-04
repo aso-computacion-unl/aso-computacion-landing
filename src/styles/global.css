@@ -4225,6 +4225,8 @@ html.motion .hero-mark-svg {
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem 0.75rem;
+		/* A free ticket has no mode chip: keep the chip's height so its date lines up with its neighbours. */
+		min-height: 1.5rem;
 	}
 
 	.tk-top .demo-tag {

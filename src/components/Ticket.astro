@@ -38,7 +38,7 @@ const facts = [
 	{ label: t('ticket.fact.for'), value: meta?.para },
 ].filter((fact) => fact.value);
 
-const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: String(number).padStart(3, '0') });
+const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 ---
 
 <li
@@ -52,7 +52,7 @@ const label = number === undefined ? t('ticket.free') : t('ticket.no', { n: Stri
 		<div class="tk-body">
 			<p class="tk-top">
 				<span class="tk-no">{label}</span>
-				<span class="tk-chip">{t(`ticket.mode.${mode}`)}</span>
+				{mode !== 'free' && <span class="tk-chip">{t(`ticket.mode.${mode}`)}</span>}
 				{entry.demo && (
 					<span class="demo-tag" title={t('demo.title')}>
 						demo

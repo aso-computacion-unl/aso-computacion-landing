@@ -1,8 +1,11 @@
 ---
+import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
-import { copy } from '../data/site';
+import { ribbonItems } from '../lib/registration/ribbon';
+import { chooseTickets } from '../lib/registration/tickets';
 
-const { ribbon } = copy[toLocale(Astro.currentLocale)];
+const locale = toLocale(Astro.currentLocale);
+const ribbon = ribbonItems(chooseTickets(getContent(locale).timeline), locale);
 ---
 
 <div class="ribbon" aria-hidden="true">

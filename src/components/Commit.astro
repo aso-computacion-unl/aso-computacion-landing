@@ -88,7 +88,6 @@ const showRef = !dense && Boolean(hash || deco);
 				</p>
 			)}
 			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
-			{entry.msg && <p class="msg">{entry.msg}</p>}
 			{!compact && entry.description && (
 				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
 			)}

@@ -11,7 +11,7 @@ const placeholder = faq.items[0] ? `git help ${faq.items[0].topic}` : 'help';
 
 <section id="faq" class="bg-navy py-section" data-faq>
 	<div class="wrap">
-		<SectionHead eyebrow="$ git help" title={faq.title} lead={faq.lead} demo={faq.demo}>
+		<SectionHead eyebrow={t('faq.eyebrow')} title={faq.title} lead={faq.lead} demo={faq.demo}>
 			<p class="lead faq-forum">
 				{t('faq.forumBefore')} <a href="#foro">{t('faq.forumLink')}</a>.
 			</p>

@@ -14,7 +14,7 @@ const segments = (url: string) => display(url).split(/(?<=\/)/);
 
 <section id="redes" class="bg-navy py-section">
 	<div class="wrap">
-		<SectionHead eyebrow="$ git remote -v" title={t('socials.title')} lead={t('socials.lead')} />
+		<SectionHead eyebrow={t('socials.eyebrow')} title={t('socials.title')} lead={t('socials.lead')} />
 
 		<ul class="socials mt-head">
 			{socials.map((social) => (

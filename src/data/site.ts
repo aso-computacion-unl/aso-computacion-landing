@@ -42,16 +42,6 @@ export const contactEmail = 'aso.computacion@gmail.com';
 // Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
 export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
 
-// Text of the diagonal ribbon: ASO verbs written as commit messages. Playful, no claims or numbers.
-export const ribbon = [
-	'feat: representar a los estudiantes',
-	'fix: aprender en equipo',
-	'chore: construir comunidad',
-	'docs: compartir lo que sabemos',
-	'feat: primer ciclo, bienvenido',
-	'refactor: hacer la carrera más llevadera',
-];
-
 // Nosotros manifesto: two static lines plus one rotating word. Screen readers get `sr` instead of the animation.
 export const manifesto = {
 	lines: ['Somos la ASO', 'de Computación'],
@@ -227,9 +217,9 @@ export const demoEvents: Omit<TimelineEntry, 'kind'>[] = [
 // certificates. Replace with the board's own words, then drop `demo`.
 export const join = {
 	demo: true,
-	eyebrow: 'CONTRIBUTING.md',
+	eyebrow: 'Participa',
 	headline: ['Tus ideas', 'también hacen', 'commit'],
-	lead: 'La carrera la mejoramos entre todos. Cuéntanos qué cambiarías y ayúdanos a fortalecer la comunidad.',
+	lead: 'Cuéntanos qué cambiarías y ayúdanos a mejorar la carrera.',
 	stickers: ['¡propón!', 'ideas de todos los ciclos'],
 	reasons: [
 		{
@@ -369,9 +359,9 @@ export interface ForumFeedLine {
 // feed, or with the board's own words, then drop `demo`.
 export const forum = {
 	demo: true,
-	eyebrow: '$ git log foro --oneline',
+	eyebrow: 'Entre estudiantes',
 	title: 'El foro de Computación',
-	lead: 'Pregunta sobre materias, propón talleres y arma equipo para el próximo evento. Es el espacio de los estudiantes de la UNL.',
+	lead: 'Pregunta sobre materias, propón talleres y arma equipo.',
 	// Names and descriptions as the forum has them.
 	categories: [
 		{ id: 'general', name: 'General', description: 'Todo lo que no cabe en otra categoría.' },
@@ -515,7 +505,6 @@ type Anchors = typeof timelineAnchors;
 export interface LandingCopy {
 	site: SiteCopy;
 	aboutHighlights: string[];
-	ribbon: string[];
 	manifesto: typeof manifesto;
 	navLinks: typeof navLinks;
 	timelineAnchors: Anchors;
@@ -547,14 +536,6 @@ const enCopy: LandingCopy = {
 	},
 	// The admin's about text stays in Spanish, so its phrases are highlighted too.
 	aboutHighlights: ['student organization', 'Universidad Nacional de Loja', ...aboutHighlights],
-	ribbon: [
-		'feat: represent the students',
-		'fix: learn as a team',
-		'chore: build community',
-		'docs: share what we know',
-		'feat: first semester, welcome',
-		'refactor: make the degree lighter',
-	],
 	manifesto: {
 		lines: ['We are the ASO', 'of Computer Science'],
 		rotor: ['students', 'community', 'your voice'],
@@ -596,7 +577,8 @@ const enCopy: LandingCopy = {
 	join: {
 		...join,
 		headline: ['Your ideas', 'make a', 'commit too'],
-		lead: 'We make the program better together. Tell us what you would change and help us make the community stronger.',
+		eyebrow: 'Get involved',
+		lead: 'Tell us what you would change and help us improve the program.',
 		stickers: ['pitch it!', 'ideas from every semester'],
 		reasons: [
 			{
@@ -633,7 +615,8 @@ const enCopy: LandingCopy = {
 	forum: {
 		...forum,
 		title: 'The Computer Science forum',
-		lead: 'Ask about your courses, pitch workshops and put a team together for the next event. It is the space of the UNL students.',
+		eyebrow: 'Student to student',
+		lead: 'Ask about your courses, pitch workshops and build a team.',
 		categories: [
 			{ ...forum.categories[0], description: 'Everything that does not fit another category.' },
 			{ ...forum.categories[1], description: 'Questions about courses, notes and exam prep.' },
@@ -656,6 +639,6 @@ const enCopy: LandingCopy = {
 };
 
 export const copy: Record<Locale, LandingCopy> = {
-	es: { site, aboutHighlights, ribbon, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
+	es: { site, aboutHighlights, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
 	en: enCopy,
 };
