@@ -1085,18 +1085,6 @@
 		--bg: var(--color-navy-deep);
 	}
 
-	/* Flat file-tab panels (README.md, CONTRIBUTING.md, git remote -v). */
-	.file-tab {
-		display: inline-block;
-		border-radius: 4px 4px 0 0;
-		background: var(--color-navy-lift);
-		padding: 0.5rem 1rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		font-weight: 600;
-		color: var(--color-sky);
-	}
-
 	.panel {
 		border-radius: 0 4px 4px 4px;
 		background: var(--color-navy-lift);
@@ -1515,19 +1503,30 @@
 		padding-top: 1.25rem;
 	}
 
-	.about-block .eyebrow {
-		margin-bottom: 1rem;
+	/* One display-type sentence, ragged right with balanced lines (never justified), then the facts as a mono line. */
+	.about-statement {
+		max-width: 24ch;
+		font-family: var(--font-display);
+		font-size: var(--text-lead);
+		font-weight: 650;
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		text-wrap: balance;
+		color: var(--color-ink);
 	}
 
-	.about-text {
-		font-family: var(--font-sans);
-		font-size: var(--text-lead);
-		font-stretch: 108%;
-		font-weight: 440;
-		line-height: 1.5;
-		letter-spacing: -0.012em;
-		color: var(--color-ink);
-		max-width: 52ch;
+	@media (min-width: 64rem) {
+		.about-statement {
+			font-size: var(--text-title);
+		}
+	}
+
+	.about-facts {
+		margin-top: 1.5rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-label);
+		line-height: 1.6;
+		color: var(--color-mist);
 	}
 
 	/* Bento grid: three pillars, flat tiles of different weight. */
@@ -1879,18 +1878,6 @@
 		color: var(--color-ink);
 	}
 
-	.role-chip {
-		min-width: 0;
-		padding: 0.375rem 0.625rem;
-		border-radius: 4px;
-		background: var(--color-navy-lift);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-sky) 55%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1;
-		color: var(--color-mist);
-	}
-
 	/* Join: the four reasons as a big numbered list. */
 	.reasons {
 		display: grid;
@@ -1899,7 +1886,7 @@
 	.reason {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
-		align-items: start;
+		align-items: center;
 		gap: 1.25rem;
 		border-top: 2px solid var(--color-on-sky);
 		padding-block: 1.25rem 1.5rem;
@@ -1926,13 +1913,6 @@
 		font-weight: 800;
 		font-size: var(--text-title);
 		line-height: 1.1;
-		color: var(--color-on-sky);
-	}
-
-	.reason-text {
-		margin-top: 0.5rem;
-		font-size: var(--text-body);
-		line-height: 1.45;
 		color: var(--color-on-sky);
 	}
 
@@ -2443,14 +2423,6 @@
 		color: var(--color-on-sky);
 	}
 
-	.social-sticker {
-		top: auto;
-		right: 2rem;
-		bottom: 2rem;
-		left: auto;
-		transform: rotate(-4deg);
-	}
-
 	.social-link:focus-visible {
 		outline-offset: 4px;
 	}
@@ -2919,10 +2891,6 @@ html.motion [data-j-in] {
 }
 
 /* Phones get the same entrances as desktop, with shorter travel so nothing leaves the narrow column. */
-html.motion .w {
-	opacity: 0.22;
-}
-
 html.motion [data-member] {
 	opacity: 0;
 	transform: translateY(3rem) rotate(2deg);

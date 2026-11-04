@@ -110,6 +110,72 @@ for (const width of [390, 768, 1440]) {
 	});
 }
 
+test.describe('polish', () => {
+	test('Nosotros has one plain kicker and a statement that is neither justified nor scrubbed word by word', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		const about = page.locator('#nosotros');
+		await expect(about.locator('.eyebrow')).toHaveText('Nosotros');
+		await expect(about.locator('.file-tab')).toHaveCount(0);
+		await expect(about.locator('[data-statement]')).toHaveCount(0);
+		const statement = about.locator('.about-statement');
+		await expect(statement).toHaveText(
+			'Representamos a quienes estudian Computación en la Universidad Nacional de Loja.',
+		);
+		await expect(statement).not.toHaveCSS('text-align', 'justify');
+		await expect(about.locator('.about-facts')).toHaveText('Organización estudiantil · ASO Computación – UNL');
+	});
+
+	test('the English page says the same sentence', async ({ page }) => {
+		await page.goto('/en/');
+		await expect(page.locator('#nosotros .eyebrow')).toHaveText('About');
+		await expect(page.locator('#nosotros .about-statement')).toHaveText(
+			'We represent the students of Computer Science at the Universidad Nacional de Loja.',
+		);
+	});
+
+	test('the board does not list the roles twice, and Redes has no sticker', async ({ page }) => {
+		await page.goto('/');
+		await expect(page.locator('#directiva .role-chip')).toHaveCount(0);
+		await expect(page.locator('#redes .social-sticker')).toHaveCount(0);
+	});
+
+	test('Ideas lists the four steps by title only', async ({ page }) => {
+		await page.goto('/');
+		const reasons = page.locator('#ideas [data-reason]');
+		await expect(reasons).toHaveCount(4);
+		for (const reason of await reasons.all()) await expect(reason.locator('p:not(.reason-num)')).toHaveCount(0);
+	});
+
+	test('an upcoming card leaves hora / lugar / para to its ticket and keeps its description short', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		const cards = page.locator('#actividades .plan .commit:has(.node-upcoming)');
+		test.skip((await cards.count()) === 0, 'the build has no upcoming activities');
+		await expect(cards.locator('.card-meta')).toHaveCount(0);
+		for (const card of await cards.all()) {
+			const description = card.locator('.card-main > p.text-mist');
+			if ((await description.count()) === 0) continue;
+			const { clamp, height, line } = await description.evaluate((node) => {
+				const style = getComputedStyle(node);
+				return { clamp: style.webkitLineClamp, height: node.clientHeight, line: parseFloat(style.lineHeight) };
+			});
+			expect(clamp).toBe('2');
+			expect(height).toBeLessThanOrEqual(line * 2 + 1);
+		}
+	});
+
+	test('every filter chip has something to filter', async ({ page }) => {
+		await page.goto('/');
+		const counts = await page
+			.locator('#actividades [data-filter]:not([data-filter="all"]) .chip-count')
+			.allTextContents();
+		expect(counts.filter((count) => count.trim() === '0')).toEqual([]);
+	});
+});
+
 test.describe('activities history', () => {
 	test('folds the older entries and always shows the root commit', async ({ page }) => {
 		await page.goto('/');

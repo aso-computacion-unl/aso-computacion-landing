@@ -39,8 +39,23 @@ export const site: SiteCopy = {
 // data: change it here only.
 export const contactEmail = 'aso.computacion@gmail.com';
 
-// Phrases of `site.about` drawn in sky blue. They must appear verbatim in the text.
-export const aboutHighlights = ['organización estudiantil', 'Universidad Nacional de Loja'];
+// Nosotros statement: one display-type sentence (the `accent` words in sky blue) and a mono line of facts. It is the
+// landing's own copy, not the admin's `about` text, which is too long to read as a headline.
+export interface AboutStatement {
+	parts: { text: string; accent?: boolean }[];
+	facts: string;
+}
+
+export const aboutStatement: AboutStatement = {
+	parts: [
+		{ text: 'Representamos a quienes estudian ' },
+		{ text: 'Computación', accent: true },
+		{ text: ' en la ' },
+		{ text: 'Universidad Nacional de Loja', accent: true },
+		{ text: '.' },
+	],
+	facts: 'Organización estudiantil · ASO Computación – UNL',
+};
 
 // Nosotros manifesto: two static lines plus one rotating word. Screen readers get `sr` instead of the animation.
 export const manifesto = {
@@ -224,19 +239,15 @@ export const join = {
 	reasons: [
 		{
 			title: 'Propón un taller o una charla',
-			text: 'Si hay algo que quieres aprender o enseñar, escríbenos y lo armamos juntos.',
 		},
 		{
 			title: 'Cuéntanos qué mejorar en la carrera',
-			text: 'Lo que ves desde tu ciclo ayuda a que la ASO lleve mejor la voz de todos.',
 		},
 		{
 			title: 'Ayúdanos a difundir y participa',
-			text: 'Ven a las actividades, comparte los anuncios y trae a tus compañeros.',
 		},
 		{
 			title: 'Comparte lo que sabes con otros ciclos',
-			text: 'Lo que aprendiste hace un año le sirve a quien está empezando.',
 		},
 	],
 	cta: 'Envíanos tu idea',
@@ -466,7 +477,7 @@ type Anchors = typeof timelineAnchors;
 
 export interface LandingCopy {
 	site: SiteCopy;
-	aboutHighlights: string[];
+	aboutStatement: AboutStatement;
 	manifesto: typeof manifesto;
 	navLinks: typeof navLinks;
 	timelineAnchors: Anchors;
@@ -496,8 +507,16 @@ const enCopy: LandingCopy = {
 		about:
 			'The Computer Science Student Association (ASO Computación – UNL) is a student organization that represents the community of future information technology professionals at the Universidad Nacional de Loja.',
 	},
-	// The admin's about text stays in Spanish, so its phrases are highlighted too.
-	aboutHighlights: ['student organization', 'Universidad Nacional de Loja', ...aboutHighlights],
+	aboutStatement: {
+		parts: [
+			{ text: 'We represent the students of ' },
+			{ text: 'Computer Science', accent: true },
+			{ text: ' at the ' },
+			{ text: 'Universidad Nacional de Loja', accent: true },
+			{ text: '.' },
+		],
+		facts: 'Student organization · ASO Computación – UNL',
+	},
 	manifesto: {
 		lines: ['We are the ASO', 'of Computer Science'],
 		rotor: ['students', 'community', 'your voice'],
@@ -545,19 +564,15 @@ const enCopy: LandingCopy = {
 		reasons: [
 			{
 				title: 'Pitch a workshop or a talk',
-				text: 'If there is something you want to learn or teach, write to us and we will put it together.',
 			},
 			{
 				title: 'Tell us what to improve in the program',
-				text: 'What you see from your semester helps the ASO carry everyone’s voice better.',
 			},
 			{
 				title: 'Help spread the word and take part',
-				text: 'Come to the activities, share the announcements and bring your classmates.',
 			},
 			{
 				title: 'Share what you know with other semesters',
-				text: 'What you learned a year ago helps someone who is just starting.',
 			},
 		],
 		cta: 'Send us your idea',
@@ -593,6 +608,6 @@ const enCopy: LandingCopy = {
 };
 
 export const copy: Record<Locale, LandingCopy> = {
-	es: { site, aboutHighlights, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
+	es: { site, aboutStatement, manifesto, navLinks, timelineAnchors, join, forum, faqCopy },
 	en: enCopy,
 };

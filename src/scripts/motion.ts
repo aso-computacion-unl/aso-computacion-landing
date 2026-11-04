@@ -3,7 +3,7 @@
 //     (no JS pin, so touch scrolling stays native and the address bar cannot make it jump), the title leaves, the isotype
 //     grows to fill the stage, its brackets slide off and the `_` cursor thins into a stem that lands on the trunk below
 //     and splits into the two sides. The isotype stays on top of the stem as the root commit.
-//   - Page: rails draw with a travelling cursor, nodes pop, cards slide in, the about sentence lights up word by word,
+//   - Page: rails draw with a travelling cursor, nodes pop, cards slide in,
 //     the Nosotros manifesto rises line by line while one word rotates, bento tiles and join reasons rise, the
 //     collage rows slide against each other, board cards stagger up, the ribbon reacts to scroll velocity.
 // Everything is visible without JS. The pre-motion state lives behind `html.motion` (set in Layout, removed
@@ -369,16 +369,6 @@ async function init(plan: MotionPlan) {
 						onToggle: (self) => (self.isActive ? cycle.play() : cycle.pause()),
 					});
 				}
-			}
-
-			const sentence = qa('[data-statement] .w');
-			if (sentence.length) {
-				gsap.to(sentence, {
-					opacity: 1,
-					ease: 'none',
-					stagger: 0.12,
-					scrollTrigger: { trigger: '[data-statement]', start: 'top 85%', end: 'bottom 50%', scrub: 0.4 },
-				});
 			}
 
 			reveal('[data-tile]', 'top 92%', (batch) =>

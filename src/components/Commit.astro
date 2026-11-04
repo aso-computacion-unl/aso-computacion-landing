@@ -43,7 +43,8 @@ const hash = entry.kind === 'next' || entry.kind === 'upcoming' ? undefined : sh
 const deco = entry.branch ? `Merge ${entry.branch.name}` : decoration[entry.kind];
 const upcoming = entry.kind === 'next' || entry.kind === 'upcoming' || entry.kind === 'head';
 const external = entry.href ? /^https?:/.test(entry.href) : false;
-const metaEntries = entry.meta ? Object.entries(entry.meta) : [];
+// An upcoming card does not repeat the hora / lugar / para of its ticket: the ticket is the place for them.
+const metaEntries = entry.meta && entry.kind !== 'upcoming' ? Object.entries(entry.meta) : [];
 const showPhoto = !compact && entry.image && entry.featured;
 const showThumb = !compact && entry.image && !entry.featured;
 const isNext = !compact && entry === nextEvent;
@@ -89,7 +90,15 @@ const showRef = !dense && Boolean(hash || deco);
 			)}
 			<h3 class:list={['font-display text-lead leading-snug text-ink', { 'mt-3': !dense }]}>{entry.title}</h3>
 			{!compact && entry.description && (
-				<p class:list={['max-w-[60ch] text-mist', dense ? 'text-secondary' : 'mt-2']}>{entry.description}</p>
+				<p
+					class:list={[
+						'max-w-[60ch] text-mist',
+						dense ? 'text-secondary' : 'mt-2',
+						{ 'line-clamp-2': dense && entry.kind === 'upcoming' },
+					]}
+				>
+					{entry.description}
+				</p>
 			)}
 			{!compact && entry.href && (
 				<a

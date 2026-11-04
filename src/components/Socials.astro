@@ -20,11 +20,6 @@ const segments = (url: string) => display(url).split(/(?<=\/)/);
 			{socials.map((social) => (
 				<li class:list={['social', `social-${social.remote}`]} data-social>
 					<a href={social.href} target="_blank" rel="me noopener" class="social-link">
-						{social.note && (
-							<span class="sticker social-sticker" aria-hidden="true">
-								{social.note}
-							</span>
-						)}
 						<svg class="social-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 							<path d={social.icon} fill="currentColor" />
 						</svg>

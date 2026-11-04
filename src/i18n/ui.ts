@@ -114,7 +114,6 @@ const es = {
 	'board.title': 'Directiva',
 	'board.lead': 'Quienes hoy representan a los estudiantes de Computación.',
 	'board.count': 'personas que te representan',
-	'board.roles': 'Cargos',
 	'board.hint': '¿quién es?',
 	'board.more': 'pasa el cursor o toca para ver más',
 	'board.language': 'lenguaje favorito',
@@ -135,6 +134,7 @@ const es = {
 	'forum.signin.only': 'Solo con tu correo',
 
 	'socials.title': 'Síguenos',
+	'about.eyebrow': 'Nosotros',
 	'socials.eyebrow': 'Dónde encontrarnos',
 	'socials.lead': 'Escríbenos por mensaje directo.',
 	'faq.eyebrow': 'Antes de preguntar',
@@ -261,7 +261,6 @@ const en: Record<keyof typeof es, string> = {
 	'board.title': 'Board',
 	'board.lead': 'The people who represent Computer Science students today.',
 	'board.count': 'people who represent you',
-	'board.roles': 'Roles',
 	'board.hint': 'who is it?',
 	'board.more': 'hover or tap to see more',
 	'board.language': 'favorite language',
@@ -282,6 +281,7 @@ const en: Record<keyof typeof es, string> = {
 	'forum.signin.only': 'Only with your',
 
 	'socials.title': 'Follow us',
+	'about.eyebrow': 'About',
 	'socials.eyebrow': 'Where to find us',
 	'socials.lead': 'Send us a direct message.',
 	'faq.eyebrow': 'Before you ask',

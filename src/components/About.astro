@@ -8,23 +8,17 @@ import { useTranslations } from '../i18n/ui';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { pillars, site } = getContent(locale);
-const { aboutHighlights, manifesto } = copy[locale];
-
-// The real LinkedIn sentence stays as body text; the highlighted phrases are only recoloured, never restyled.
-const pattern = new RegExp(`(${aboutHighlights.join('|')})`);
-const parts = site.about.split(pattern).filter(Boolean);
-// Each word is its own span so the scroll scrub can light the sentence up word by word.
-const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.length > 0);
+const { pillars } = getContent(locale);
+const { aboutStatement, manifesto } = copy[locale];
 ---
 
 <section id="nosotros" class="bg-navy py-section">
 	<div class="wrap">
-		<p class="file-tab" aria-hidden="true">
-			README.md
+		<p class="eyebrow" aria-hidden="true">
+			<span>{t('about.eyebrow')}</span>
 		</p>
 
-		<div class="mt-8 grid items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
+		<div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
 			<h2 class="manifesto" data-manifesto>
 				<span class="sr-only">{manifesto.sr}</span>
 				<span aria-hidden="true">
@@ -48,20 +42,10 @@ const words = (text: string) => text.split(/(\s+)/).filter((chunk) => chunk.leng
 			</h2>
 
 			<div class="about-block">
-				<p class="eyebrow" aria-hidden="true">
-					<span>$ cat README.md</span>
+				<p class="about-statement">
+					{aboutStatement.parts.map((part) => (part.accent ? <span class="text-sky">{part.text}</span> : part.text))}
 				</p>
-				<p class="about-text" data-statement>
-					{parts.map((part) =>
-						aboutHighlights.includes(part) ? (
-							<span class="text-sky">
-								{words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))}
-							</span>
-						) : (
-							words(part).map((chunk) => (/^\s+$/.test(chunk) ? chunk : <span class="w">{chunk}</span>))
-						),
-					)}
-				</p>
+				<p class="about-facts">{aboutStatement.facts}</p>
 			</div>
 		</div>
 
