@@ -81,7 +81,7 @@ Para ver borradores y contenido programado antes de publicarlos hay un build de 
 
 ## Cómo colaborar
 
-Este es un proyecto de la comunidad y cualquier persona puede aportar con una propuesta de cambio (Pull Request) hacia `main`. Para errores o ideas, abre un issue.
+Este es un proyecto de la comunidad y cualquier persona puede aportar con una propuesta de cambio (Pull Request) hacia `main`. Para errores o ideas, abra un issue.
 
 - Guía de contribución: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Vulnerabilidades: se reportan en privado, según [SECURITY.md](SECURITY.md)

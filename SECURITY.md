@@ -2,11 +2,11 @@
 
 ## Cómo reportar una vulnerabilidad
 
-No abras un issue público. Usá el reporte privado de GitHub:
+No abra un issue público. Use el reporte privado de GitHub:
 
 1. Pestaña **Security** de este repositorio.
 2. **Report a vulnerability**.
-3. Describí qué encontraste, cómo reproducirlo y qué impacto tiene.
+3. Describa qué encontró, cómo reproducirlo y qué impacto tiene.
 
 Solo la directiva y quien mantiene el proyecto ven el reporte. Respondemos en cuanto podamos; es un proyecto estudiantil voluntario, así que pedimos paciencia.
 
@@ -19,7 +19,7 @@ Solo la directiva y quien mantiene el proyecto ven el reporte. Respondemos en cu
 
 ## Qué ya hace el sitio
 
-Para que tu reporte sea más preciso, estas son las defensas que hoy tiene (detalle en [docs/REFERENCIA.md](docs/REFERENCIA.md)):
+Para que su reporte sea más preciso, estas son las defensas que hoy tiene (detalle en [docs/REFERENCIA.md](docs/REFERENCIA.md)):
 
 - Es estático: no hay servidor, formulario ni cookie propios. Las inscripciones y el foro viven en el panel.
 - El contenido del panel se valida al construir el sitio (forma, largos, imágenes solo de Cloudinary, enlaces `https`) y se escapa al mostrarlo; el Markdown de las noticias no admite HTML y el JSON-LD no puede cerrar su etiqueta `<script>`.
@@ -30,5 +30,5 @@ Para que tu reporte sea más preciso, estas son las defensas que hoy tiene (deta
 
 ## Qué no hacer
 
-- No pruebes ataques contra el sitio en producción ni contra cuentas de otras personas.
-- No accedas a datos que no son tuyos más allá de lo necesario para demostrar el problema.
+- No pruebe ataques contra el sitio en producción ni contra cuentas de otras personas.
+- No acceda a datos que no le pertenecen más allá de lo necesario para demostrar el problema.
