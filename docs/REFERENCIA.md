@@ -346,7 +346,7 @@ Coverage thresholds (statements 59, branches 66, functions 62, lines 59) live in
 
 `pnpm test:e2e` (CI job `e2e`) runs the suites in `e2e/`. Most use the fallback build, so they need no secrets:
 
-- `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/` (and the first news post
+- `a11y.spec.ts`: axe-core (`@axe-core/playwright`) over `/`, `/en/`, `/novedades/`, `/privacidad/`, `/en/privacidad/` (and the first news post
   when the fallback has one), in the dark and the light theme with motion reduced. Any **serious or critical**
   violation fails, and the failure prints the rule and the offending elements.
 - `motion-loading.spec.ts`: which motion chunks a desktop, a touch screen and a reduced-motion visitor download; also that
@@ -453,8 +453,10 @@ in `Layout.astro` sets the theme before the first paint, so there is no flash. U
 (`text-ink`, `bg-navy`, `text-on-sky`), not `text-white`, and `.theme-dark-only` / `.theme-light-only` for
 pieces drawn once per theme.
 
+**Privacy policy.** `/privacidad/` and `/en/privacidad/` (the public URL Google asks for the OAuth app of the admin and the forum), linked from the footer. The text is in `src/i18n/privacy.ts` and describes what the admin and the forum store; change it with them and bump `privacyUpdated`. Contact: `contactEmail`.
+
 **Languages.** Spanish lives at `/`, English under `/en/` (`/en/`, `/en/novedades/`,
-`/en/novedades/<slug>/`). The header switch goes to the same page in the other language, and every page
+`/en/novedades/<slug>/`, `/en/privacidad/`). The header switch goes to the same page in the other language, and every page
 carries `hreflang` alternates and the right `<html lang>`. Only the landing's *fixed* copy is translated;
 what is loaded in the admin (events, FAQ, pillars, news, board, site texts) and the demo placeholders stay in
 Spanish. Dates are formatted per language.

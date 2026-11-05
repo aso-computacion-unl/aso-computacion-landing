@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 
 // axe-core over the pages of the fallback build, in both themes (the colours differ), with motion reduced so the
 // pre-animation state does not hide anything. Serious and critical violations fail the run.
-const pages = ['/', '/en/', '/novedades/'];
+const pages = ['/', '/en/', '/novedades/', '/privacidad/', '/en/privacidad/'];
 // The fallback has no news today; when it has some, the first post is scanned too.
 const fallback = JSON.parse(readFileSync('src/data/fallback.json', 'utf8')) as { news: { slug: string }[] };
 const [firstPost] = fallback.news;

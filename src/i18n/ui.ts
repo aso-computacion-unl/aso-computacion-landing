@@ -148,6 +148,7 @@ const es = {
 	'footer.contact': 'Contacto del autor',
 	'footer.portfolio': 'portafolio',
 	'footer.email': 'correo',
+	'footer.privacy': 'Privacidad',
 } as const;
 
 const en: Record<keyof typeof es, string> = {
@@ -294,6 +295,7 @@ const en: Record<keyof typeof es, string> = {
 	'footer.contact': "Author's contact",
 	'footer.portfolio': 'portfolio',
 	'footer.email': 'email',
+	'footer.privacy': 'Privacy',
 };
 
 export type UiKey = keyof typeof es;

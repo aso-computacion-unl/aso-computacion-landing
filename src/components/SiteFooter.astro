@@ -1,7 +1,7 @@
 ---
 import { getContent } from '../data/content';
 import { contactEmail } from '../data/site';
-import { toLocale } from '../i18n/locales';
+import { localizedPath, toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 
 const locale = toLocale(Astro.currentLocale);
@@ -29,7 +29,12 @@ const [before, after] = t('footer.madeBy').split('{name}');
 			<p>
 				{site.name} · {t('footer.university')}
 			</p>
-			<p>© {new Date().getFullYear()}</p>
+			<p class="flex flex-wrap items-center gap-x-5">
+				<span>© {new Date().getFullYear()}</span>
+				<a href={localizedPath('/privacidad', locale)} class="credit-link">
+					{t('footer.privacy')}
+				</a>
+			</p>
 		</div>
 		<div class="credit flex flex-col gap-3 pt-6 lg:flex-row lg:items-center lg:justify-between">
 			<p>
