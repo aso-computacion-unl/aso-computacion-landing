@@ -28,7 +28,7 @@ previews should read the admin too):
 
 | Variable | Value |
 | --- | --- |
-| `NODE_VERSION` | `22.23.4` or a newer 22.x. `package.json` requires `>=22.23.4`. |
+| `NODE_VERSION` | `22.23.4` or a newer 22.x. `package.json` requires `>=22.23.4`. The repo also pins `22.23.4` in `.nvmrc`, which Cloudflare reads too; keep both at or above the `engines` minimum. |
 | `ADMIN_CONTENT_URL` | Full URL of the admin's `GET /api/public/content`, for example `https://your-admin.vercel.app/api/public/content`. |
 | `PRODUCTION_BRANCH` | Optional. The branch whose builds are production builds (default `main`). Set it only if production deploys from another branch. |
 | `ALLOW_CONTENT_FALLBACK` | Emergency only. `1` lets a production build ship the fallback/demo content with a warning instead of failing. Leave unset. |
@@ -43,7 +43,7 @@ automatically. Do one or the other: with both, visits are counted twice.
 
 Package manager: the repo is **pnpm only**. Cloudflare picks pnpm because of `pnpm-lock.yaml`
 (lockfile version 9). If the install step complains about the pnpm version, pin it with the
-`PNPM_VERSION` variable (9 or 10). Never add a `package-lock.json` or `yarn.lock`.
+`PNPM_VERSION` variable (9 or 10); `package.json` pins `packageManager` to `pnpm@10.33.2`, the version CI uses. Never add a `package-lock.json` or `yarn.lock`.
 
 ## When the admin is down
 
