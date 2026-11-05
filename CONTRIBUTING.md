@@ -67,6 +67,8 @@ El orden es siempre el mismo, sea cual sea su rol:
 - SonarCloud analiza el código de los PRs; sus hallazgos también hay que resolverlos.
 - Se pide la revisión de quien mantiene el proyecto automáticamente (`.github/CODEOWNERS`).
 - Dependabot abre PRs semanales: las actualizaciones menores y de parche llegan agrupadas; las mayores, por separado.
+  Las menores y de parche se aprueban y se mergean solas cuando pasan los checks obligatorios
+  (`.github/workflows/dependabot-auto-merge.yml`); las mayores esperan revisión manual.
 
 ### Tamaño de los PRs
 
