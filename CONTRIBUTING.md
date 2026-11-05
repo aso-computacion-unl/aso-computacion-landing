@@ -44,7 +44,7 @@ El orden es siempre el mismo, sea cual sea su rol:
    pnpm lint
    pnpm check          # astro check: tipos de .astro y .ts
    pnpm format:check   # pnpm format lo arregla
-   pnpm test
+   pnpm test:coverage  # las pruebas unitarias, con el umbral de cobertura
    pnpm build
    pnpm test:e2e       # sobre el build de recién
    ```
@@ -61,7 +61,7 @@ El orden es siempre el mismo, sea cual sea su rol:
 - Cada PR necesita **1 aprobación** de otra persona.
 - No se permite `force push` ni borrar `main`.
 - La CI (GitHub Actions) tiene que pasar en verde para mergear. En cada PR corre tres trabajos y no usa secretos:
-  - `checks`: auditoría de dependencias de producción (`pnpm audit`, falla con avisos altos o críticos), `pnpm lint`, `pnpm check`, `pnpm format:check`, `pnpm test` y `pnpm build`.
+  - `checks`: auditoría de dependencias de producción (`pnpm audit`, falla con avisos altos o críticos), `pnpm lint`, `pnpm check`, `pnpm format:check`, `pnpm test:coverage` (pruebas unitarias con umbral de cobertura) y `pnpm build`.
   - `e2e`: Playwright y axe-core sobre ese build (accesibilidad, orden de las secciones, escala tipográfica, movimiento).
   - `lighthouse`: presupuestos de rendimiento, accesibilidad, buenas prácticas y SEO.
 - SonarCloud analiza el código de los PRs; sus hallazgos también hay que resolverlos.
@@ -122,10 +122,11 @@ QA no necesita escribir código para aportar: probar, reproducir y reportar bien
 
 | Nivel | Dónde | Comando |
 |---|---|---|
-| Unitarias | Junto a cada módulo, como `*.test.ts` en `src/` | `pnpm test` |
+| Unitarias | Junto a cada módulo, como `*.test.ts` en `src/` | `pnpm test` (`pnpm test:coverage` en la CI) |
 | Punta a punta y accesibilidad | `e2e/*.spec.ts` (Playwright con axe-core) | `pnpm build && pnpm test:e2e` |
 | Rendimiento, accesibilidad y SEO | `lighthouserc.json` | `pnpm build && pnpm lighthouse` |
 
+- La cobertura de las pruebas unitarias tiene un umbral mínimo en `vitest.config.ts` (sentencias, ramas, funciones y líneas): no se baja para que un PR pase; se sube cuando la cobertura crece.
 - Lighthouse exige como mínimo 0,9 en rendimiento y 0,95 en accesibilidad y buenas prácticas. Los umbrales no se bajan para que un PR pase.
 - `e2e/built-from-admin.spec.ts` construye el sitio contra un panel simulado: es el que detecta si se rompe el contrato con el panel.
 
