@@ -78,7 +78,7 @@ El uso que hacemos de la información recibida de Google se limita a ofrecer el 
 - **Cloudflare:** alojamiento de este sitio, verificación anti-robots (Turnstile) en el formulario abierto de inscripción y, cuando está activada, estadísticas de visitas sin cookies.
 - **Sentry:** aviso de errores técnicos, cuando está configurado; no se envían datos personales por defecto.
 
-Estos proveedores pueden guardar datos fuera de Ecuador. Dentro de la asociación, solo el equipo autorizado accede a las inscripciones y a los datos de las cuentas. Tus publicaciones en el foro las ven otros estudiantes con sesión iniciada. Podemos entregar datos si una autoridad competente lo exige por ley.`,
+Estos proveedores pueden guardar datos fuera de Ecuador. Dentro de la asociación, solo los miembros de la directiva con una cuenta en el panel de administración acceden a las inscripciones y a los datos de las cuentas; exportar o eliminar inscripciones requiere el rol de administrador. Tus publicaciones en el foro las ven otros estudiantes con sesión iniciada. Podemos entregar datos si una autoridad competente lo exige por ley.`,
 			},
 			{
 				id: 'cookies',
@@ -176,7 +176,7 @@ Our use of information received from Google is limited to providing sign-in and 
 - **Cloudflare:** hosting of this site, anti-bot verification (Turnstile) on the open sign-up form and, when enabled, cookie-free visit statistics.
 - **Sentry:** technical error reports, when configured; no personal data is sent by default.
 
-These providers may store data outside Ecuador. Inside the association, only authorized team members access sign-ups and account data. Your forum posts are seen by other signed-in students. We may hand over data if a competent authority requires it by law.`,
+These providers may store data outside Ecuador. Inside the association, only board members with an account in the admin panel access sign-ups and account data; exporting or deleting sign-ups requires the administrator role. Your forum posts are seen by other signed-in students. We may hand over data if a competent authority requires it by law.`,
 			},
 			{
 				id: 'cookies',
