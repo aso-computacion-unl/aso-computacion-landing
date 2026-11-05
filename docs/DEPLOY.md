@@ -41,9 +41,10 @@ if it is still there (it does no harm, it is ignored). The Turnstile keys live i
 Instead of the variable you can switch on Web Analytics in the Pages project settings, which injects the beacon
 automatically. Do one or the other: with both, visits are counted twice.
 
-Package manager: the repo is **pnpm only**. Cloudflare picks pnpm because of `pnpm-lock.yaml`
-(lockfile version 9). If the install step complains about the pnpm version, pin it with the
-`PNPM_VERSION` variable (9 or 10); `package.json` pins `packageManager` to `pnpm@10.33.2`, the version CI uses. Never add a `package-lock.json` or `yarn.lock`.
+Package manager: the repo is **pnpm only**. Cloudflare runs pnpm because of `pnpm-lock.yaml`, but its
+build system does not read the pnpm version from the lockfile ([build image](https://developers.cloudflare.com/pages/configuration/build-image/)).
+If the install step complains about the pnpm version, pin it with the `PNPM_VERSION` variable (9 or 10);
+`package.json` pins `packageManager` to `pnpm@10.33.2`, the version CI uses. Never add a `package-lock.json` or `yarn.lock`.
 
 ## When the admin is down
 
