@@ -542,7 +542,8 @@ uses the fallback):
 | `lighthouse` | `pnpm build`, then `pnpm lighthouse` | a median category score is under budget (see below) |
 
 Also: Dependabot opens weekly pull requests for npm and GitHub Actions, minor and patch updates grouped and majors apart
-(`.github/dependabot.yml`); `.github/CODEOWNERS` requests the maintainer's review; SonarCloud analyses the project and leaves the
+(`.github/dependabot.yml`), and minor and patch updates are approved and auto-merged once the required checks pass
+(`.github/workflows/dependabot-auto-merge.yml`); `.github/CODEOWNERS` requests the maintainer's review; SonarCloud analyses the project and leaves the
 two parallel copy tables out of duplicate detection (`.sonarcloud.properties`: `src/i18n/ui.ts`, `src/data/site.ts`).
 
 ## Structure
