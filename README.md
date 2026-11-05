@@ -64,7 +64,7 @@ Calidad: TypeScript, Vitest, Playwright con axe-core y Lighthouse CI, ESLint, Pr
 
 ## Probarlo en local
 
-Requiere Node.js 22.23.4 o superior y [pnpm](https://pnpm.io).
+Requiere Node.js 22.23.4 o superior y [pnpm](https://pnpm.io) 10.33.2 (`.nvmrc` y el campo `packageManager` de `package.json` fijan ambas versiones).
 
 ```sh
 pnpm install

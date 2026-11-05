@@ -16,7 +16,7 @@ Si no sabe por dónde empezar, abra un issue y lo revisamos juntos.
 
 ## Preparar el entorno local
 
-Se hace una sola vez. Necesita **Node 22.23.4 o superior**, **[pnpm](https://pnpm.io) 10** (la CI usa la 10.33.2) y Git. No necesita base de datos ni Docker: la landing es un sitio estático.
+Se hace una sola vez. Necesita **Node 22.23.4 o superior**, **[pnpm](https://pnpm.io) 10.33.2** y Git. Ambas versiones están fijadas en el repositorio: `.nvmrc` indica la de Node (con nvm, `nvm use`) y el campo `packageManager` de `package.json` la de pnpm (si usa Corepack, `corepack enable` hace que `pnpm` sea esa versión). La CI toma pnpm de ese mismo campo. No necesita base de datos ni Docker: la landing es un sitio estático.
 
 1. **Instalar:**
    ```sh
