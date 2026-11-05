@@ -75,7 +75,7 @@ pnpm build     # genera ./dist
 pnpm test:e2e  # Playwright + axe sobre el último build (la primera vez: pnpm exec playwright install chromium)
 ```
 
-Sin la variable `ADMIN_CONTENT_URL`, el sitio usa la copia del contenido incluida en el repositorio, así que funciona sin configurar nada (con etiquetas «demo» en lo que es de ejemplo). Si levantas `pnpm dev` antes de que el panel responda, el servidor vuelve a preguntarle solo en la siguiente visita. En producción (la rama `main` en Cloudflare Pages) un build que caería a esa copia falla a propósito y el sitio anterior sigue publicado; ver [docs/DEPLOY.md](docs/DEPLOY.md).
+Sin la variable `ADMIN_CONTENT_URL`, el sitio usa la copia del contenido incluida en el repositorio, así que funciona sin configurar nada (con etiquetas «demo» en lo que es de ejemplo). Si levanta `pnpm dev` antes de que el panel responda, el servidor vuelve a preguntarle solo en la siguiente visita. En producción (la rama `main` en Cloudflare Pages) un build que caería a esa copia falla a propósito y el sitio anterior sigue publicado; ver [docs/DEPLOY.md](docs/DEPLOY.md).
 
 Para ver borradores y contenido programado antes de publicarlos hay un build de vista previa (`PREVIEW_BUILD=1` con `PREVIEW_TOKEN` y `ADMIN_PREVIEW_URL`). Muestra la barra «Vista previa — no publicar», no se indexa y se detiene si el código venció; solo se usa en local o en un proyecto aparte protegido. Ver [docs/DEPLOY.md](docs/DEPLOY.md#preview-builds).
 
@@ -83,15 +83,19 @@ Para ver borradores y contenido programado antes de publicarlos hay un build de 
 
 Este es un proyecto de la comunidad y cualquier persona puede aportar con una propuesta de cambio (Pull Request) hacia `main`. Para errores o ideas, abra un issue.
 
-- Guía de contribución: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Guía de contribución: [CONTRIBUTING.md](CONTRIBUTING.md), con el entorno local, el flujo de trabajo y una guía para cada rol (frontend, QA y backend)
 - Vulnerabilidades: se reportan en privado, según [SECURITY.md](SECURITY.md)
 
 ## Documentación
 
+La documentación del sitio y del panel se lee en un solo lugar, con buscador: el **[portal de documentación](https://aso-computacion-unl.github.io/aso-computacion-admin/)**. Se construye desde el repositorio del panel y recoge los documentos de este repositorio cada lunes y en cada cambio del panel.
+
+**Por dónde empezar:** [PRODUCT.md](PRODUCT.md), luego la [arquitectura del sistema](https://github.com/aso-computacion-unl/aso-computacion-admin/blob/main/docs/ARQUITECTURA.md) y, para aportar, [CONTRIBUTING.md](CONTRIBUTING.md).
+
 | Documento | Para qué sirve |
 |-----------|----------------|
 | [README.md](README.md) | Esta presentación del proyecto |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Flujo de trabajo y convenciones para colaborar |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Entorno local, flujo de trabajo y guía por rol (frontend, QA y backend) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Publicación en Cloudflare Pages, reconstrucciones automáticas e inscripciones |
 | [docs/REFERENCIA.md](docs/REFERENCIA.md) | Referencia técnica: contenido, copia de respaldo, mapeo a la página, pruebas y calidad |
 | [Arquitectura del sistema](https://github.com/aso-computacion-unl/aso-computacion-admin/blob/main/docs/ARQUITECTURA.md) | Cómo encajan el panel y este sitio (vive en el repo del panel) |
