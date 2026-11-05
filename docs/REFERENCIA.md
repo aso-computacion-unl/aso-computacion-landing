@@ -18,6 +18,7 @@ pnpm dev       # http://localhost:4321
 pnpm build     # output in ./dist
 pnpm preview
 pnpm test          # vitest (unit)
+pnpm test:coverage # vitest with V8 coverage; fails under the thresholds in vitest.config.ts
 pnpm test:e2e      # Playwright, against `astro preview` of the last build (see Tests)
 pnpm lighthouse    # Lighthouse CI, same build
 pnpm lint          # ESLint
@@ -337,8 +338,11 @@ in that payload must be Cloudinary ones.
 
 ```sh
 pnpm test      # vitest: fetch, validation, fallback, mapping, preview loader, content gate, dev refresh, Markdown, share links, related posts, motion plan, tickets, deadline rules and seats, SEO builders, i18n
+pnpm test:coverage   # same suite with V8 coverage over `src/**/*.ts` (tests excluded); CI runs this one
 pnpm build && pnpm test:e2e   # Playwright (Chromium) against `astro preview` of that build
 ```
+
+Coverage thresholds (statements 59, branches 66, functions 62, lines 59) live in `vitest.config.ts` and were set to the measured values rounded down. They only count what the unit tests reach: the browser scripts in `src/scripts/` and the `.astro` components are exercised by the e2e suite, so they pull the number down. Never lower the thresholds; raise them when coverage grows.
 
 `pnpm test:e2e` (CI job `e2e`) runs the suites in `e2e/`. Most use the fallback build, so they need no secrets:
 
@@ -533,7 +537,7 @@ uses the fallback):
 
 | Job | Runs | Fails when |
 |-----|------|------------|
-| `checks` | `pnpm audit --prod --audit-level high`, `pnpm lint` (ESLint with `typescript-eslint` and `eslint-plugin-astro`), `pnpm check` (`astro check`), `pnpm format:check` (Prettier with the Astro plugin; `*.md` is in `.prettierignore`), `pnpm test`, `pnpm build` | any step fails, or a production dependency has a high or critical advisory |
+| `checks` | `pnpm audit --prod --audit-level high`, `pnpm lint` (ESLint with `typescript-eslint` and `eslint-plugin-astro`), `pnpm check` (`astro check`), `pnpm format:check` (Prettier with the Astro plugin; `*.md` is in `.prettierignore`), `pnpm test:coverage` (vitest with V8 coverage thresholds), `pnpm build` | any step fails, coverage drops under a threshold in `vitest.config.ts`, or a production dependency has a high or critical advisory |
 | `e2e` | `pnpm build`, then `pnpm test:e2e` (see Tests) | a spec fails, including serious or critical axe violations |
 | `lighthouse` | `pnpm build`, then `pnpm lighthouse` | a median category score is under budget (see below) |
 

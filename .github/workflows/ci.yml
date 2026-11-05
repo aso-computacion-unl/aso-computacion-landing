@@ -38,7 +38,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm check
       - run: pnpm format:check
-      - run: pnpm test
+      - run: pnpm test:coverage
       - run: pnpm build
 
   # axe-core and the motion-loading checks in Chromium, against `astro preview` of the fallback build.
