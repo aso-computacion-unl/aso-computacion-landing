@@ -158,7 +158,9 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 			})();
 		</script>
 		<script is:inline>
-			// Opt in to the pre-motion state only when motion is allowed; fall back to visible if the motion script never starts.
+			// Opt in to the pre-motion state only when motion is allowed; fall back to visible if the motion script has not
+			// started after three seconds (a slow connection must not leave the hero invisible). motion.ts checks the class
+			// before it starts, so a late start finds the page revealed and leaves it alone.
 			(function () {
 				const root = document.documentElement;
 				root.classList.add('js');
@@ -166,7 +168,7 @@ const alternates = locales.map((code) => ({ code, href: alternateHref(alternateP
 				root.classList.add('motion');
 				setTimeout(function () {
 					if (!root.dataset.motionReady) root.classList.remove('motion');
-				}, 5000);
+				}, 3000);
 			})();
 		</script>
 	</head>

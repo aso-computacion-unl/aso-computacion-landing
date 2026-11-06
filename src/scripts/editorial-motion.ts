@@ -19,6 +19,9 @@ export interface EditorialKit {
 	plan: MotionPlan;
 	// Runs `onEnter` once for the elements matching `selector` as they pass `start` (see motion.ts).
 	reveal: (selector: string, start: string, onEnter: (batch: Element[]) => void) => void;
+	// True when the page was already revealed before motion started (it loaded slowly): the hero intro is skipped so the
+	// headline, lede and shortcuts are not hidden again; everything else runs as usual.
+	late: boolean;
 }
 
 const q = <T extends Element>(selector: string, scope: ParentNode = document) => scope.querySelector<T>(selector);
@@ -33,7 +36,20 @@ async function heroIntro({ gsap, SplitText }: EditorialKit) {
 	await Promise.race([document.fonts?.ready, new Promise((resolve) => setTimeout(resolve, 900))]);
 	const lines = qa('.hero .hero-line');
 	if (SplitText && lines.length > 0) {
-		const split = SplitText.create(lines, { type: 'chars', mask: 'chars', charsClass: 'split-char', smartWrap: true });
+		// The headline's name goes on the h1, the one element that may carry it, and the split lines and letters are hidden from
+		// assistive technology (SplitText's own `auto` would put an aria-label on each line span, which ARIA does not allow).
+		const title = lines[0].closest('h1');
+		// The name is the visually hidden prefix (the association) and then the lines, which sit next to each other without
+		// a space in the markup.
+		const prefix = title?.querySelector('.sr-only')?.textContent ?? '';
+		title?.setAttribute('aria-label', `${prefix}${lines.map((line) => line.textContent).join(' ')}`.trim());
+		const split = SplitText.create(lines, {
+			type: 'chars',
+			mask: 'chars',
+			charsClass: 'split-char',
+			smartWrap: true,
+			aria: title ? 'hidden' : 'auto',
+		});
 		gsap.set(split.chars, { yPercent: RISE });
 		gsap.set(lines, { visibility: 'visible' });
 		gsap.to(split.chars, { yPercent: 0, duration: 1.2, stagger: 0.018, ease: 'expo.out', delay: 0.15 });
@@ -166,7 +182,7 @@ function magnets({ gsap }: EditorialKit) {
 
 export function initEditorial(kit: EditorialKit) {
 	// If the intro fails halfway, the page falls back to its complete static state, as when motion itself fails.
-	void heroIntro(kit).catch(() => document.documentElement.classList.remove('motion'));
+	if (!kit.late) void heroIntro(kit).catch(() => document.documentElement.classList.remove('motion'));
 	heroLogo(kit);
 	headings(kit);
 	entrances(kit);

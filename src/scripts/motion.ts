@@ -95,6 +95,9 @@ async function init(plan: MotionPlan) {
 			() => null,
 		),
 	]);
+	// Layout.astro reveals the page after three seconds without motion. A start after that still runs every moment, but the
+	// hero intro must not hide the revealed headline again (see `late` in editorial-motion.ts).
+	const late = !root.classList.contains('motion');
 	gsap.registerPlugin(ScrollTrigger);
 	if (SplitText) gsap.registerPlugin(SplitText);
 	ScrollTrigger.config({ ignoreMobileResize: true });
@@ -468,7 +471,7 @@ async function init(plan: MotionPlan) {
 		},
 	);
 
-	initEditorial({ gsap, ScrollTrigger, SplitText, plan, reveal });
+	initEditorial({ gsap, ScrollTrigger, SplitText, plan, reveal, late });
 
 	const refresh = () => ScrollTrigger.refresh();
 	window.addEventListener('load', refresh);
