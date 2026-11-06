@@ -4,7 +4,8 @@
 // where the student signs up (there is no form on the landing); `free` has no registration, only its calendar link.
 // The page is built ahead of time, so what can change afterwards carries a data hook: src/scripts/ticket-deadline.ts
 // closes the ticket when its deadline passes and keeps the days left honest, src/scripts/seats.ts paints the live
-// seats and src/scripts/ticket.ts is what both do to a closed one.
+// seats and src/scripts/ticket.ts is what both do to a closed one. Each ticket takes one of three accents in turn
+// (sky, signal, navy; `data-acc`), which src/styles/sections.css paints on its band, badge, date, labels and stub.
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { formatDeadline, registrationClosed } from '../lib/registration/rules';
@@ -38,12 +39,15 @@ const facts = [
 	{ label: t('ticket.fact.for'), value: meta?.para },
 ].filter((fact) => fact.value);
 
+const accent = (number - 1) % 3;
+
 const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 ---
 
 <li
 	class="tk-item"
 	id={ticketAnchor(entry.id)}
+	data-acc={accent}
 	data-ticket={mode === 'free' ? undefined : entry.id}
 	data-reg={registration ? '' : undefined}
 	data-reg-deadline={registration?.deadline}
@@ -140,13 +144,15 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 				<p class="tk-free-n">{t('ticket.freeEntry')}</p>
 				<p class="tk-dl">{t('ticket.freeHint')}</p>
 				{calendarHref && (
-					<a class="tk-cal" href={calendarHref}>
+					<a class="tk-cal" href={calendarHref} title={t('ticket.calendarTitle')}>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 							<rect x="3.5" y="5" width="17" height="15.5" stroke="currentColor" stroke-width="2" />
 							<path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" />
 						</svg>
-						{t('calendar.add')}
-						<span aria-hidden="true"> · .ics</span>
+						<span class="tk-cal-say">
+							<b>{t('ticket.calendar')}</b>
+							<small>{t('ticket.calendarApps')}</small>
+						</span>
 						<span class="sr-only">: {entry.title}</span>
 					</a>
 				)}

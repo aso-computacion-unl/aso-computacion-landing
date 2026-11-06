@@ -262,7 +262,7 @@ test.describe('registration from the admin', () => {
 			await expect(item).not.toContainText('Pase libre');
 			await expect(item.locator('.tk-chip')).toHaveCount(0);
 			await expect(item.locator('[data-reg], [data-reg-action], [data-seat-num]')).toHaveCount(0);
-			await expect(item.getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
+			await expect(item.getByRole('link', { name: /Guardar en mi calendario/ })).toHaveAttribute(
 				'href',
 				calendar(admin.url, 'taller-libre'),
 			);
@@ -319,7 +319,7 @@ test.describe('registration from the admin', () => {
 			await expect(action(page)).toHaveAttribute('href', eventPage(admin, 'taller-abierto'));
 			await expect(item.locator('[data-seat-label]')).toHaveText('seats');
 			await expect(item).toContainText('Ecuador time');
-			await expect(ticket(page, 'taller-libre').getByRole('link', { name: /Add to calendar/ })).toBeVisible();
+			await expect(ticket(page, 'taller-libre').getByRole('link', { name: /Save to my calendar/ })).toBeVisible();
 			await expect(ticket(page, 'charla-unl').getByRole('link', { name: /Sign me up/ })).toBeVisible();
 		});
 	});

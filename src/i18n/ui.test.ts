@@ -18,6 +18,35 @@ describe('ui dictionaries', () => {
 	});
 });
 
+describe('editorial sections copy', () => {
+	it('names the calendar link for what it does and keeps ".ics" for the title', () => {
+		for (const locale of ['es', 'en'] as const) {
+			const t = useTranslations(locale);
+			expect(t('ticket.calendar')).not.toMatch(/ics/i);
+			expect(t('ticket.calendarApps')).toBe('Google · Apple · Outlook');
+			expect(t('ticket.calendarTitle')).toContain('.ics');
+		}
+		expect(useTranslations('es')('ticket.calendar')).toBe('Guardar en mi calendario');
+		expect(useTranslations('en')('ticket.calendar')).toBe('Save to my calendar');
+	});
+
+	it('fills the rail counter and the forum totals', () => {
+		expect(useTranslations('es')('ticket.rail.range', { from: '01', to: '03', total: '06' })).toBe('01–03 de 06');
+		expect(useTranslations('en')('ticket.rail.range', { from: '01', to: '03', total: '06' })).toBe('01–03 of 06');
+		expect(useTranslations('es')('forum.stats', { threads: 3, categories: 3 })).toBe('3 hilos · 3 categorías');
+		expect(useTranslations('en')('forum.stats', { threads: 3, categories: 3 })).toBe('3 threads · 3 categories');
+		expect(useTranslations('es')('forum.window', { name: 'ASO Computación' })).toBe('foro · ASO Computación');
+	});
+
+	it('leaves the forum status template to the script, which fills {count} and {total}', () => {
+		for (const locale of ['es', 'en'] as const) {
+			const template = useTranslations(locale)('forum.shown');
+			expect(template).toContain('{count}');
+			expect(template).toContain('{total}');
+		}
+	});
+});
+
 describe('useTranslations', () => {
 	it('looks a key up in the locale and fills the placeholders', () => {
 		expect(useTranslations('es')('activities.branch', { title: 'Hackatón' })).toBe('Actividades de Hackatón');

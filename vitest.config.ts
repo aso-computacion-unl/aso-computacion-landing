@@ -13,10 +13,10 @@ export default defineConfig({
 			reporter: ['text-summary'],
 			// Never lower these; raise them when coverage grows.
 			thresholds: {
-				statements: 59,
-				branches: 66,
-				functions: 62,
-				lines: 59,
+				statements: 63,
+				branches: 67,
+				functions: 65,
+				lines: 63,
 			},
 		},
 	},

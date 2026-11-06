@@ -1,0 +1,996 @@
+/* Editorial section layer (S5 tickets, S6 news front page, S7 forum window). Owned by T3-T5 of
+   odd/tasks/landing-editorial.md. Unlayered on purpose: it sits on top of the component rules in global.css, which are
+   layered, so nothing here needs !important. Surfaces take the theme roles (--color-*) so both themes stay readable; the
+   ticket paper and the sign-in ticket are paper in both themes, so those use the paper roles. */
+
+:root {
+	/* The official isotype (the two shards), as a mask for the watermarks. */
+	--iso-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='278 165 186 209'%3E%3Cpath d='M387.747 167.937 L387.747 200.218 L311.829 238.228 L311.829 314.444 L280.868 338.296 L280.868 222.268 Z'/%3E%3Cpath d='M431.093 213.736 L431.093 301.351 L357.778 338.923 L357.778 369.692 L461.443 317.912 L461.443 193.268 Z'/%3E%3C/svg%3E");
+	/* Text on a signal, sky-on-paper or navy fill: white in both themes. */
+	--ed-on-accent: #fff;
+	/* The sky that reads on white paper (the page's --color-sky is lighter in the dark theme). */
+	--ed-sky-paper: #0a6f9e;
+	--ed-ring: color-mix(in srgb, var(--color-ink) 16%, transparent);
+	--ed-ring-soft: color-mix(in srgb, var(--color-ink) 11%, transparent);
+	/* A solid block that stands out from the surface around it: navy in the light theme, sky in the dark one. */
+	--ed-block: var(--color-brand);
+	--ed-block-ink: var(--color-paper);
+	--ed-block-accent: var(--color-stub);
+}
+
+:root:not([data-theme='light']) {
+	--ed-block: var(--color-stub);
+	--ed-block-ink: var(--color-on-paper);
+	--ed-block-accent: var(--color-brand);
+}
+
+.tk-body::after,
+.news-list > li:first-child .news-link::after,
+.forum-door-top::after {
+	content: '';
+	position: absolute;
+	pointer-events: none;
+	-webkit-mask: var(--iso-mask) center / contain no-repeat;
+	mask: var(--iso-mask) center / contain no-repeat;
+}
+
+/* ───────── S5 · tickets ───────── */
+
+/* An accent per ticket, in turn: sky, signal, navy. */
+.tk-item {
+	--tk-acc: var(--ed-sky-paper);
+}
+
+.tk-item[data-acc='1'] {
+	--tk-acc: var(--color-signal);
+}
+
+.tk-item[data-acc='2'] {
+	--tk-acc: var(--color-brand);
+}
+
+.tk-body {
+	position: relative;
+	overflow: hidden;
+	border-top: 0.625rem solid var(--tk-acc);
+	background: linear-gradient(
+		160deg,
+		color-mix(in srgb, var(--tk-acc) 13%, var(--color-paper)),
+		var(--color-paper) 60%
+	);
+}
+
+.tk-body::after {
+	right: -1.75rem;
+	bottom: -2rem;
+	width: 11.875rem;
+	height: 13.375rem;
+	background: var(--tk-acc);
+	opacity: 0.09;
+}
+
+.tk-body > * {
+	position: relative;
+	z-index: 1;
+}
+
+.tk-no {
+	padding: 0.3125rem 0.5625rem;
+	background: var(--tk-acc);
+	color: var(--ed-on-accent);
+	font-weight: 600;
+}
+
+.tk-day b {
+	color: var(--tk-acc);
+}
+
+.tk-facts dt {
+	color: var(--tk-acc);
+}
+
+.tk:not(.is-closed) .tk-stub {
+	background: var(--tk-acc);
+	color: var(--ed-on-accent);
+}
+
+.tk:not(.is-closed) .tk-live::before,
+.tk:not(.is-closed) .tk-meter i {
+	background: var(--ed-on-accent);
+}
+
+.tk:not(.is-closed) .tk-meter {
+	background: color-mix(in srgb, var(--ed-on-accent) 30%, transparent);
+}
+
+.tk-stub .tk-action:focus-visible,
+.tk-stub .tk-cal:focus-visible {
+	outline-color: var(--ed-on-accent);
+}
+
+/* The calendar link says what it does; ".ics" lives in its title. */
+.tk-cal {
+	gap: 0.75rem;
+	color: inherit;
+	text-decoration: none;
+}
+
+.tk-cal-say {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1875rem;
+	line-height: 1.2;
+}
+
+.tk-cal-say b {
+	font-weight: 700;
+	text-decoration: underline transparent;
+	text-underline-offset: 0.28em;
+}
+
+.tk-cal-say small {
+	font-size: var(--text-small);
+	opacity: 0.85;
+}
+
+.tk-cal:hover .tk-cal-say b,
+.tk-cal:focus-visible .tk-cal-say b {
+	text-decoration-color: currentColor;
+}
+
+/* More than three tickets: a rail that scrolls sideways. The server marks the list (`is-rail`); without JS it is a
+   scrollable strip, with it the arrows, the counter and the bar appear above it (src/scripts/ticket-rail.ts). */
+.tk-list.is-rail {
+	/* The containing block of the screen-reader-only text inside the tickets: without it those absolutely placed spans
+	   escape the strip and make the page itself scroll sideways. */
+	position: relative;
+	grid-auto-flow: column;
+	grid-template-columns: none;
+	grid-template-rows: auto;
+	grid-auto-columns: 86%;
+	column-gap: 1.25rem;
+	margin-inline: -0.25rem;
+	margin-bottom: 0;
+	padding: 0.875rem 0.25rem 1.5rem;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scroll-padding-inline: 0.25rem;
+	scrollbar-width: none;
+}
+
+.tk-list.is-rail::-webkit-scrollbar {
+	display: none;
+}
+
+.tk-list.is-rail > .tk-item {
+	scroll-snap-align: start;
+}
+
+/* Subgrid tickets share three bands; in a rail they are laid down the columns, three rows to a ticket. */
+@supports (grid-template-rows: subgrid) {
+	.tk-list.is-rail {
+		grid-template-rows: repeat(3, auto);
+	}
+}
+
+@media (min-width: 40rem) {
+	.tk-list.is-rail {
+		grid-auto-columns: calc((100% - 1.75rem) / 2);
+		column-gap: 1.75rem;
+	}
+}
+
+@media (min-width: 64rem) {
+	.tk-list.is-rail {
+		grid-auto-columns: calc((100% - 2 * 1.75rem) / 3);
+	}
+}
+
+.tk-rail-ui {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-top: var(--spacing-head);
+}
+
+.tk-rail-ui[hidden] {
+	display: none;
+}
+
+.tk-rail-ui:not([hidden]) + .tk-list {
+	margin-top: 0.5rem;
+}
+
+.tk-rail-ui button {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 3rem;
+	height: 3rem;
+	border: 0;
+	background: var(--color-action);
+	color: var(--color-on-action);
+	font-size: var(--text-lead);
+	cursor: pointer;
+	box-shadow: 4px 4px 0 var(--color-signal);
+}
+
+.tk-rail-ui button:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.tk-rail-ui button:focus-visible {
+	outline: 2px solid var(--color-sky);
+	outline-offset: 3px;
+}
+
+.tk-rail-count {
+	flex: none;
+	font-family: var(--font-mono);
+	font-size: var(--text-label);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.06em;
+	color: var(--color-ink);
+}
+
+.tk-rail-bar {
+	flex: 1;
+	min-width: 0;
+	height: 3px;
+	background: color-mix(in srgb, var(--color-ink) 15%, transparent);
+}
+
+.tk-rail-bar i {
+	display: block;
+	height: 100%;
+	background: var(--color-signal);
+	transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.tk-rail-ui button {
+		transition: transform 0.2s;
+	}
+
+	.tk-rail-ui button:not(:disabled):hover {
+		transform: translate(-2px, -2px);
+	}
+
+	.tk-rail-bar i {
+		transition: transform 0.3s;
+	}
+}
+
+/* ───────── S6 · news front page ───────── */
+
+.news-list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1.25rem;
+	border: 0;
+}
+
+.news-list > li {
+	min-width: 0;
+	border: 0;
+}
+
+/* The newest is a banner across the whole row; a lone card after it takes the row too. */
+.news-list > li:first-child,
+.news-list > li:nth-child(2):last-child {
+	grid-column: 1 / -1;
+}
+
+.news-list .news-link {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 1.5rem;
+	height: 100%;
+	padding: 1.75rem 1.875rem;
+	overflow: hidden;
+	background: var(--color-navy-lift);
+	box-shadow: inset 0 0 0 1.5px var(--ed-ring);
+	color: var(--color-ink);
+	text-decoration: none;
+}
+
+.news-list .news-link > * {
+	position: relative;
+	z-index: 1;
+}
+
+.news-list .news-link:focus-visible {
+	outline: 2px solid var(--color-sky);
+	outline-offset: 3px;
+}
+
+.news-list .news-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.news-list .news-when {
+	display: flex;
+	align-items: baseline;
+	gap: 0.625rem;
+	font-family: var(--font-mono);
+	font-size: var(--text-label);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-sky);
+}
+
+.news-list .news-when b {
+	font-family: var(--font-display);
+	font-stretch: 125%;
+	font-weight: 900;
+	font-size: var(--text-section);
+	line-height: 0.8;
+	letter-spacing: -0.05em;
+	color: var(--color-ink);
+}
+
+.news-list .news-title {
+	min-width: 0;
+	font-family: var(--font-display);
+	font-stretch: 112%;
+	font-weight: 800;
+	font-size: var(--text-title);
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--color-ink);
+	overflow-wrap: anywhere;
+	text-wrap: balance;
+}
+
+.news-list .news-arrow {
+	display: grid;
+	place-items: center;
+	align-self: flex-end;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 1.5px currentColor;
+	font-size: var(--text-lead);
+	color: inherit;
+}
+
+.news-list .news-link:hover .news-arrow,
+.news-list .news-link:focus-visible .news-arrow {
+	background: var(--color-signal);
+	box-shadow: none;
+	color: var(--ed-on-accent);
+}
+
+.news-list .news-link:hover,
+.news-list .news-link:focus-visible {
+	box-shadow:
+		inset 0 0 0 2px var(--color-ink),
+		0.625rem 0.625rem 0 var(--color-signal);
+}
+
+.news-new {
+	align-self: flex-start;
+	padding: 0.4375rem 0.625rem;
+	background: var(--color-signal);
+	color: var(--ed-on-accent);
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+/* The banner: a solid block, three columns (date, title, arrow). */
+.news-list > li:first-child .news-link {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	column-gap: clamp(1.5rem, 4vw, 4rem);
+	padding: 2.125rem 2.5rem;
+	background: var(--ed-block);
+	box-shadow: none;
+	color: var(--ed-block-ink);
+}
+
+.news-list > li:first-child .news-link:hover,
+.news-list > li:first-child .news-link:focus-visible {
+	box-shadow: 0.625rem 0.625rem 0 var(--color-signal);
+}
+
+.news-list > li:first-child .news-link::after {
+	right: 6rem;
+	bottom: -5.5rem;
+	width: 15rem;
+	height: 16.875rem;
+	background: var(--ed-block-accent);
+	opacity: 0.12;
+}
+
+.news-list > li:first-child .news-head {
+	flex-direction: column;
+	gap: 0.875rem;
+}
+
+.news-list > li:first-child .news-when {
+	color: var(--ed-block-accent);
+}
+
+.news-list > li:first-child .news-when b {
+	font-size: var(--text-display);
+	color: var(--ed-block-ink);
+}
+
+.news-list > li:first-child .news-title {
+	font-stretch: 120%;
+	font-size: var(--text-section);
+	line-height: 1;
+	color: var(--ed-block-ink);
+}
+
+.news-list > li:first-child .news-arrow {
+	align-self: center;
+	width: 4rem;
+	height: 4rem;
+	font-size: var(--text-title);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.news-list .news-link {
+		transition:
+			transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+			box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.news-list .news-link:hover,
+	.news-list .news-link:focus-visible {
+		transform: translate(-3px, -3px);
+	}
+
+	.news-list .news-arrow {
+		transition:
+			background-color 0.3s,
+			color 0.3s;
+	}
+}
+
+@media (max-width: 56.25rem) {
+	.news-list {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.news-list .news-link {
+		padding: 1.5rem;
+	}
+
+	.news-list > li:first-child .news-link {
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: 1rem;
+	}
+
+	.news-list > li:first-child .news-arrow {
+		justify-self: end;
+	}
+
+	.news-list > li:first-child .news-link::after {
+		right: -2rem;
+	}
+}
+
+/* ───────── S7 · forum ───────── */
+
+.forum-teaser {
+	display: grid;
+	gap: 2rem;
+	align-items: stretch;
+}
+
+@media (min-width: 64rem) {
+	.forum-teaser {
+		grid-template-columns: minmax(0, 1fr) 23.75rem;
+		gap: 3rem;
+	}
+}
+
+.forum-threads {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+/* Category colours, for the avatar and the chip of a thread: sky for courses, signal for proposals, ink for the rest. */
+.forum-link {
+	--k-bg: var(--color-ink);
+	--k-fg: var(--color-navy);
+	--k-text: var(--color-ink);
+}
+
+.forum-link[data-k='materias'] {
+	--k-bg: var(--color-sky);
+	--k-fg: var(--color-on-sky);
+	/* Sky alone is too light as small text in either theme: mixing in ink darkens it on light and lightens it on dark. */
+	--k-text: color-mix(in srgb, var(--color-sky) 60%, var(--color-ink));
+}
+
+.forum-link[data-k='propuestas'] {
+	--k-bg: var(--color-signal);
+	--k-fg: var(--ed-on-accent);
+	--k-text: var(--color-signal);
+}
+
+/* Signal is too dark to read as text on the dark window. */
+:root:not([data-theme='light']) .forum-link[data-k='propuestas'] {
+	--k-text: color-mix(in srgb, var(--color-signal) 40%, white);
+}
+
+.forum-app {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	background: var(--color-navy-lift);
+	color: var(--color-ink);
+	box-shadow:
+		inset 0 0 0 1.5px var(--ed-ring),
+		0.5rem 0.5rem 0 color-mix(in srgb, var(--color-sky) 30%, transparent);
+}
+
+@media (min-width: 40rem) {
+	.forum-app {
+		box-shadow:
+			inset 0 0 0 1.5px var(--ed-ring),
+			0.875rem 0.875rem 0 color-mix(in srgb, var(--color-sky) 30%, transparent);
+	}
+}
+
+.forum-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.75rem 1rem;
+	background: var(--ed-block);
+	color: var(--ed-block-ink);
+	font-family: var(--font-mono);
+	font-size: var(--text-label);
+	font-weight: 500;
+	line-height: 1;
+}
+
+.forum-bar i {
+	flex: none;
+	width: 0.625rem;
+	height: 0.625rem;
+	border-radius: 50%;
+	background: var(--ed-block-accent);
+}
+
+.forum-bar i:first-child {
+	background: var(--color-signal);
+}
+
+.forum-bar i:nth-child(2) {
+	background: var(--ed-block-ink);
+}
+
+.forum-bar span {
+	min-width: 0;
+	margin-left: 0.625rem;
+	overflow-wrap: anywhere;
+}
+
+/* The chips only mean something with the script that filters: without JS they are not shown. */
+.forum-tabs {
+	display: none;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding: 0.875rem 1rem;
+	border-bottom: 1.5px solid var(--ed-ring-soft);
+}
+
+html.js .forum-tabs {
+	display: flex;
+}
+
+.forum-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 2.75rem;
+	padding: 0.375rem 0.875rem;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-ink) 22%, transparent);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	font-size: var(--text-label);
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.forum-chip .ct {
+	display: inline-grid;
+	place-items: center;
+	min-width: 1.375rem;
+	height: 1.375rem;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 600;
+}
+
+.forum-chip[aria-pressed='true'] {
+	background: var(--color-signal);
+	box-shadow: none;
+	color: var(--ed-on-accent);
+}
+
+.forum-chip[aria-pressed='true'] .ct {
+	background: color-mix(in srgb, var(--ed-on-accent) 25%, transparent);
+}
+
+.forum-chip:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+.forum-chip:focus-visible,
+.forum-compose a:focus-visible {
+	outline: 2px solid var(--color-sky);
+	outline-offset: 2px;
+}
+
+.forum-compose {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem;
+}
+
+.forum-compose .field {
+	position: relative;
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 0.625rem;
+	min-width: 0;
+	height: 3.125rem;
+	padding-inline: 1rem;
+	overflow: hidden;
+	background: var(--color-navy);
+	box-shadow: inset 0 0 0 1.5px var(--ed-ring);
+	color: var(--color-mist);
+	font-size: var(--text-secondary);
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.forum-compose .field-link {
+	position: absolute;
+	inset: 0;
+}
+
+.forum-compose .typed {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.forum-compose .caret {
+	flex: none;
+	width: 2px;
+	height: 1.25rem;
+	background: var(--color-signal);
+}
+
+.forum-compose .new {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	height: 3.125rem;
+	padding-inline: 1.125rem;
+	background: var(--color-signal);
+	color: var(--ed-on-accent);
+	font-size: var(--text-secondary);
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.forum-compose .caret {
+		animation: forum-caret 1s steps(2) infinite;
+	}
+}
+
+@keyframes forum-caret {
+	50% {
+		opacity: 0;
+	}
+}
+
+.forum-list {
+	flex: 1;
+	margin: 0;
+	padding: 0 1rem 0.5rem;
+	border: 0;
+	list-style: none;
+}
+
+.forum-list > li {
+	border: 0;
+}
+
+.forum-list > li[hidden] {
+	display: none;
+}
+
+.forum-link {
+	display: grid;
+	grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+	grid-template-areas:
+		'av title arrow'
+		'av kind arrow';
+	gap: 0.25rem 0.875rem;
+	align-items: center;
+	padding: 1rem 0.5rem;
+	border-top: 1px solid var(--ed-ring-soft);
+	color: var(--color-ink);
+	text-decoration: none;
+}
+
+@media (min-width: 40rem) {
+	.forum-link {
+		grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+	}
+}
+
+.forum-link .av {
+	display: grid;
+	grid-area: av;
+	place-items: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	background: var(--k-bg);
+	color: var(--k-fg);
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: var(--text-label);
+	line-height: 1;
+}
+
+@media (min-width: 40rem) {
+	.forum-link .av {
+		width: 2.75rem;
+		height: 2.75rem;
+	}
+}
+
+.forum-title {
+	grid-area: title;
+	min-width: 0;
+	font-size: var(--text-body);
+	font-stretch: 112%;
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	color: var(--color-ink);
+	overflow-wrap: anywhere;
+}
+
+.forum-kind {
+	grid-area: kind;
+	justify-self: start;
+	padding: 0.3125rem 0.5rem;
+	background: color-mix(in srgb, var(--k-bg) 16%, transparent);
+	color: var(--k-text);
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.forum-arrow {
+	grid-area: arrow;
+	color: var(--color-mist);
+}
+
+a.forum-link:hover {
+	background: var(--color-navy);
+}
+
+a.forum-link:hover .forum-title,
+a.forum-link:focus-visible .forum-title {
+	text-decoration: underline;
+	text-decoration-color: var(--color-sky);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.22em;
+}
+
+a.forum-link:hover .forum-arrow,
+a.forum-link:focus-visible .forum-arrow {
+	color: var(--color-sky);
+}
+
+a.forum-link:focus-visible {
+	outline: 2px solid var(--color-sky);
+	outline-offset: -2px;
+}
+
+/* The window's footer: the totals and the way to every thread, in one bar instead of a lone button. */
+.forum-foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+	padding: 1rem 1.5rem;
+	background: var(--color-action);
+	color: var(--color-on-action);
+	font-size: var(--text-secondary);
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: none;
+}
+
+.forum-foot small {
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.forum-foot .go {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.625rem;
+}
+
+.forum-foot .go i {
+	display: grid;
+	flex: none;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 50%;
+	background: var(--color-signal);
+	color: var(--ed-on-accent);
+	font-style: normal;
+}
+
+a.forum-foot:hover,
+a.forum-foot:focus-visible {
+	background: var(--color-signal);
+	color: var(--ed-on-accent);
+}
+
+a.forum-foot:hover .go i,
+a.forum-foot:focus-visible .go i {
+	background: var(--ed-on-accent);
+	color: var(--color-signal);
+}
+
+a.forum-foot:focus-visible {
+	outline: 2px solid var(--color-sky);
+	outline-offset: -4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.forum-link,
+	.forum-foot {
+		transition: background-color 0.25s;
+	}
+
+	.forum-foot .go i {
+		transition: transform 0.3s;
+	}
+
+	a.forum-foot:hover .go i {
+		transform: translateX(4px);
+	}
+}
+
+@media (max-width: 56.25rem) {
+	.forum-compose {
+		flex-wrap: wrap;
+	}
+
+	.forum-compose .new {
+		justify-content: center;
+		width: 100%;
+	}
+}
+
+/* The sign-in card is a full-height ticket next to the window: perks, categories, a watermark and the stub at the foot. */
+.forum-door-top {
+	position: relative;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	overflow: hidden;
+	padding-bottom: 1.75rem;
+}
+
+.forum-door-top::after {
+	right: -2.5rem;
+	bottom: -3rem;
+	width: 12.5rem;
+	height: 14.0625rem;
+	background: var(--ed-sky-paper);
+	opacity: 0.08;
+}
+
+.forum-door-top > * {
+	position: relative;
+	z-index: 1;
+}
+
+.door-perks {
+	margin: 1.5rem 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.door-perks li {
+	display: flex;
+	align-items: baseline;
+	gap: 0.875rem;
+	padding: 0.875rem 0;
+	border-top: 1px solid color-mix(in srgb, var(--color-on-paper) 14%, transparent);
+	color: var(--color-on-paper);
+	font-size: var(--text-body);
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.door-perks b {
+	flex: none;
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 600;
+	color: var(--color-signal);
+}
+
+.door-cats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+	margin: auto 0 0;
+	padding: 1.375rem 0 0;
+	list-style: none;
+}
+
+.door-cats li {
+	padding: 0.375rem 0.5625rem;
+	background: #e4ebf4;
+	color: #053066;
+	font-family: var(--font-mono);
+	font-size: var(--text-small);
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.door-cats li[data-k='materias'] {
+	background: #e3f2fa;
+	color: #075a80;
+}
+
+.door-cats li[data-k='propuestas'] {
+	background: #f8e8ea;
+	color: #8d2930;
+}
