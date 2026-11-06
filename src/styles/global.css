@@ -51,9 +51,10 @@
 
 	/*
 	 * Type scale: the only font sizes of the landing (CSS and utilities such as text-body). The Tailwind defaults are
-	 * cleared so a stray text-xl cannot add a ninth size. Two fluid roles scale with the viewport and the rest are fixed:
-	 *   display   the hero headline, and the oversized outline numerals and words (80px at 1440, 44px on phones)
-	 *   section   every section title, h2 or the h1 of a news page (72px at 1440, 40px on phones)
+	 * cleared so a stray text-xl cannot add a ninth size. Three fluid roles scale with the viewport and the rest are fixed:
+	 *   display   the hero headline, and the oversized numerals and tile words (80px at 1440, 44px on phones)
+	 *   giant     every section title, h2 or the h1 of a news page, and the Nosotros manifesto (108px at 1440, 41px on phones)
+	 *   section   the join title and its numerals (72px at 1440, 40px on phones)
 	 *   title     card, tile and ticket titles, 28px
 	 *   lead      lead paragraphs and sub-titles, 22px
 	 *   body      running text, 18px
@@ -63,6 +64,7 @@
 	 */
 	--text-*: initial;
 	--text-display: clamp(2.75rem, 1.5rem + 3.9vw, 6rem);
+	--text-giant: clamp(2.125rem, 1rem + 6.4vw, 8.5rem);
 	--text-section: clamp(2.5rem, 1.75rem + 3.05vw, 4.5rem);
 	--text-title: 1.75rem;
 	--text-lead: 1.375rem;
@@ -178,9 +180,10 @@
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 800;
-		font-size: var(--text-section);
-		line-height: 1;
-		letter-spacing: -0.02em;
+		font-size: var(--text-giant);
+		line-height: 0.9;
+		letter-spacing: -0.045em;
+		overflow-wrap: break-word;
 	}
 
 	.graph {
@@ -1068,7 +1071,8 @@
 		--bg: var(--color-navy-deep);
 	}
 
-	/* Hero: a short, centred headline (one block per line) and the three ticket-shaped shortcuts. */
+	/* Hero: a short headline on the left (one block per line), the official round logo on the right, and the three
+	   ticket-shaped shortcuts below. On a phone the logo comes first, small. */
 	.hero {
 		--notch: var(--color-navy);
 		position: relative;
@@ -1077,35 +1081,48 @@
 		padding-top: clamp(2.5rem, 1rem + 5vw, 5rem);
 		padding-bottom: 6rem;
 		background: var(--color-navy);
-		text-align: center;
+	}
+
+	.hero .wrap {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.hero-title {
-		max-width: 13ch;
-		margin-inline: auto;
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 800;
 		font-size: var(--text-display);
-		line-height: 1;
-		letter-spacing: -0.02em;
+		line-height: 0.9;
+		letter-spacing: -0.045em;
 	}
 
 	.hero-line {
 		display: block;
 	}
 
+	/* The red underline is a bar under the line, not text decoration: the letters rise inside clips and a decoration would
+	   not follow them. */
 	.hero-accent {
-		text-decoration: underline;
-		text-decoration-color: var(--color-signal);
-		text-decoration-thickness: 0.09em;
-		text-underline-offset: 0.12em;
+		position: relative;
+		width: fit-content;
+	}
+
+	.hero-accent::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		bottom: -0.1em;
+		height: 0.09em;
+		background: var(--color-signal);
 	}
 
 	/* Lede: one short paragraph under the headline. */
 	.hero-lede {
-		max-width: 46ch;
-		margin: 1.5rem auto 0;
+		max-width: 40ch;
+		margin: 1.5rem 0 0;
 		font-size: var(--text-lead);
 		font-stretch: 112%;
 		font-weight: 450;
@@ -1183,94 +1200,106 @@
 		grid-row: 1 / 3;
 	}
 
+	/* The editorial hover: the card lifts off a hard red offset shadow. */
+	.gate:hover,
+	.gate:focus-visible {
+		box-shadow:
+			inset 0 0 0 1px var(--paper-ring),
+			8px 8px 0 var(--color-signal);
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		.gate {
 			transition:
-				transform 0.12s var(--ease-expo),
-				box-shadow 0.12s var(--ease-expo);
+				transform 0.45s var(--ease-expo),
+				box-shadow 0.45s var(--ease-expo);
 		}
 
-		.gate:hover {
-			transform: translateY(-3px);
-			box-shadow:
-				inset 0 0 0 1px var(--paper-ring),
-				0 7px 0 var(--color-paper-edge);
+		.gate:hover,
+		.gate:focus-visible {
+			transform: translate(-3px, -3px);
 		}
 	}
 
-	/* Moments from the degree, one per section, all quiet: transform and opacity only, paused off screen, and a calm end
-	   state under reduced motion. Networks (the hero): a faint graph behind the shortcuts where echo requests travel. */
-	.hero .wrap {
+	/* The official round logo (its colour version in the light theme, the white and sky one in the dark) with the isotype
+	   outline behind it. Without motion both are simply there; with it the outline draws itself on load and then breathes,
+	   and the logo floats (src/scripts/editorial-motion.ts). */
+	.hero-logo {
+		position: relative;
+		order: -1;
+		display: grid;
+		place-items: center;
+		justify-self: start;
+		width: 8.25rem;
+		aspect-ratio: 1;
+		margin-bottom: 0.75rem;
+	}
+
+	.hero-logo-mark {
 		position: relative;
 		z-index: 1;
+		width: 82%;
+		height: 82%;
 	}
 
-	.net {
-		display: none;
+	:root[data-theme='light'] .hero-logo-mark {
+		filter: drop-shadow(0 1.75rem 2.25rem color-mix(in srgb, var(--color-brand) 28%, transparent));
+	}
+
+	.iso-ghost {
 		position: absolute;
-		inset: 0;
-		z-index: 0;
+		inset: -9%;
+		width: 118%;
+		height: 118%;
+		overflow: visible;
 		pointer-events: none;
 	}
 
-	@media (min-width: 73.75rem) {
-		.net {
-			display: block;
+	.iso-ghost path {
+		fill: none;
+		stroke: var(--color-sky);
+		stroke-width: 1.6;
+		stroke-linejoin: round;
+		opacity: 0.55;
+	}
+
+	.iso-ghost path + path {
+		stroke: var(--color-signal);
+		opacity: 0.4;
+	}
+
+	@media (min-width: 56.25rem) {
+		.hero .wrap {
+			grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+			column-gap: 4vw;
+			align-items: center;
+		}
+
+		.hero-title,
+		.hero-lede {
+			grid-column: 1;
+		}
+
+		.hero-line {
+			white-space: nowrap;
+		}
+
+		.hero-logo {
+			order: 0;
+			grid-column: 2;
+			grid-row: 1 / span 2;
+			justify-self: end;
+			width: min(100%, 25rem);
+			margin-bottom: 0;
+		}
+
+		.gates {
+			grid-column: 1 / -1;
 		}
 	}
 
-	.net svg {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-
-	.net-edge {
-		fill: none;
-		stroke: var(--color-sky);
-		stroke-width: 1;
-		opacity: 0.28;
-	}
-
-	.net-node {
-		fill: var(--color-sky);
-		opacity: 0.6;
-	}
-
-	.net-root {
-		fill: var(--color-ink);
-		opacity: 1;
-	}
-
-	.net-ring {
-		fill: none;
-		stroke: var(--color-sky);
-		stroke-width: 1.5;
-		opacity: 0;
-		transform-box: fill-box;
-		transform-origin: center;
-	}
-
-	.net-packet {
-		fill: var(--color-sky);
-	}
-
-	.net-packet.is-back {
-		fill: var(--color-ink);
-	}
-
-	.net-say {
-		position: absolute;
-		right: max(4%, calc((100% - 1600px) / 2));
-		bottom: 4.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-small);
-		line-height: 1.4;
-		color: var(--color-mist);
-		text-align: right;
-	}
-
-	/* Hacking (Novedades): the title's letters resolve out of symbols, each in the width it will have. */
+	/* Moments from the degree, quiet: transform and opacity only, paused off screen, and a calm end state under reduced
+	   motion. Hacking (Novedades): the title's letters resolve out of symbols, each in the width it will have. */
 	.dc {
 		display: inline-block;
 		white-space: pre;
@@ -1411,7 +1440,18 @@
 		outline-offset: 5px;
 	}
 
+	/* The editorial hover: a hard red offset shadow under the button. Where there is a fine pointer the button also leans
+	   toward it (editorial-motion.ts). */
+	.btn:hover,
+	.btn:focus-visible {
+		box-shadow: 7px 7px 0 var(--color-signal);
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
+		.btn {
+			transition: box-shadow 0.3s var(--ease-expo);
+		}
+
 		.btn-face {
 			transition: transform 110ms cubic-bezier(0.16, 1, 0.3, 1);
 		}
@@ -1431,9 +1471,10 @@
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 800;
-		font-size: var(--text-section);
-		line-height: 1.04;
-		letter-spacing: -0.02em;
+		font-size: var(--text-giant);
+		line-height: 0.92;
+		letter-spacing: -0.045em;
+		max-width: 16ch;
 		color: var(--color-ink);
 	}
 
@@ -1476,43 +1517,6 @@
 		transform: translateY(110%);
 	}
 
-	.about-block {
-		border-top: 2px solid var(--color-sky);
-		padding-top: 1.25rem;
-	}
-
-	/* One display-type sentence, ragged right with balanced lines (never justified), then the facts as a mono line. */
-	.about-statement {
-		max-width: 24ch;
-		font-family: var(--font-display);
-		font-size: var(--text-lead);
-		font-weight: 650;
-		line-height: 1.2;
-		letter-spacing: -0.015em;
-		text-wrap: balance;
-		color: var(--color-ink);
-	}
-
-	@media (min-width: 64rem) {
-		.about-statement {
-			font-size: var(--text-title);
-		}
-	}
-
-	.about-statement.is-long {
-		max-width: 60ch;
-		font-size: var(--text-lead);
-		overflow-wrap: anywhere;
-	}
-
-	.about-facts {
-		margin-top: 1.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		line-height: 1.6;
-		color: var(--color-mist);
-	}
-
 	/* Bento grid: three pillars, flat tiles of different weight. */
 	.bento {
 		display: grid;
@@ -1534,17 +1538,17 @@
 		padding: 1.5rem;
 	}
 
-	.outline-word {
+	/* The word of a pillar: solid display type (Mona Sans 900, expanded), sky on the dark tiles. */
+	.tile-word {
 		display: block;
 		margin-bottom: 1rem;
 		font-family: var(--font-display);
 		font-stretch: 125%;
-		font-weight: 800;
+		font-weight: 900;
 		font-size: var(--text-display);
 		line-height: 0.9;
-		letter-spacing: -0.01em;
-		color: transparent;
-		-webkit-text-stroke: 2px var(--color-sky);
+		letter-spacing: -0.045em;
+		color: var(--color-sky);
 	}
 
 	.tile-title {
@@ -1579,22 +1583,24 @@
 	}
 
 	/* The sky tile is the single bright relief of the grid. */
+	/* A deep blue, the same in both themes, so the white word and text keep their contrast. */
 	.tile-2 {
-		background: var(--color-sky);
+		background: #0a6f9e;
 	}
 
-	.tile-2 .outline-word {
-		-webkit-text-stroke-color: var(--color-on-sky);
+	/* APOYO reads white on its blue tile (the approved artboard). */
+	.tile-2 .tile-word {
+		color: #fff;
 	}
 
 	.tile-2 .tile-title,
 	.tile-2 .tile-text {
-		color: var(--color-on-sky);
+		color: #fff;
 	}
 
 	.tile-2 .demo-tag {
-		border-color: color-mix(in srgb, var(--color-on-sky) 60%, transparent);
-		color: var(--color-on-sky);
+		border-color: color-mix(in srgb, #fff 60%, transparent);
+		color: #fff;
 	}
 
 	@media (min-width: 64rem) {
@@ -1782,6 +1788,35 @@
 
 	.eyebrow .demo-tag {
 		margin-left: 0;
+	}
+
+	/* Numbered section markers: a red badge with 01, 02... counted in reading order, then a full-width rule. */
+	main {
+		counter-reset: section;
+	}
+
+	main > section .eyebrow {
+		counter-increment: section;
+		width: 100%;
+		gap: 0.5rem 0.875rem;
+		margin-bottom: 1.75rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	main > section .eyebrow::before {
+		content: counter(section, decimal-leading-zero);
+		display: inline-grid;
+		place-items: center;
+		min-width: 2.5rem;
+		height: 1.75rem;
+		padding-inline: 0.5rem;
+		background: var(--color-signal);
+		color: var(--color-paper);
+		font-weight: 600;
+		letter-spacing: 0.04em;
 	}
 
 	.on-sky .eyebrow,
@@ -2973,6 +3008,51 @@ html.motion .hero-mark-svg {
 	visibility: hidden;
 }
 
+/* The editorial layer's pre-motion state (src/scripts/editorial-motion.ts): the hero waits for its letters, the logo rolls
+   in, the outline draws, and tickets, news and the forum window wait for their entrance. */
+html.motion .hero-line {
+	visibility: hidden;
+}
+
+html.motion .hero-lede,
+html.motion .gates li {
+	opacity: 0;
+	transform: translateY(2.25rem);
+}
+
+html.motion .hero-logo-mark {
+	opacity: 0;
+	transform: rotate(-140deg) scale(0.6);
+}
+
+html.motion .iso-ghost path {
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+}
+
+html.motion .tk-item {
+	opacity: 0;
+	transform: translateY(5.625rem);
+}
+
+html.motion .news-list > li {
+	opacity: 0;
+	transform: translateX(-3.75rem);
+}
+
+html.motion .forum-app {
+	opacity: 0;
+	transform: translateY(5rem) rotate(-1.5deg);
+}
+
+/* The clips letters and words rise out of (SplitText masks): room for descenders and for the tight tracking, with the
+   same amount taken back in margin so the text does not move. */
+.split-char-mask,
+.split-word-mask {
+	padding: 0.14em 0.08em;
+	margin: -0.14em -0.08em;
+}
+
 /* Event registration (S8): the link and the calendar under an upcoming activity's card, and the Inscripciones section
    (S2), whose tickets carry the seats, the deadline and the link to the admin's event page. */
 @layer components {
@@ -3046,6 +3126,25 @@ html.motion .hero-mark-svg {
 		color: var(--color-on-paper);
 		box-shadow: 0 4px 0 var(--color-paper-edge);
 		border-radius: 6px;
+	}
+
+	/* The editorial hover: the ticket lifts off a hard red offset shadow. */
+	@media (hover: hover) {
+		.tk:hover {
+			box-shadow: 12px 12px 0 var(--color-signal);
+		}
+	}
+
+	@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+		.tk {
+			transition:
+				transform 0.55s var(--ease-expo),
+				box-shadow 0.55s var(--ease-expo);
+		}
+
+		.tk:hover {
+			transform: translateY(-8px) rotate(-0.6deg);
+		}
 	}
 
 	/* The tickets of a row share their three bands (paper, perforation, stub), so every tear line sits on the same

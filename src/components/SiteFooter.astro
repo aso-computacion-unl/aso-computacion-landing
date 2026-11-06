@@ -1,4 +1,6 @@
 ---
+import LogoColor from '../assets/brand/logo-color.svg';
+import LogoWhiteSky from '../assets/brand/logo-white-sky.svg';
 import { getContent } from '../data/content';
 import { contactEmail } from '../data/site';
 import { localizedPath, toLocale } from '../i18n/locales';
@@ -25,6 +27,16 @@ const [before, after] = t('footer.madeBy').split('{name}');
 
 <footer class="deep bg-navy-deep py-10">
 	<div class="wrap grid gap-6 font-mono text-label text-mist">
+		{/* The brand, big: the round logo makes one full turn as the page scrolls to its end (src/scripts/motion.ts). */}
+		<div class="foot-brand" data-foot-brand aria-hidden="true">
+			<span class="foot-logo" data-foot-logo>
+				<LogoColor class="theme-light-only" />
+				<LogoWhiteSky class="theme-dark-only" />
+			</span>
+			<span class="foot-word" data-foot-word>
+				{site.name}
+			</span>
+		</div>
 		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 			<p>
 				{site.name} · {t('footer.university')}
@@ -62,6 +74,40 @@ const [before, after] = t('footer.madeBy').split('{name}');
 </footer>
 
 <style>
+	.foot-brand {
+		display: flex;
+		align-items: center;
+		gap: clamp(1rem, 3vw, 2.5rem);
+		padding-bottom: 2.5rem;
+		/* The wordmark slides in from the right: clip it so that start never widens the page. */
+		overflow: clip;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+	}
+
+	.foot-logo {
+		flex: none;
+		width: clamp(5.5rem, 10vw, 9.5rem);
+	}
+
+	.foot-logo :global(svg) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	/* The wordmark is Audiowide, the brand face; it shrinks to fit the row so a phone never scrolls sideways. */
+	.foot-word {
+		min-width: 0;
+		font-family: var(--font-brand);
+		font-size: calc(var(--text-giant) * 0.75);
+		font-stretch: 100%;
+		font-weight: 400;
+		line-height: 0.9;
+		letter-spacing: 0;
+		color: var(--color-ink);
+		overflow-wrap: break-word;
+	}
+
 	.credit {
 		border-top: 1px dashed color-mix(in srgb, var(--color-mist) 35%, transparent);
 	}

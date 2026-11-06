@@ -66,6 +66,7 @@ for (const width of [390, 768, 1440]) {
 	test.describe(`at ${width}px`, () => {
 		test.use({ viewport: { width, height: 900 } });
 
+		// The join title is its own, smaller role (the card that invites to propose); every other section title is giant.
 		test('every section title has the same size and the page uses at most nine text sizes', async ({ page }) => {
 			await page.goto('/');
 			await page.evaluate(() => document.fonts.ready);
@@ -75,7 +76,9 @@ for (const width of [390, 768, 1440]) {
 					const hasText = [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent?.trim());
 					if (hasText) sizes.add(getComputedStyle(element).fontSize);
 				});
-				const titles = [...document.querySelectorAll('main section[id] h2')].map((h2) => getComputedStyle(h2).fontSize);
+				const titles = [...document.querySelectorAll('main section[id] h2:not(.join-title)')].map(
+					(h2) => getComputedStyle(h2).fontSize,
+				);
 				return { sizes: [...sizes], titles };
 			});
 			expect(new Set(result.titles).size).toBe(1);
@@ -111,28 +114,23 @@ for (const width of [390, 768, 1440]) {
 }
 
 test.describe('polish', () => {
-	test('Nosotros has one plain kicker and a statement that is neither justified nor scrubbed word by word', async ({
-		page,
-	}) => {
+	test('Nosotros reads manifesto then tiles, with no statement or facts', async ({ page }) => {
 		await page.goto('/');
 		const about = page.locator('#nosotros');
 		await expect(about.locator('.eyebrow')).toHaveText('Nosotros');
 		await expect(about.locator('.file-tab')).toHaveCount(0);
-		await expect(about.locator('[data-statement]')).toHaveCount(0);
-		const statement = about.locator('.about-statement');
-		await expect(statement).toHaveText(
-			'Representamos a quienes estudian Computación en la Universidad Nacional de Loja.',
-		);
-		await expect(statement).not.toHaveCSS('text-align', 'justify');
-		await expect(about.locator('.about-facts')).toHaveText('Organización estudiantil · ASO Computación – UNL');
+		await expect(about.locator('[data-statement], .about-statement, .about-facts')).toHaveCount(0);
+		await expect(about).not.toContainText('Representamos a quienes estudian');
+		await expect(about).not.toContainText('Organización estudiantil');
+		const manifesto = await about.locator('.manifesto').boundingBox();
+		const tiles = await about.locator('.bento').boundingBox();
+		expect(manifesto && tiles && manifesto.y + manifesto.height <= tiles.y).toBe(true);
 	});
 
-	test('the English page says the same sentence', async ({ page }) => {
+	test('the English page drops the statement too', async ({ page }) => {
 		await page.goto('/en/');
 		await expect(page.locator('#nosotros .eyebrow')).toHaveText('About');
-		await expect(page.locator('#nosotros .about-statement')).toHaveText(
-			'We represent the students of Computer Science at the Universidad Nacional de Loja.',
-		);
+		await expect(page.locator('#nosotros .about-statement, #nosotros .about-facts')).toHaveCount(0);
 	});
 
 	test('the board does not list the roles twice, and Redes has no sticker', async ({ page }) => {

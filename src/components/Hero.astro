@@ -1,11 +1,15 @@
 ---
-// The home's first screen: who we are and the three things a visitor most often came to do, as ticket-shaped shortcuts.
+// The home's first screen: who we are (headline on the left, the official logo on the right) and the three things a visitor
+// most often came to do, as ticket-shaped shortcuts.
 // A shortcut is left out with its section (the tickets and the news only render when there is something to show; the
 // forum always does). The scroll animation that used to open the page lives at the start of Actividades now.
+import LogoColor from '../assets/brand/logo-color.svg';
+import LogoWhiteSky from '../assets/brand/logo-white-sky.svg';
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
+import { ISOTYPE_LEFT, ISOTYPE_RIGHT, ISOTYPE_VIEWBOX } from '../scripts/editorial-isotype';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
@@ -18,26 +22,19 @@ const signUpsNote =
 const gates = [
 	navLinks.some((link) => link.href === '#inscripciones') && {
 		href: '#inscripciones',
-		name: 'inscripciones',
 		label: t('hero.quick.registrations'),
 		note: signUpsNote,
 	},
 	latestNews.length > 0 && {
 		href: '#novedades',
-		name: 'novedades',
 		label: t('hero.quick.news'),
 		note: t('hero.gate.news', { date: latestNews[0].stamp }),
 	},
-	{ href: '#foro', name: 'foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
+	{ href: '#foro', label: t('hero.quick.forum'), note: t('hero.gate.forum') },
 ].filter((gate) => gate !== false);
 ---
 
 <section id="top" class="hero" data-hero>
-	<div class="net" data-net aria-hidden="true">
-		<p class="net-say" data-net-say>
-			$ ping aso
-		</p>
-	</div>
 	<div class="wrap">
 		<h1 class="hero-title">
 			<span class="sr-only">{site.name}: </span>
@@ -50,7 +47,7 @@ const gates = [
 			<ul style={`--gates:${gates.length}`}>
 				{gates.map((gate) => (
 					<li>
-						<a href={gate.href} class="gate" data-net-name={gate.name}>
+						<a href={gate.href} class="gate">
 							<span class="gate-name">{gate.label}</span>
 							<span class="gate-note">{gate.note}</span>
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -61,5 +58,14 @@ const gates = [
 				))}
 			</ul>
 		</nav>
+		{/* The official round logo, with the isotype outline behind it: it draws itself on load and then breathes. */}
+		<div class="hero-logo" data-hero-logo aria-hidden="true">
+			<svg class="iso-ghost" data-iso-ghost viewBox={ISOTYPE_VIEWBOX} focusable="false">
+				<path d={ISOTYPE_LEFT} pathLength="1"></path>
+				<path d={ISOTYPE_RIGHT} pathLength="1"></path>
+			</svg>
+			<LogoColor class="theme-light-only hero-logo-mark" data-hero-logo-mark />
+			<LogoWhiteSky class="theme-dark-only hero-logo-mark" data-hero-logo-mark />
+		</div>
 	</div>
 </section>

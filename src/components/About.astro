@@ -8,15 +8,8 @@ import { useTranslations } from '../i18n/ui';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { pillars, site } = getContent(locale);
-const { aboutStatement, manifesto } = copy[locale];
-
-// The statement is the admin's about text (or the fallback sentence), with its key phrases in sky. A long text keeps
-// the statement's place but drops to the lead size, so a paragraph never sets in display type.
-const escape = (phrase: string) => phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const accents = new RegExp(`(${aboutStatement.accents.map(escape).join('|')})`);
-const parts = site.about.split(accents).filter(Boolean);
-const long = site.about.length > 120;
+const { pillars } = getContent(locale);
+const { manifesto } = copy[locale];
 ---
 
 <section id="nosotros" class="bg-navy py-section">
@@ -25,36 +18,27 @@ const long = site.about.length > 120;
 			<span>{t('about.eyebrow')}</span>
 		</p>
 
-		<div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-16">
-			<h2 class="manifesto" data-manifesto>
-				<span class="sr-only">{manifesto.sr}</span>
-				<span aria-hidden="true">
-					{manifesto.lines.map((line) => (
-						<span class="m-line">
-							<span class="m-in" data-m-in>
-								{line}
-							</span>
-						</span>
-					))}
+		<h2 class="manifesto" data-manifesto>
+			<span class="sr-only">{manifesto.sr}</span>
+			<span aria-hidden="true">
+				{manifesto.lines.map((line) => (
 					<span class="m-line">
 						<span class="m-in" data-m-in>
-							<span class="rotor" data-rotor>
-								{manifesto.rotor.map((word) => (
-									<span class="rotor-word">{word}</span>
-								))}
-							</span>
+							{line}
+						</span>
+					</span>
+				))}
+				<span class="m-line">
+					<span class="m-in" data-m-in>
+						<span class="rotor" data-rotor>
+							{manifesto.rotor.map((word) => (
+								<span class="rotor-word">{word}</span>
+							))}
 						</span>
 					</span>
 				</span>
-			</h2>
-
-			<div class="about-block">
-				<p class:list={['about-statement', { 'is-long': long }]}>
-					{parts.map((part) => (aboutStatement.accents.includes(part) ? <span class="text-sky">{part}</span> : part))}
-				</p>
-				<p class="about-facts">{aboutStatement.facts}</p>
-			</div>
-		</div>
+			</span>
+		</h2>
 
 		{pillars.length > 0 && (
 			<ul class="bento mt-head">
@@ -73,7 +57,7 @@ const long = site.about.length > 120;
 						)}
 						{pillar.faces && <Isotype class="tile-iso" aria-hidden="true" />}
 						<div class="tile-body">
-							<span class="outline-word" aria-hidden="true" data-outline>
+							<span class="tile-word" aria-hidden="true" data-word>
 								{pillar.word}
 							</span>
 							<h3 class="tile-title">{pillar.title}</h3>
