@@ -248,6 +248,29 @@ test.describe('forum window', () => {
 		}
 	});
 
+	// The field clips its overflow (the typed prompt), so a focus ring drawn outside the link would be cut away: axe cannot
+	// see that, so the ring must sit inside the field.
+	test('the composer link shows its keyboard focus ring inside the field', async ({ page }) => {
+		await open(page);
+		const link = page.locator('#foro .field-link');
+		await link.scrollIntoViewIfNeeded();
+		await page.keyboard.press('Tab');
+		await link.focus();
+		const ring = await link.evaluate((el) => {
+			const style = getComputedStyle(el);
+			return {
+				focusVisible: el.matches(':focus-visible'),
+				style: style.outlineStyle,
+				width: parseFloat(style.outlineWidth),
+				offset: parseFloat(style.outlineOffset),
+			};
+		});
+		expect(ring.focusVisible).toBe(true);
+		expect(ring.style).not.toBe('none');
+		expect(ring.width).toBeGreaterThan(0);
+		expect(ring.offset + ring.width).toBeLessThanOrEqual(0);
+	});
+
 	test('has a full-height sign-in ticket with numbered perks, categories and the Google stub at the foot', async ({
 		page,
 	}) => {
