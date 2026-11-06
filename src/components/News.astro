@@ -1,7 +1,8 @@
 ---
-// Home section: a teaser for the news. The three latest posts as a plain list (date, title, arrow; each row links to its
-// post) and one button to the news page, which has the rest. The title decrypts once (src/scripts/moments.ts). Hidden
-// by the page when there is nothing to show.
+// Home section: a teaser for the news laid out as a front page (S6). The three latest posts, each one link to its post:
+// the newest is a full-width banner (big day, month and year, a "Nuevo" badge, title, round arrow) and the rest are
+// cards, two to a row, with the same big day. One button goes to the news page, which has the rest. The title decrypts
+// once (src/scripts/moments.ts). Hidden by the page when there is nothing to show. The look is in src/styles/sections.css.
 import { getContent } from '../data/content';
 import { localizedPath, toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
@@ -11,6 +12,12 @@ import SectionHead from './SectionHead.astro';
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 const { latestNews } = getContent(locale);
+
+// "14 abr 2026" → the day is the big numeral and the rest its caption (a month-only date has the month in its place).
+const split = (stamp: string) => {
+	const [big, ...rest] = stamp.trim().split(/\s+/);
+	return { big, rest: rest.join(' ') };
+};
 ---
 
 <section id="novedades" class="deep bg-navy-deep py-section">
@@ -22,10 +29,16 @@ const { latestNews } = getContent(locale);
 		</SectionHead>
 
 		<ul class="news-list mt-head">
-			{latestNews.map((item) => (
+			{latestNews.map((item, index) => (
 				<li>
 					<a class="news-link" href={item.href}>
-						<time datetime={item.date}>{item.stamp}</time>
+						<span class="news-head">
+							<time class="news-when" datetime={item.date}>
+								<b>{split(item.stamp).big}</b>
+								<span>{split(item.stamp).rest}</span>
+							</time>
+							{index === 0 && <span class="news-new">{t('news.new')}</span>}
+						</span>
 						<span class="news-title">{item.title}</span>
 						<span class="news-arrow" aria-hidden="true">
 							→
@@ -36,74 +49,3 @@ const { latestNews } = getContent(locale);
 		</ul>
 	</div>
 </section>
-
-<style>
-	.news-list {
-		list-style: none;
-		border-top: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
-	}
-
-	.news-list li {
-		border-bottom: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
-	}
-
-	.news-link {
-		display: grid;
-		grid-template-columns: 7.5rem minmax(0, 1fr) auto;
-		gap: 1.5rem;
-		align-items: baseline;
-		padding: 1.25rem 0;
-		color: var(--color-ink);
-		text-decoration: none;
-	}
-
-	.news-link time {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.news-title {
-		font-size: var(--text-lead);
-		font-stretch: 112%;
-		font-weight: 700;
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-		overflow-wrap: anywhere;
-	}
-
-	.news-arrow {
-		color: var(--color-mist);
-		transition: color 0.15s;
-	}
-
-	.news-link:hover .news-title,
-	.news-link:focus-visible .news-title {
-		text-decoration: underline;
-		text-decoration-color: var(--color-sky);
-		text-decoration-thickness: 2px;
-		text-underline-offset: 0.22em;
-	}
-
-	.news-link:hover .news-arrow,
-	.news-link:focus-visible .news-arrow {
-		color: var(--color-sky);
-	}
-
-	.news-link:focus-visible {
-		outline: 2px solid var(--color-sky);
-		outline-offset: 2px;
-	}
-
-	/* On a phone the date sits above the title instead of beside it. */
-	@media (max-width: 39.9375rem) {
-		.news-link {
-			grid-template-columns: minmax(0, 1fr) auto;
-			gap: 0.25rem 1rem;
-		}
-
-		.news-link time {
-			grid-column: 1 / -1;
-		}
-	}
-</style>

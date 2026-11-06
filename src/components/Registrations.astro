@@ -3,11 +3,13 @@
 // and any dates. Which activities get one, and how each signs up, is decided in src/lib/registration/tickets.ts; the
 // section is left out when there is none. The seats left are painted by src/scripts/seats.ts when the admin's origin
 // is known (`data-seats-url`); signing up happens on the admin's event page, which each ticket links to, and the head's
-// one button goes to the admin's list of every event (left out when the origin is unknown).
+// one button goes to the admin's list of every event (left out when the origin is unknown). Up to three tickets sit in
+// a grid; more become a rail that scrolls sideways (src/scripts/ticket-rail.ts adds its arrows, counter and bar).
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
+import { padCount, shouldRail } from '../scripts/ticket-rail';
 import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 import Ticket from './Ticket.astro';
@@ -23,6 +25,13 @@ const head = {
 	demo: tickets.some((ticket) => ticket.entry.demo),
 };
 const live = tickets.some((ticket) => ticket.mode !== 'free');
+const rail = shouldRail(tickets.length);
+// What the counter says before the script measures the strip: the first three of them.
+const firstPage = t('ticket.rail.range', {
+	from: padCount(1),
+	to: padCount(Math.min(3, tickets.length)),
+	total: padCount(tickets.length),
+});
 ---
 
 {tickets.length > 0 && (
@@ -38,11 +47,33 @@ const live = tickets.some((ticket) => ticket.mode !== 'free');
 			) : (
 				<SectionHead {...head} />
 			)}
-			<ol class="tk-list" aria-label={t('ticket.list')}>
-				{tickets.map((ticket) => (
-					<Ticket ticket={ticket} />
-				))}
-			</ol>
+			<div data-rail-host={rail ? '' : undefined}>
+				{rail && (
+					<div class="tk-rail-ui" data-rail-ui hidden>
+						<button type="button" data-rail-prev aria-label={t('ticket.rail.prev')}>
+							<span aria-hidden="true">←</span>
+						</button>
+						<button type="button" data-rail-next aria-label={t('ticket.rail.next')}>
+							<span aria-hidden="true">→</span>
+						</button>
+						<p class="tk-rail-count" data-rail-count aria-live="polite">
+							{firstPage}
+						</p>
+						<span class="tk-rail-bar" aria-hidden="true">
+							<i data-rail-bar />
+						</span>
+					</div>
+				)}
+				<ol
+					class:list={['tk-list', { 'is-rail': rail }]}
+					aria-label={t('ticket.list')}
+					data-rail={rail ? '' : undefined}
+				>
+					{tickets.map((ticket) => (
+						<Ticket ticket={ticket} />
+					))}
+				</ol>
+			</div>
 		</div>
 	</section>
 )}
@@ -50,4 +81,6 @@ const live = tickets.some((ticket) => ticket.mode !== 'free');
 <script>
 	// Pages that do not know the admin's origin (or have no ticket with registration) never ask for the seats.
 	if (document.querySelector('[data-seats-url]')) void import('../scripts/seats');
+	// Only a list with more than three tickets is a rail.
+	if (document.querySelector('[data-rail-host]')) void import('../scripts/ticket-rail');
 </script>

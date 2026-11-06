@@ -1,21 +1,39 @@
 ---
-// The forum's door on the landing: a teaser. Three example thread titles beside the sign-in card, the only way in, and a
-// button that sends to the forum for the rest. The forum itself lives on the admin's origin (`forum.url`, built in
-// src/data/content.ts); without a known admin origin the way in is left out and the titles are plain text. The threads
-// are demo content, tagged as such through the section head.
+// The forum's door on the landing (S7): an app window and, beside it, the sign-in ticket. The window has a title bar,
+// the category chips with their counts (they filter the example threads), a composer that types the forum's own prompts,
+// the threads (a coloured avatar letter and a category chip each) and a footer with the totals and the way to every
+// thread. The forum itself lives on the admin's origin (`forum.url`, built in src/data/content.ts); without a known admin
+// origin the way in is left out and the titles are plain text. The threads are demo content, tagged as such through the
+// section head. Everything is in the markup already; src/scripts/forum-window.ts only makes the chips filter and the
+// composer type. The look is in src/styles/sections.css.
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
+import { ALL, categoryCounts } from '../scripts/forum-window';
 import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 
 const locale = toLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const { forum } = getContent(locale);
+const { forum, site } = getContent(locale);
 
 const THREADS = 3;
 const threads = forum.threads.slice(0, THREADS);
 const categoryName = (id: string) => forum.categories.find((category) => category.id === id)?.name ?? id;
+const counts = categoryCounts(
+	threads.map((thread) => thread.category),
+	forum.categories.map((category) => category.id),
+);
+const chips = [
+	{ id: ALL, name: t('forum.all'), count: counts[ALL] },
+	...forum.categories.map((category) => ({ id: category.id, name: category.name, count: counts[category.id] })),
+];
+// What the composer types: the section's own line first (it is what the markup shows), then each category's description.
+const prompts = [forum.lead, ...forum.categories.map((category) => category.description)];
+const stats = t(threads.length === 1 ? 'forum.statsOne' : 'forum.stats', {
+	threads: threads.length,
+	categories: forum.categories.length,
+});
 ---
 
 <section id="foro" class="bg-navy py-section">
@@ -24,32 +42,99 @@ const categoryName = (id: string) => forum.categories.find((category) => categor
 
 		<div class="forum-teaser mt-head">
 			<div class="forum-threads">
-				<ul class="forum-list" aria-label={t('forum.threads')}>
-					{threads.map((thread) => (
-						<li>
-							{forum.url ? (
-								<a class="forum-link" href={forum.url} target="_blank" rel="me noopener">
-									<span class="forum-kind">{categoryName(thread.category)}</span>
-									<span class="forum-title">{thread.title}</span>
-									<span class="forum-arrow" aria-hidden="true">
-										→
+				<div class="forum-app" data-forum-app data-forum-prompts={JSON.stringify(prompts)}>
+					<div class="forum-bar" aria-hidden="true">
+						<i></i>
+						<i></i>
+						<i></i>
+						<span>{t('forum.window', { name: site.name })}</span>
+					</div>
+
+					<div class="forum-tabs" role="group" aria-label={t('forum.filters')}>
+						{chips.map((chip) => (
+							<button
+								type="button"
+								class="forum-chip"
+								data-forum-chip={chip.id}
+								aria-pressed={chip.id === ALL ? 'true' : 'false'}
+								disabled={chip.count === 0}
+							>
+								{chip.name}
+								<span class="ct">{chip.count}</span>
+							</button>
+						))}
+					</div>
+					<p class="sr-only" aria-live="polite" data-forum-status data-template={t('forum.shown')}></p>
+
+					<div class="forum-compose">
+						<div class="field">
+							<span class="typed" data-forum-typed aria-hidden="true">
+								{prompts[0]}
+							</span>
+							{forum.url && <span class="caret" aria-hidden="true" />}
+							{/* The link covers the field and holds only its name, so the typing never has to match it. */}
+							{forum.url && (
+								<a class="field-link" href={forum.url} target="_blank" rel="me noopener">
+									<span class="sr-only">
+										{t('forum.compose')} {t('newTab')}
 									</span>
-									<span class="sr-only">{t('newTab')}</span>
 								</a>
-							) : (
-								<div class="forum-link">
-									<span class="forum-kind">{categoryName(thread.category)}</span>
-									<span class="forum-title">{thread.title}</span>
-								</div>
 							)}
-						</li>
-					))}
-				</ul>
-				{forum.url && (
-					<Button href={forum.url} variant="ghost" external>
-						{t('forum.seeAll')}
-					</Button>
-				)}
+						</div>
+						{forum.url && (
+							<a class="new" href={forum.url} target="_blank" rel="me noopener">
+								{t('forum.new')}
+								<span class="sr-only">{t('newTab')}</span>
+							</a>
+						)}
+					</div>
+
+					<ul class="forum-list" aria-label={t('forum.threads')}>
+						{threads.map((thread) => {
+							const kind = categoryName(thread.category);
+							return (
+								<li data-forum-row={thread.category}>
+									{forum.url ? (
+										<a class="forum-link" href={forum.url} target="_blank" rel="me noopener" data-k={thread.category}>
+											<span class="av" aria-hidden="true">
+												{kind.charAt(0)}
+											</span>
+											<span class="forum-title">{thread.title}</span>
+											<span class="forum-kind">{kind}</span>
+											<span class="forum-arrow" aria-hidden="true">
+												→
+											</span>
+											<span class="sr-only">{t('newTab')}</span>
+										</a>
+									) : (
+										<div class="forum-link" data-k={thread.category}>
+											<span class="av" aria-hidden="true">
+												{kind.charAt(0)}
+											</span>
+											<span class="forum-title">{thread.title}</span>
+											<span class="forum-kind">{kind}</span>
+										</div>
+									)}
+								</li>
+							);
+						})}
+					</ul>
+
+					{forum.url ? (
+						<a class="forum-foot" href={forum.url} target="_blank" rel="me noopener">
+							<small>{stats}</small>
+							<span class="go">
+								{t('forum.seeAll')}
+								<i aria-hidden="true">→</i>
+							</span>
+							<span class="sr-only">{t('newTab')}</span>
+						</a>
+					) : (
+						<p class="forum-foot">
+							<small>{stats}</small>
+						</p>
+					)}
+				</div>
 			</div>
 
 			<section class="forum-door" aria-labelledby="forum-signin">
@@ -58,6 +143,19 @@ const categoryName = (id: string) => forum.categories.find((category) => categor
 						{t('forum.signin.title')}
 					</h3>
 					<p class="forum-door-text">{t('forum.signin.text')}</p>
+					<ol class="door-perks">
+						{(['forum.perk.1', 'forum.perk.2', 'forum.perk.3'] as const).map((key, index) => (
+							<li>
+								<b aria-hidden="true">{String(index + 1).padStart(2, '0')}</b>
+								{t(key)}
+							</li>
+						))}
+					</ol>
+					<ul class="door-cats" aria-label={t('forum.filters')}>
+						{forum.categories.map((category) => (
+							<li data-k={category.id}>{category.name}</li>
+						))}
+					</ul>
 				</div>
 				<div class="forum-door-perf" aria-hidden="true"></div>
 				<div class="forum-door-stub">
@@ -94,99 +192,7 @@ const categoryName = (id: string) => forum.categories.find((category) => categor
 	</div>
 </section>
 
-<style>
-	/* The thread titles sit beside the taller sign-in card; the button at the bottom of their column fills the height. */
-	.forum-teaser {
-		display: grid;
-		gap: 2rem;
-		align-items: stretch;
-	}
-
-	@media (min-width: 64rem) {
-		.forum-teaser {
-			grid-template-columns: minmax(0, 1fr) 23.75rem;
-			gap: 3rem;
-		}
-	}
-
-	.forum-threads {
-		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-		min-width: 0;
-	}
-
-	.forum-threads :global(.btn) {
-		align-self: flex-start;
-		margin-top: auto;
-	}
-
-	.forum-list {
-		list-style: none;
-		border-top: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
-	}
-
-	.forum-list li {
-		border-bottom: 1px solid color-mix(in oklab, var(--color-sky) 24%, transparent);
-	}
-
-	.forum-link {
-		display: grid;
-		grid-template-columns: 7.5rem minmax(0, 1fr) auto;
-		gap: 1.5rem;
-		align-items: baseline;
-		padding: 1.25rem 0;
-		color: var(--color-ink);
-		text-decoration: none;
-	}
-
-	.forum-kind {
-		font-family: var(--font-mono);
-		font-size: var(--text-label);
-		color: var(--color-mist);
-	}
-
-	.forum-title {
-		font-size: var(--text-lead);
-		font-stretch: 112%;
-		font-weight: 700;
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-		overflow-wrap: anywhere;
-	}
-
-	.forum-arrow {
-		color: var(--color-mist);
-		transition: color 0.15s;
-	}
-
-	a.forum-link:hover .forum-title,
-	a.forum-link:focus-visible .forum-title {
-		text-decoration: underline;
-		text-decoration-color: var(--color-sky);
-		text-decoration-thickness: 2px;
-		text-underline-offset: 0.22em;
-	}
-
-	a.forum-link:hover .forum-arrow,
-	a.forum-link:focus-visible .forum-arrow {
-		color: var(--color-sky);
-	}
-
-	a.forum-link:focus-visible {
-		outline: 2px solid var(--color-sky);
-		outline-offset: 2px;
-	}
-
-	/* On a phone the category sits above the title, so the arrow stays beside the title. */
-	@media (max-width: 39.9375rem) {
-		.forum-link {
-			grid-template-columns: minmax(0, 1fr) auto;
-			gap: 0.25rem 1rem;
-		}
-
-		.forum-kind {
-			grid-column: 1 / -1;
-		}
-	}
-</style>
+<script>
+	// Pages without the window never download the script.
+	if (document.querySelector('[data-forum-app]')) void import('../scripts/forum-window');
+</script>

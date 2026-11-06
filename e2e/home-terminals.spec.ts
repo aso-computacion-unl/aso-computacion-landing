@@ -87,18 +87,18 @@ test.describe('forum teaser', () => {
 		}
 	});
 
-	test('keeps the arrow beside the title on a phone', async ({ page }) => {
+	test('on a phone a thread is its avatar beside the title, with the category under it and no arrow', async ({
+		page,
+	}) => {
 		await page.setViewportSize({ width: 390, height: 800 });
 		await page.goto('/');
 		const row = page.locator('#foro .forum-link').first();
+		const avatar = await row.locator('.av').boundingBox();
 		const title = await row.locator('.forum-title').boundingBox();
 		const kind = await row.locator('.forum-kind').boundingBox();
-		expect(title && kind && kind.y + kind.height <= title.y + 1).toBe(true);
-		const arrow = row.locator('.forum-arrow');
-		if ((await arrow.count()) > 0) {
-			const box = await arrow.boundingBox();
-			expect(title && box && box.y < title.y + title.height).toBe(true);
-		}
+		expect(avatar && title && avatar.x + avatar.width <= title.x).toBe(true);
+		expect(title && kind && kind.y >= title.y + title.height - 1).toBe(true);
+		await expect(row.locator('.forum-arrow')).toBeHidden();
 	});
 
 	test.describe('without JS', () => {
