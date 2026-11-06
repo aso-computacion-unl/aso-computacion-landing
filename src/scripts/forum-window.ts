@@ -42,7 +42,7 @@ export function nextFrame({ line, chars, deleting }: TypeState, lines: readonly 
 	return { text, delay: TYPE_MS, state: { line: (line + 1) % lines.length, chars: 0, deleting: false } };
 }
 
-function initFilters(app: HTMLElement) {
+export function initFilters(app: HTMLElement) {
 	const chips = Array.from(app.querySelectorAll<HTMLButtonElement>('[data-forum-chip]'));
 	const rows = Array.from(app.querySelectorAll<HTMLElement>('[data-forum-row]'));
 	const status = app.querySelector<HTMLElement>('[data-forum-status]');
@@ -61,7 +61,7 @@ function initFilters(app: HTMLElement) {
 	chips.forEach((chip) => chip.addEventListener('click', () => select(chip)));
 }
 
-function initTyping(app: HTMLElement) {
+export function initTyping(app: HTMLElement) {
 	const target = app.querySelector<HTMLElement>('[data-forum-typed]');
 	if (!target) return;
 	let lines: string[] = [];
