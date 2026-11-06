@@ -15,7 +15,7 @@ import {
 	type StaticSite,
 } from './support/admin-site';
 
-// The two small moments from the degree (networks in the hero, hacking in the Novedades title). They need an admin
+// The hero's official logo and the small moment from the degree (hacking in the Novedades title). They need an admin
 // with tickets and news, so the build is a real one against a mock. Each one is quiet: nothing runs under reduced motion, and the page never shifts while one plays.
 test.describe.configure({ mode: 'serial' });
 
@@ -76,61 +76,46 @@ test.describe('moments from the degree', () => {
 		await Promise.all([site?.close(), admin?.close()]);
 	});
 
-	test.describe('networks (hero)', () => {
+	test.describe('official logo (hero)', () => {
 		test.use({ viewport: { width: 1440, height: 900 } });
 
-		test('draws a graph behind the shortcuts and sends packets down it, with a ping readout', async ({ page }) => {
+		test('there is no ping network: the round logo sits beside the headline and its outline draws itself', async ({
+			page,
+		}) => {
 			await open(page, `${site.url}/`);
-			await expect(page.locator('[data-net] svg .net-node')).not.toHaveCount(0);
-			await expect(page.locator('[data-net] svg .net-edge')).toHaveCount(1);
-			await expect(page.locator('[data-net] .net-packet').first()).toBeAttached({ timeout: 6000 });
-			await expect(page.locator('[data-net]')).toHaveAttribute('aria-hidden', 'true');
-			await expect
-				.poll(() => page.locator('[data-net-say]').textContent(), { timeout: 12_000 })
-				.toMatch(/^64 bytes de /);
-		});
-
-		test('puts the nodes that receive the packets right above the shortcuts', async ({ page }) => {
-			await open(page, `${site.url}/`);
-			const hosts = await page.evaluate(() => {
-				const net = document.querySelector('[data-net]')!.getBoundingClientRect();
-				const nodes = [...document.querySelectorAll('[data-net] .net-node')].slice(-3);
-				const gates = [...document.querySelectorAll('[data-net-name]')];
-				return gates.map((gate, index) => {
-					const g = gate.getBoundingClientRect();
-					const n = nodes[index].getBoundingClientRect();
-					return {
-						dx: Math.abs(n.left + n.width / 2 - (g.left + g.width / 2)),
-						above: g.top - (n.top + n.height / 2) > 0,
-						inside: n.top >= net.top,
-					};
-				});
+			await expect(page.locator('[data-net]')).toHaveCount(0);
+			await expect(page.locator('[data-hero-logo]')).toHaveAttribute('aria-hidden', 'true');
+			const mark = page.locator('.theme-light-only[data-hero-logo-mark]');
+			await expect(mark).toBeVisible();
+			const box = await page.evaluate(() => {
+				const logo = document.querySelector('[data-hero-logo]')!.getBoundingClientRect();
+				const title = document.querySelector('.hero-title')!.getBoundingClientRect();
+				return { right: logo.left >= title.right - 1, overlap: logo.top < title.bottom && logo.bottom > title.top };
 			});
-			for (const host of hosts) {
-				expect(host.dx).toBeLessThan(2);
-				expect(host.above).toBe(true);
-				expect(host.inside).toBe(true);
-			}
+			expect(box).toEqual({ right: true, overlap: true });
+			await expect
+				.poll(
+					() =>
+						page.evaluate(() =>
+							[...document.querySelectorAll('[data-iso-ghost] path')].map((p) => getComputedStyle(p).strokeDashoffset),
+						),
+					{ timeout: 6000 },
+				)
+				.toEqual(expect.arrayContaining(['0px']));
 		});
 
-		test('with reduced motion the graph is drawn and nothing travels', async ({ browser }) => {
+		test('with reduced motion the logo and its outline are simply there', async ({ browser }) => {
 			const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
 			const page = await context.newPage();
 			await open(page, `${site.url}/`);
-			await expect(page.locator('[data-net] svg .net-node')).not.toHaveCount(0);
-			await page.waitForTimeout(3500);
-			await expect(page.locator('[data-net] .net-packet')).toHaveCount(0);
+			const mark = page.locator('.theme-light-only[data-hero-logo-mark]');
+			await expect(mark).toBeVisible();
+			expect(await mark.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+			const offsets = await page.evaluate(() =>
+				[...document.querySelectorAll('[data-iso-ghost] path')].map((p) => getComputedStyle(p).strokeDashoffset),
+			);
+			expect(offsets.every((offset) => offset === '0px')).toBe(true);
 			await context.close();
-		});
-	});
-
-	test.describe('on a narrower screen', () => {
-		test.use({ viewport: { width: 1024, height: 800 } });
-
-		test('there is no graph: it is hidden and never drawn', async ({ page }) => {
-			await open(page, `${site.url}/`);
-			await expect(page.locator('[data-net]')).toBeHidden();
-			await expect(page.locator('[data-net] svg')).toHaveCount(0);
 		});
 	});
 

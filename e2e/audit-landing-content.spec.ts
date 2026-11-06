@@ -189,14 +189,15 @@ test.describe('hostile content', () => {
 		});
 	}
 
-	test("Nosotros says the admin's about text, in the statement's place, in a smaller size when it is long", async ({
-		page,
-	}) => {
+	test("Nosotros keeps the manifesto then the tiles and never prints the admin's about text", async ({ page }) => {
 		await open(page, `${site.url}/`);
-		const statement = page.locator('#nosotros .about-statement');
-		await expect(statement).toContainText(sentence(TEXT).slice(0, 80));
-		await expect(statement).not.toContainText('Representamos a quienes estudian');
-		await expect(statement).toHaveClass(/is-long/);
+		const section = page.locator('#nosotros');
+		// S4: the statement and the facts were removed from the home, so long or hostile about text has no place in it.
+		await expect(section.locator('.about-statement')).toHaveCount(0);
+		expect(await section.innerText()).not.toContain(sentence(TEXT).slice(0, 80));
+		const manifesto = await section.locator('[data-manifesto]').boundingBox();
+		const tiles = await section.locator('.bento').boundingBox();
+		expect(manifesto && tiles && manifesto.y < tiles.y).toBe(true);
 	});
 
 	test('images that never load do not break the layout or the console contract', async ({ page }) => {

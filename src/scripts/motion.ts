@@ -6,12 +6,17 @@
 //   - Page: rails draw with a travelling cursor, nodes pop, cards slide in,
 //     the Nosotros manifesto rises line by line while one word rotates, bento tiles and join reasons rise, the
 //     collage rows slide against each other, board cards stagger up, the ribbon reacts to scroll velocity.
+//   - Editorial layer (editorial-motion.ts): the hero letters rise while the round logo rolls in and its isotype outline
+//     draws itself, headings rise word by word, tickets are dealt in, news and the forum window enter, buttons lean toward
+//     a fine pointer, and the footer logo turns once as the page ends.
 // Everything is visible without JS. The pre-motion state lives behind `html.motion` (set in Layout, removed
 // when motion is reduced or this script fails), so reduced motion gets no sticky run and no movement at all.
 // Loading: GSAP and ScrollTrigger are fetched after the first paint, once the browser is idle, and never under reduced
-// motion; Lenis only where a mouse is the main input (see motion-policy.ts).
+// motion; Lenis only where a mouse is the main input (see motion-policy.ts); SplitText (letters and words) rides along in
+// the same fetch and is optional: without it the text just shows.
 
 import type { gsap } from 'gsap';
+import { initEditorial } from './editorial-motion';
 import { planMotion, readMotionEnv, type MotionPlan } from './motion-policy';
 
 const root = document.documentElement;
@@ -81,12 +86,17 @@ const qa = <T extends Element>(selector: string, scope: ParentNode = document) =
 	Array.from(scope.querySelectorAll<T>(selector));
 
 async function init(plan: MotionPlan) {
-	const [{ gsap }, { ScrollTrigger }, lenisModule] = await Promise.all([
+	const [{ gsap }, { ScrollTrigger }, lenisModule, SplitText] = await Promise.all([
 		import('gsap'),
 		import('gsap/ScrollTrigger'),
 		plan.lenis ? import('lenis') : null,
+		import('gsap/SplitText').then(
+			(module) => module.SplitText,
+			() => null,
+		),
 	]);
 	gsap.registerPlugin(ScrollTrigger);
+	if (SplitText) gsap.registerPlugin(SplitText);
 	ScrollTrigger.config({ ignoreMobileResize: true });
 
 	if (lenisModule) {
@@ -375,9 +385,9 @@ async function init(plan: MotionPlan) {
 				gsap.to(batch, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.14 }),
 			);
 
-			// Outline words drift against the scroll; on a phone the travel is halved so they stay inside the column.
+			// The tile words drift against the scroll; on a phone the travel is halved so they stay inside the column.
 			const drift = full ? 36 : 18;
-			qa<HTMLElement>('[data-outline]').forEach((word) => {
+			qa<HTMLElement>('[data-word]').forEach((word) => {
 				gsap.fromTo(
 					word,
 					{ x: drift },
@@ -457,6 +467,8 @@ async function init(plan: MotionPlan) {
 			return () => cleanups.forEach((off) => off());
 		},
 	);
+
+	initEditorial({ gsap, ScrollTrigger, SplitText, plan, reveal });
 
 	const refresh = () => ScrollTrigger.refresh();
 	window.addEventListener('load', refresh);

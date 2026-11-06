@@ -72,5 +72,5 @@ history
 	?.querySelector('[data-history-more]')
 	?.addEventListener('toggle', () => window.dispatchEvent(new Event('aso:relayout')));
 
-// The two moments from the degree (networks, hacking) load only on a page that has one.
-if (document.querySelector('[data-net], [data-decrypt]')) void import('./moments');
+// The moment from the degree (hacking) loads only on a page that has one.
+if (document.querySelector('[data-decrypt]')) void import('./moments');

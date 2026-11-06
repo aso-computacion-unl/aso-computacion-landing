@@ -2,6 +2,7 @@
 //   - Reduced motion: nothing is loaded (no GSAP, no ScrollTrigger, no Lenis); the page is static.
 //   - Otherwise GSAP + ScrollTrigger run the scroll choreography on every device.
 //   - Lenis (smooth scroll) only where a mouse is the main input; touch scrolling stays native.
+//   - Magnetic buttons (they lean toward the pointer) wherever there is a fine pointer to lean toward.
 
 export const MOTION_QUERIES = {
 	reducedMotion: '(prefers-reduced-motion: reduce)',
@@ -18,11 +19,12 @@ export interface MotionEnv {
 export interface MotionPlan {
 	gsap: boolean;
 	lenis: boolean;
+	magnetic: boolean;
 }
 
 export function planMotion({ reducedMotion, finePointer, hoverCapable }: MotionEnv): MotionPlan {
-	if (reducedMotion) return { gsap: false, lenis: false };
-	return { gsap: true, lenis: finePointer && hoverCapable };
+	if (reducedMotion) return { gsap: false, lenis: false, magnetic: false };
+	return { gsap: true, lenis: finePointer && hoverCapable, magnetic: finePointer };
 }
 
 export function readMotionEnv(match: (query: string) => { matches: boolean }): MotionEnv {
