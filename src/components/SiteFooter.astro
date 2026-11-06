@@ -95,7 +95,8 @@ const [before, after] = t('footer.madeBy').split('{name}');
 		height: auto;
 	}
 
-	/* The wordmark is Audiowide, the brand face; it shrinks to fit the row so a phone never scrolls sideways. */
+	/* The wordmark is Audiowide, the brand face; it shrinks to fit the row so a phone never scrolls sideways. Its size is a
+	   fixed share of the section-title role on purpose: the nearest scale roles are too big for the row at 320px. */
 	.foot-word {
 		min-width: 0;
 		font-family: var(--font-brand);

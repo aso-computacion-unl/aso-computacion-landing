@@ -107,8 +107,11 @@ test.describe('tickets', () => {
 		await next.click();
 		await expect(prev).toBeEnabled();
 		await expect(count).not.toHaveText(/^01–/);
-		for (let i = 0; i < 6 && (await next.isEnabled()); i++) await next.click();
-		await expect(next).toBeDisabled();
+		// The strip scrolls smoothly, so each click is retried until the strip has reached its end.
+		await expect(async () => {
+			if (await next.isEnabled()) await next.click();
+			await expect(next).toBeDisabled({ timeout: 500 });
+		}).toPass({ timeout: 10_000 });
 		await expect(count).toHaveText(/^0[1-6]–06 de 06$/);
 		const bar = await ui.locator('[data-rail-bar]').evaluate((el) => getComputedStyle(el).transform);
 		expect(bar === 'none' || bar.startsWith('matrix(1,')).toBe(true);
@@ -254,6 +257,7 @@ test.describe('forum window', () => {
 		await open(page);
 		const link = page.locator('#foro .field-link');
 		await link.scrollIntoViewIfNeeded();
+		// A script-driven focus only matches :focus-visible once the keyboard has been used, hence the Tab first.
 		await page.keyboard.press('Tab');
 		await link.focus();
 		const ring = await link.evaluate((el) => {

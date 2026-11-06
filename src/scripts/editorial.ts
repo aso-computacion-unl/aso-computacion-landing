@@ -1,4 +1,4 @@
-// Pure helpers of the editorial motion layer (the choreography itself lives in motion.ts).
+// Pure helpers of the editorial motion layer (the choreography itself lives in editorial-motion.ts).
 
 // How far a card dealt in leans before it settles, in degrees: alternating sides, small enough to read as a card.
 export const DEAL_TILTS = [-3, 2, -1.5];

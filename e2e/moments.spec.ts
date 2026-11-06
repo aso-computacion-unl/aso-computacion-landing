@@ -101,7 +101,7 @@ test.describe('moments from the degree', () => {
 						),
 					{ timeout: 6000 },
 				)
-				.toEqual(expect.arrayContaining(['0px']));
+				.toEqual(['0px', '0px']);
 		});
 
 		test('with reduced motion the logo and its outline are simply there', async ({ browser }) => {

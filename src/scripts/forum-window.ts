@@ -32,7 +32,8 @@ const TYPE_MS = 42;
 const ERASE_MS = 18;
 const HOLD_MS = 1600;
 
-// One step of the composer's typing: type a line, hold it, erase it twice as fast as it was typed, go to the next.
+// One step of the composer's typing: type a line a character at a time, hold it, erase it two characters per step (about
+// four and a half times as fast per character: 18 ms for two against 42 ms for one), go to the next.
 export function nextFrame({ line, chars, deleting }: TypeState, lines: readonly string[]): TypeFrame {
 	const current = lines[line] ?? '';
 	const text = current.slice(0, chars);

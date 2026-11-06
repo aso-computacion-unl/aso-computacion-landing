@@ -1582,25 +1582,25 @@
 		inset: 0;
 	}
 
-	/* The sky tile is the single bright relief of the grid. */
-	/* A deep blue, the same in both themes, so the white word and text keep their contrast. */
+	/* The sky tile is the single bright relief of the grid: a deep blue, the same in both themes, so the white word and text
+	   keep their contrast (the editorial roles in sections.css). */
 	.tile-2 {
-		background: #0a6f9e;
+		background: var(--ed-sky-paper);
 	}
 
 	/* APOYO reads white on its blue tile (the approved artboard). */
 	.tile-2 .tile-word {
-		color: #fff;
+		color: var(--ed-on-accent);
 	}
 
 	.tile-2 .tile-title,
 	.tile-2 .tile-text {
-		color: #fff;
+		color: var(--ed-on-accent);
 	}
 
 	.tile-2 .demo-tag {
-		border-color: color-mix(in srgb, #fff 60%, transparent);
-		color: #fff;
+		border-color: color-mix(in srgb, var(--ed-on-accent) 60%, transparent);
+		color: var(--ed-on-accent);
 	}
 
 	@media (min-width: 64rem) {
