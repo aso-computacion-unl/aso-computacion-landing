@@ -18,6 +18,7 @@ const split = (stamp: string) => {
 	const [big, ...rest] = stamp.trim().split(/\s+/);
 	return { big, rest: rest.join(' ') };
 };
+const posts = latestNews.map((item) => ({ item, when: split(item.stamp) }));
 ---
 
 <section id="novedades" class="deep bg-navy-deep py-section">
@@ -29,13 +30,13 @@ const split = (stamp: string) => {
 		</SectionHead>
 
 		<ul class="news-list mt-head">
-			{latestNews.map((item, index) => (
+			{posts.map(({ item, when }, index) => (
 				<li>
 					<a class="news-link" href={item.href}>
 						<span class="news-head">
 							<time class="news-when" datetime={item.date}>
-								<b>{split(item.stamp).big}</b>
-								<span>{split(item.stamp).rest}</span>
+								<b>{when.big}</b>
+								<span>{when.rest}</span>
 							</time>
 							{index === 0 && <span class="news-new">{t('news.new')}</span>}
 						</span>

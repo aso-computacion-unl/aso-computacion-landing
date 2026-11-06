@@ -9,7 +9,7 @@ import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
-import { padCount, shouldRail } from '../scripts/ticket-rail';
+import { RAIL_MIN, padCount, shouldRail } from '../scripts/ticket-rail';
 import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 import Ticket from './Ticket.astro';
@@ -26,10 +26,10 @@ const head = {
 };
 const live = tickets.some((ticket) => ticket.mode !== 'free');
 const rail = shouldRail(tickets.length);
-// What the counter says before the script measures the strip: the first three of them.
+// What the counter says before the script measures the strip: the first row (one ticket fewer than a rail needs).
 const firstPage = t('ticket.rail.range', {
 	from: padCount(1),
-	to: padCount(Math.min(3, tickets.length)),
+	to: padCount(Math.min(RAIL_MIN - 1, tickets.length)),
 	total: padCount(tickets.length),
 });
 ---

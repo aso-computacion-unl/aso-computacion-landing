@@ -1,7 +1,7 @@
-/* Editorial section layer (S5 tickets, S6 news front page, S7 forum window). Owned by T3-T5 of
-   odd/tasks/landing-editorial.md. Unlayered on purpose: it sits on top of the component rules in global.css, which are
-   layered, so nothing here needs !important. Surfaces take the theme roles (--color-*) so both themes stay readable; the
-   ticket paper and the sign-in ticket are paper in both themes, so those use the paper roles. */
+/* Editorial section layer (S5 tickets, S6 news front page, S7 forum window). Unlayered on purpose: it sits on top of the
+   component rules in global.css, which are layered, so nothing here needs !important. Surfaces take the theme roles
+   (--color-*) so both themes stay readable; the ticket paper and the sign-in ticket are paper in both themes, so those use
+   the paper roles. */
 
 :root {
 	/* The official isotype (the two shards), as a mask for the watermarks. */
