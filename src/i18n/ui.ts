@@ -86,9 +86,6 @@ const es = {
 	'ticket.calendarShort': 'Guardar fecha',
 	'ticket.calendarApps': 'Google · Apple · Outlook',
 	'ticket.calendarTitle': 'Descarga un archivo .ics que abre tu app de calendario',
-	'ticket.rail.prev': 'Boletos anteriores',
-	'ticket.rail.next': 'Boletos siguientes',
-	'ticket.rail.range': '{from}–{to} de {total}',
 
 	'news.title': 'Novedades',
 	'news.eyebrow': 'Lo último',
@@ -251,9 +248,6 @@ const en: Record<keyof typeof es, string> = {
 	'ticket.calendarShort': 'Save date',
 	'ticket.calendarApps': 'Google · Apple · Outlook',
 	'ticket.calendarTitle': 'Downloads an .ics file that opens in your calendar app',
-	'ticket.rail.prev': 'Previous tickets',
-	'ticket.rail.next': 'Next tickets',
-	'ticket.rail.range': '{from}–{to} of {total}',
 
 	'news.title': 'News',
 	'news.eyebrow': 'The latest',
