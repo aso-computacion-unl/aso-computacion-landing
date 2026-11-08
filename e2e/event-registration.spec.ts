@@ -19,7 +19,7 @@ import {
 } from './support/admin-site';
 
 // Real builds of the landing against a mock admin (S8): the per-event tickets, whose only action links to the admin's
-// event page (`/foro/eventos/<slug>`, for both registration modes: the landing has no form), the live seats, the .ics
+// event page (`/inscripciones/<slug>`, for both registration modes: the landing has no form), the live seats, the .ics
 // link and the Event structured data. One file, serial: the builds share Astro's cache, so they must not overlap.
 test.describe.configure({ mode: 'serial' });
 test.use({ reducedMotion: 'reduce' });
@@ -63,9 +63,9 @@ const registrationContent = (admin: string) =>
 				structuredData: schedule(30),
 			}),
 			event('charla-unl', 'Charla con cuenta UNL', 35, {
-				registration: unlRegistration({ url: `${admin}/foro/eventos/charla-unl` }),
+				registration: unlRegistration({ url: `${admin}/inscripciones/charla-unl` }),
 				calendarUrl: calendar(admin, 'charla-unl'),
-				structuredData: schedule(35, { registrationUrl: `${admin}/foro/eventos/charla-unl`, location: 'Auditorio' }),
+				structuredData: schedule(35, { registrationUrl: `${admin}/inscripciones/charla-unl`, location: 'Auditorio' }),
 			}),
 			event('taller-libre', 'Taller libre', 40, {
 				calendarUrl: calendar(admin, 'taller-libre'),
@@ -109,7 +109,7 @@ const foreignContent = (admin: string) => {
 			...item,
 			registration: item.registration && {
 				...item.registration,
-				url: item.registration.url && `${EVIL}/foro/eventos/${item.slug}`,
+				url: item.registration.url && `${EVIL}/inscripciones/${item.slug}`,
 				endpoint: item.registration.endpoint && `${EVIL}/api/public/events/${item.slug}/registrations`,
 			},
 			calendarUrl: item.calendarUrl && `${EVIL}/api/public/events/${item.slug}/calendar.ics`,
@@ -128,7 +128,7 @@ const card = (page: Page, slug: string) => page.locator(`#evento-${slug}`);
 // The ticket of an activity in the Inscripciones section; its action is the link to the admin's event page.
 const ticket = (page: Page, slug: string) => page.locator(`#inscripciones-${slug}`);
 const action = (page: Page, slug = 'taller-abierto') => ticket(page, slug).locator('[data-reg-action]');
-const eventPage = (admin: MockAdmin, slug: string) => `${admin.url}/foro/eventos/${slug}`;
+const eventPage = (admin: MockAdmin, slug: string) => `${admin.url}/inscripciones/${slug}`;
 
 const ldEvents = async (page: Page) => {
 	const texts = await page.locator('script[type="application/ld+json"]').allTextContents();

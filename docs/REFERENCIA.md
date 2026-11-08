@@ -230,14 +230,14 @@ non-public Cloudflare Pages project.
 ### Event registration
 
 Which way an event takes sign-ups is decided in the admin (`registration.mode`); **the sign-up itself happens on the
-admin's event page, `<admin>/foro/eventos/<slug>`**, for both modes. The landing has no registration form: it shows the
+admin's event page, `<admin>/inscripciones/<slug>`**, for both modes. The landing has no registration form: it shows the
 ticket and links there. Everything below applies to **upcoming** events (dated today or later, Ecuador time): a past event
 shows no registration, no calendar link and no structured data.
 
 | Admin says | The ticket (Inscripciones) shows |
 | --- | --- |
 | `registration: null` (mode none, or an older admin) | A **pase libre**: no seats, no action, only its calendar link. |
-| `mode: "unl"` | "Boleto 00N", "Con cuenta UNL" and the action "Inscribirme" to `<admin>/foro/eventos/<slug>` (same tab). The student signs in with their UNL account there. |
+| `mode: "unl"` | "Boleto 00N", "Con cuenta UNL" and the action "Inscribirme" to `<admin>/inscripciones/<slug>` (same tab). The student signs in with their UNL account there. |
 | `mode: "open"` | The same ticket, "Con formulario": the action goes to the same page, where the open form (name, email, career, semester, Turnstile) lives. |
 | `capacity`, `deadline` | The capacity before the seats arrive, and "Cierra en N días · <date> (hora de Ecuador)" (or "Sin fecha límite"). |
 | a `deadline` already passed at build time, or by the visitor's clock | "Inscripciones cerradas" and an action that goes nowhere (`aria-disabled`, no `href`). The page is built ahead of time, so `src/scripts/ticket-deadline.ts` checks again in the browser. |
@@ -372,7 +372,7 @@ These build the site again against a mock admin (`e2e/support/admin-site.ts`, in
 - `event-registration.spec.ts`: a mock admin that also answers the seats endpoint (`page.route`; no spec
   reaches Cloudflare or a real admin). It covers what each event shows (the ticket for each mode, a free pass, closed at
   build time, expired in the browser via `page.clock`, past, English), that every ticket links to
-  `<admin>/foro/eventos/<slug>` and no page carries a form, a Turnstile reference or a script for one, that the links of a
+  `<admin>/inscripciones/<slug>` and no page carries a form, a Turnstile reference or a script for one, that the links of a
   ticket carry the activity in their name, the live seats (one plain GET without credentials, N of M and the meter, the
   singular, full, closed, no capacity, an answer that is not the contract, offline, slow, no change of height), the `.ics`
   links, the `Event` JSON-LD and its offers, an admin without the S8 keys, links on another origin (left out, build warning)

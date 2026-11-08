@@ -46,7 +46,7 @@ const content = (admin: string) => {
 				}),
 			}),
 			event('hackathon-unl', 'Hackathon UNL', 30, {
-				registration: unlRegistration({ url: `${admin}/foro/eventos/hackathon-unl` }),
+				registration: unlRegistration({ url: `${admin}/inscripciones/hackathon-unl` }),
 			}),
 		],
 		news: [newsItem({ cover: null }), newsItem({ slug: 'otra', title: 'Otra novedad', cover: null })],

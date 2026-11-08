@@ -70,7 +70,7 @@ const hostile = (admin: string): PublicContent =>
 			event('titulo-largo', sentence(TITLE), 12, {
 				description: sentence(TEXT),
 				lugar: sentence(SHORT),
-				registration: unlRegistration({ url: `${admin}/foro/eventos/titulo-largo` }),
+				registration: unlRegistration({ url: `${admin}/inscripciones/titulo-largo` }),
 				photos: [image({ url: BROKEN, alt: 'Foto que no carga' })],
 			}),
 			event('sin-foto', 'Evento sin foto', 14, { photos: [] }),
