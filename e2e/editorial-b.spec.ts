@@ -10,10 +10,9 @@ import {
 	type StaticSite,
 } from './support/admin-site';
 
-// The editorial sections of the home (S5 tickets and rail, S6 news front page, S7 forum window), against a real build
-// with a mock admin: six upcoming events (so the rail), three news posts and an admin origin (so the forum links out).
-// The committed fallback build (the default webServer) covers the other side: three tickets stay a grid. One build,
-// serial, like the other specs that build.
+// The editorial sections of the home (S5 ticket strips, S6 news front page, S7 forum window), against a real build
+// with a mock admin: six upcoming events (so a long list of strips), three news posts and an admin origin (so the forum
+// links out). One build, serial, like the other specs that build.
 test.describe.configure({ mode: 'serial' });
 
 const DAY = 86_400_000;
@@ -89,32 +88,21 @@ const noSideScroll = async (page: Page) => {
 test.describe('tickets', () => {
 	test.use({ reducedMotion: 'reduce' });
 
-	test('more than three become a rail with arrows, a live counter and a progress bar', async ({ page }) => {
+	test('six tickets are six strips in one list: no rail, no arrows, nothing to scroll sideways', async ({ page }) => {
 		await open(page);
 		const list = page.locator('#inscripciones .tk-list');
-		await expect(list).toHaveClass(/is-rail/);
 		await expect(list.locator('.tk-item')).toHaveCount(6);
-
-		const ui = page.locator('#inscripciones .tk-rail-ui');
-		const count = ui.locator('[data-rail-count]');
-		const prev = ui.getByRole('button', { name: 'Boletos anteriores' });
-		const next = ui.getByRole('button', { name: 'Boletos siguientes' });
-		await expect(ui).toBeVisible();
-		await expect(count).toHaveText(/^01–0[1-3] de 06$/);
-		await expect(prev).toBeDisabled();
-		await expect(next).toBeEnabled();
-
-		await next.click();
-		await expect(prev).toBeEnabled();
-		await expect(count).not.toHaveText(/^01–/);
-		// The strip scrolls smoothly, so each click is retried until the strip has reached its end.
-		await expect(async () => {
-			if (await next.isEnabled()) await next.click();
-			await expect(next).toBeDisabled({ timeout: 500 });
-		}).toPass({ timeout: 10_000 });
-		await expect(count).toHaveText(/^0[1-6]–06 de 06$/);
-		const bar = await ui.locator('[data-rail-bar]').evaluate((el) => getComputedStyle(el).transform);
-		expect(bar === 'none' || bar.startsWith('matrix(1,')).toBe(true);
+		await expect(page.locator('#inscripciones .tk-rail-ui, #inscripciones [data-rail]')).toHaveCount(0);
+		const boxes = await list.locator('.tk').evaluateAll((strips) =>
+			strips.map((strip) => {
+				const { x, y, width } = strip.getBoundingClientRect();
+				return { x: Math.round(x), y, width: Math.round(width) };
+			}),
+		);
+		expect(new Set(boxes.map((box) => box.x)).size).toBe(1);
+		expect(new Set(boxes.map((box) => box.width)).size).toBe(1);
+		expect(boxes.map((box) => box.y)).toEqual([...boxes.map((box) => box.y)].sort((a, b) => a - b));
+		expect(await list.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
 	});
 
 	test('rotates the accent sky, signal, navy over the tickets', async ({ page }) => {
@@ -123,10 +111,10 @@ test.describe('tickets', () => {
 			.locator('#inscripciones .tk-item')
 			.evaluateAll((items) => items.map((i) => i.getAttribute('data-acc')));
 		expect(accents).toEqual(['0', '1', '2', '0', '1', '2']);
-		const bands = await page
-			.locator('#inscripciones .tk-body')
-			.evaluateAll((bodies) => bodies.slice(0, 3).map((b) => getComputedStyle(b).borderTopColor));
-		expect(new Set(bands).size).toBe(3);
+		const stubs = await page
+			.locator('#inscripciones .tk-date')
+			.evaluateAll((dates) => dates.slice(0, 3).map((d) => getComputedStyle(d).backgroundColor));
+		expect(new Set(stubs).size).toBe(3);
 	});
 
 	test('names the calendar link for what it does and keeps ".ics" in the title', async ({ page }) => {
@@ -142,7 +130,6 @@ test.describe('tickets', () => {
 		await page.setViewportSize({ width: 390, height: 800 });
 		await open(page);
 		await noSideScroll(page);
-		await expect(page.locator('#inscripciones .tk-rail-ui')).toBeVisible();
 	});
 });
 

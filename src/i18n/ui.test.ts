@@ -30,9 +30,7 @@ describe('editorial sections copy', () => {
 		expect(useTranslations('en')('ticket.calendar')).toBe('Save to my calendar');
 	});
 
-	it('fills the rail counter and the forum totals', () => {
-		expect(useTranslations('es')('ticket.rail.range', { from: '01', to: '03', total: '06' })).toBe('01–03 de 06');
-		expect(useTranslations('en')('ticket.rail.range', { from: '01', to: '03', total: '06' })).toBe('01–03 of 06');
+	it('fills the forum totals', () => {
 		expect(useTranslations('es')('forum.stats', { threads: 3, categories: 3 })).toBe('3 hilos · 3 categorías');
 		expect(useTranslations('en')('forum.stats', { threads: 3, categories: 3 })).toBe('3 threads · 3 categories');
 		expect(useTranslations('es')('forum.window', { name: 'ASO Computación' })).toBe('foro · ASO Computación');

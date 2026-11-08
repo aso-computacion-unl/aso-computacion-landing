@@ -24,7 +24,6 @@
 	--ed-block-accent: var(--color-brand);
 }
 
-.tk-body::after,
 .news-list > li:first-child .news-link::after,
 .forum-door-top::after {
 	content: '';
@@ -36,7 +35,7 @@
 
 /* ───────── S5 · tickets ───────── */
 
-/* An accent per ticket, in turn: sky, signal, navy. */
+/* An accent per ticket, in turn: sky, signal, navy. It paints the date stub, the seats meter and the live dot. */
 .tk-item {
 	--tk-acc: var(--ed-sky-paper);
 }
@@ -49,219 +48,29 @@
 	--tk-acc: var(--color-brand);
 }
 
-.tk-body {
-	position: relative;
-	overflow: hidden;
-	border-top: 0.625rem solid var(--tk-acc);
-	background: linear-gradient(
-		160deg,
-		color-mix(in srgb, var(--tk-acc) 13%, var(--color-paper)),
-		var(--color-paper) 60%
-	);
-}
-
-.tk-body::after {
-	right: -1.75rem;
-	bottom: -2rem;
-	width: 11.875rem;
-	height: 13.375rem;
-	background: var(--tk-acc);
-	opacity: 0.09;
-}
-
-.tk-body > * {
-	position: relative;
-	z-index: 1;
-}
-
-.tk-no {
-	padding: 0.3125rem 0.5625rem;
-	background: var(--tk-acc);
-	color: var(--ed-on-accent);
-	font-weight: 600;
-}
-
-.tk-day b {
-	color: var(--tk-acc);
-}
-
-.tk-facts dt {
-	color: var(--tk-acc);
-}
-
-.tk:not(.is-closed) .tk-stub {
+.tk-date {
 	background: var(--tk-acc);
 	color: var(--ed-on-accent);
 }
 
-.tk:not(.is-closed) .tk-live::before,
-.tk:not(.is-closed) .tk-meter i {
-	background: var(--ed-on-accent);
+/* A closed ticket has no accent: its stub goes quiet. */
+.tk.is-closed .tk-date {
+	background: var(--color-paper-soft);
 }
 
-.tk:not(.is-closed) .tk-meter {
-	background: color-mix(in srgb, var(--ed-on-accent) 30%, transparent);
+.tk-meter i,
+.tk-live::before {
+	background: var(--tk-acc);
 }
 
-.tk-stub .tk-action:focus-visible,
-.tk-stub .tk-cal:focus-visible {
-	outline-color: var(--ed-on-accent);
-}
-
-/* The calendar link says what it does; ".ics" lives in its title. */
-.tk-cal {
-	gap: 0.75rem;
-	color: inherit;
-	text-decoration: none;
-}
-
-.tk-cal-say {
-	display: flex;
-	flex-direction: column;
-	gap: 0.1875rem;
-	line-height: 1.2;
-}
-
-.tk-cal-say b {
-	font-weight: 700;
-	text-decoration: underline transparent;
-	text-underline-offset: 0.28em;
-}
-
-.tk-cal-say small {
-	font-size: var(--text-small);
-	opacity: 0.85;
+.tk.is-closed .tk-meter i,
+.tk.is-closed .tk-live::before {
+	background: var(--color-paper-soft);
 }
 
 .tk-cal:hover .tk-cal-say b,
 .tk-cal:focus-visible .tk-cal-say b {
-	text-decoration-color: currentColor;
-}
-
-/* More than three tickets: a rail that scrolls sideways. The server marks the list (`is-rail`); without JS it is a
-   scrollable strip, with it the arrows, the counter and the bar appear above it (src/scripts/ticket-rail.ts). */
-.tk-list.is-rail {
-	/* The containing block of the screen-reader-only text inside the tickets: without it those absolutely placed spans
-	   escape the strip and make the page itself scroll sideways. */
-	position: relative;
-	grid-auto-flow: column;
-	grid-template-columns: none;
-	grid-template-rows: auto;
-	grid-auto-columns: 86%;
-	column-gap: 1.25rem;
-	margin-inline: -0.25rem;
-	margin-bottom: 0;
-	padding: 0.875rem 0.25rem 1.5rem;
-	overflow-x: auto;
-	overscroll-behavior-x: contain;
-	scroll-snap-type: x mandatory;
-	scroll-padding-inline: 0.25rem;
-	scrollbar-width: none;
-}
-
-.tk-list.is-rail::-webkit-scrollbar {
-	display: none;
-}
-
-.tk-list.is-rail > .tk-item {
-	scroll-snap-align: start;
-}
-
-/* Subgrid tickets share three bands; in a rail they are laid down the columns, three rows to a ticket. */
-@supports (grid-template-rows: subgrid) {
-	.tk-list.is-rail {
-		grid-template-rows: repeat(3, auto);
-	}
-}
-
-@media (min-width: 40rem) {
-	.tk-list.is-rail {
-		grid-auto-columns: calc((100% - 1.75rem) / 2);
-		column-gap: 1.75rem;
-	}
-}
-
-@media (min-width: 64rem) {
-	.tk-list.is-rail {
-		grid-auto-columns: calc((100% - 2 * 1.75rem) / 3);
-	}
-}
-
-.tk-rail-ui {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	margin-top: var(--spacing-head);
-}
-
-.tk-rail-ui[hidden] {
-	display: none;
-}
-
-.tk-rail-ui:not([hidden]) + .tk-list {
-	margin-top: 0.5rem;
-}
-
-.tk-rail-ui button {
-	display: grid;
-	flex: none;
-	place-items: center;
-	width: 3rem;
-	height: 3rem;
-	border: 0;
-	background: var(--color-action);
-	color: var(--color-on-action);
-	font-size: var(--text-lead);
-	cursor: pointer;
-	box-shadow: 4px 4px 0 var(--color-signal);
-}
-
-.tk-rail-ui button:disabled {
-	opacity: 0.3;
-	cursor: default;
-}
-
-.tk-rail-ui button:focus-visible {
-	outline: 2px solid var(--color-sky);
-	outline-offset: 3px;
-}
-
-.tk-rail-count {
-	flex: none;
-	font-family: var(--font-mono);
-	font-size: var(--text-label);
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.06em;
-	color: var(--color-ink);
-}
-
-.tk-rail-bar {
-	flex: 1;
-	min-width: 0;
-	height: 3px;
-	background: color-mix(in srgb, var(--color-ink) 15%, transparent);
-}
-
-.tk-rail-bar i {
-	display: block;
-	height: 100%;
-	background: var(--color-signal);
-	transform-origin: left;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-	.tk-rail-ui button {
-		transition: transform 0.2s;
-	}
-
-	.tk-rail-ui button:not(:disabled):hover {
-		transform: translate(-2px, -2px);
-	}
-
-	.tk-rail-bar i {
-		transition: transform 0.3s;
-	}
+	color: var(--tk-acc);
 }
 
 /* ───────── S6 · news front page ───────── */

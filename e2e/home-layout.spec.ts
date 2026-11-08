@@ -66,7 +66,8 @@ for (const width of [390, 768, 1440]) {
 	test.describe(`at ${width}px`, () => {
 		test.use({ viewport: { width, height: 900 } });
 
-		// The join title is its own, smaller role (the card that invites to propose); every other section title is giant.
+		// Only the join title is its own, smaller role (the card that invites to propose); every section title, the
+		// Inscripciones one included, is giant.
 		test('every section title has the same size and the page uses at most nine text sizes', async ({ page }) => {
 			await page.goto('/');
 			await page.evaluate(() => document.fonts.ready);
@@ -82,7 +83,7 @@ for (const width of [390, 768, 1440]) {
 				return { sizes: [...sizes], titles };
 			});
 			expect(new Set(result.titles).size).toBe(1);
-			expect(result.titles.length).toBeGreaterThan(4);
+			expect(result.titles.length).toBeGreaterThan(3);
 			expect(result.sizes.length, result.sizes.join(', ')).toBeLessThanOrEqual(9);
 		});
 

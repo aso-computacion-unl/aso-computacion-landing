@@ -15,7 +15,6 @@ function paint(ticket: HTMLElement, seat: Seat, translate: Translate) {
 		const number = ticket.querySelector<HTMLElement>('[data-seat-num]');
 		const label = ticket.querySelector<HTMLElement>('[data-seat-label]');
 		const meter = ticket.querySelector<HTMLElement>('[data-seat-meter]');
-		const taken = ticket.querySelector<HTMLElement>('[data-seat-taken]');
 		const live = ticket.querySelector<HTMLElement>('[data-seat-live]');
 		if (number) number.textContent = String(view.free);
 		if (label)
@@ -27,10 +26,6 @@ function paint(ticket: HTMLElement, seat: Seat, translate: Translate) {
 		}
 		// The numbers come from the admin now, not from the build: say so.
 		live?.removeAttribute('hidden');
-		if (taken) {
-			taken.textContent = translate('ticket.taken', { count: view.taken });
-			taken.setAttribute('data-seat-shown', '');
-		}
 	}
 	if (view.state === 'full') closeTicket(ticket, translate('ticket.full'));
 	else if (view.state === 'closed') closeTicket(ticket, translate('ticket.closed'));

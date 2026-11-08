@@ -1,15 +1,16 @@
 ---
-// One ticket of the Inscripciones section (S1, S2): white paper with the activity on top and, under the perforation,
-// a sky stub with the seats, the deadline and the single action. `unl` and `open` both link to the admin's event page,
-// where the student signs up (there is no form on the landing); `free` has no registration, only its calendar link.
+// One ticket of the Inscripciones section (S1, S2, S4): a full-width strip of white paper. On the left the date stub, in
+// the ticket's accent, then the perforation, the activity, and on the right the one column that differs per activity:
+// `unl` and `open` show the seats, the days left and the link to the admin's event page, where the student signs up
+// (there is no form on the landing); `free` has no registration, only "Entrada libre" and its calendar link.
 // The page is built ahead of time, so what can change afterwards carries a data hook: src/scripts/ticket-deadline.ts
 // closes the ticket when its deadline passes and keeps the days left honest, src/scripts/seats.ts paints the live
 // seats and src/scripts/ticket.ts is what both do to a closed one. Each ticket takes one of three accents in turn
-// (sky, signal, navy; `data-acc`), which src/styles/sections.css paints on its band, badge, date, labels and stub.
+// (sky, signal, navy; `data-acc`), which src/styles/sections.css paints on its stub, numeral and labels.
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { formatDeadline, registrationClosed } from '../lib/registration/rules';
-import { closesIn, closesInLabel, ticketAnchor, type Ticket } from '../lib/registration/tickets';
+import { closesIn, closesInLabel, ticketAnchor, ticketDate, type Ticket } from '../lib/registration/tickets';
 
 interface Props {
 	ticket: Ticket;
@@ -28,15 +29,16 @@ const left = registration && !closed ? closesIn(registration.deadline, now) : un
 const daysLeft = left ? closesInLabel(left.days) : undefined;
 const capacity = registration?.capacity;
 
-// "14 abr 2026": the day is the big numeral of the ticket and the rest its caption. A month-only date has no day, so the
-// month takes its place; an undated activity has no date block.
-const [big, ...rest] = (entry.stamp ?? '').split(' ');
-const when = entry.stamp ? { big, rest: rest.join(' ') } : undefined;
+// The stub prints the day as its big numeral with month and year as the caption; the body says it again with its
+// weekday ("jue 12 nov"). A month-only date has no day, so the month takes the numeral's place; an undated activity
+// has no date block.
+const when = ticketDate(entry, locale);
+const said = when && [when.weekday, when.day, when.month].filter(Boolean).join(' ');
 
 const facts = [
-	{ label: t('ticket.fact.time'), value: meta?.hora },
-	{ label: t('ticket.fact.place'), value: meta?.lugar },
-	{ label: t('ticket.fact.for'), value: meta?.para },
+	{ key: 'time', label: t('ticket.fact.time'), value: meta?.hora },
+	{ key: 'place', label: t('ticket.fact.place'), value: meta?.lugar },
+	{ key: 'for', label: t('ticket.fact.for'), value: meta?.para },
 ].filter((fact) => fact.value);
 
 const accent = (number - 1) % 3;
@@ -53,9 +55,28 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 	data-reg-deadline={registration?.deadline}
 >
 	<article class:list={['tk', { 'tk-free': mode === 'free', 'is-closed': closed }]} aria-labelledby={`${id}-heading`}>
+		<div class="tk-date" aria-hidden="true">
+			{when && (
+				<p class="tk-day">
+					<b>{when.day}</b>
+					<span>
+						{when.month}
+						{when.year && <span class="tk-year"> {when.year}</span>}
+					</span>
+				</p>
+			)}
+		</div>
+		<div class="tk-perf" aria-hidden="true"></div>
+
 		<div class="tk-body">
 			<p class="tk-top">
 				<span class="tk-no">{label}</span>
+				{when && (
+					<>
+						<span aria-hidden="true">·</span>
+						<time datetime={entry.date}>{said}</time>
+					</>
+				)}
 				{mode !== 'free' && <span class="tk-chip">{t(`ticket.mode.${mode}`)}</span>}
 				{entry.demo && (
 					<span class="demo-tag" title={t('demo.title')}>
@@ -63,32 +84,32 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 					</span>
 				)}
 			</p>
-			{when && (
-				<p class="tk-day">
-					<time datetime={entry.date}>
-						<b>{when.big}</b>
-						<span>{when.rest}</span>
-					</time>
-				</p>
-			)}
 			<h3 class="tk-title" id={`${id}-heading`}>
 				{entry.title}
 			</h3>
 			{facts.length > 0 && (
 				<dl class="tk-facts">
 					{facts.map((fact) => (
-						<div>
-							<dt>{fact.label}</dt>
+						<div class={`tk-fact-${fact.key}`}>
+							<dt class="sr-only">{fact.label}</dt>
 							<dd>{fact.value}</dd>
 						</div>
 					))}
 				</dl>
 			)}
+			{registration && (
+				<p class="tk-dl" data-reg-extra hidden={closed}>
+					{registration.deadline ? formatDeadline(registration.deadline, locale) : t('ticket.noDeadline')}
+					<span class="tk-hint">
+						{' · '}
+						{t(mode === 'unl' ? 'ticket.hint.unl' : 'ticket.hint.open')}
+					</span>
+				</p>
+			)}
 		</div>
-		<div class="tk-perf" aria-hidden="true"></div>
 
 		{registration ? (
-			<div class="tk-stub">
+			<div class="tk-act">
 				<div class="tk-seat">
 					<p class="tk-seat-n" hidden={capacity === undefined}>
 						<span data-seat-num>{capacity}</span>
@@ -100,8 +121,12 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 					<div class="tk-meter" role="img" data-seat-meter data-seat-slot>
 						<i />
 					</div>
-					<p class="tk-cap" data-seat-taken data-seat-slot />
 				</div>
+				{daysLeft && (
+					<p class="tk-dl" data-reg-extra>
+						<span data-reg-closes>{t(daysLeft.key, daysLeft.vars)}</span>
+					</p>
+				)}
 				<p class="tk-state" data-ticket-state hidden={!closed}>
 					{closed && t('ticket.closed')}
 				</p>
@@ -121,36 +146,17 @@ const label = t('ticket.no', { n: String(number).padStart(3, '0') });
 						</span>
 					</span>
 				</a>
-				<div class="tk-notes">
-					{daysLeft && registration.deadline && (
-						<p class="tk-dl" data-reg-extra>
-							<span data-reg-closes>{t(daysLeft.key, daysLeft.vars)}</span>
-							{' · '}
-							{formatDeadline(registration.deadline, locale)}
-						</p>
-					)}
-					{!closed && !registration.deadline && (
-						<p class="tk-dl" data-reg-extra>
-							{t('ticket.noDeadline')}
-						</p>
-					)}
-					<p class="tk-dl" data-reg-extra hidden={closed}>
-						{t(mode === 'unl' ? 'ticket.hint.unl' : 'ticket.hint.open')}
-					</p>
-				</div>
 			</div>
 		) : (
-			<div class="tk-stub">
-				<p class="tk-free-n">{t('ticket.freeEntry')}</p>
-				<p class="tk-dl">{t('ticket.freeHint')}</p>
+			<div class="tk-act">
+				<p class="tk-entry">{t('ticket.freeEntry')}</p>
 				{calendarHref && (
 					<a class="tk-cal" href={calendarHref} title={t('ticket.calendarTitle')}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-							<rect x="3.5" y="5" width="17" height="15.5" stroke="currentColor" stroke-width="2" />
-							<path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" />
-						</svg>
 						<span class="tk-cal-say">
-							<b>{t('ticket.calendar')}</b>
+							<b>
+								<span class="tk-cal-long">{t('ticket.calendar')}</span>
+								<span class="tk-cal-short">{t('ticket.calendarShort')}</span>
+							</b>
 							<small>{t('ticket.calendarApps')}</small>
 						</span>
 						<span class="sr-only">: {entry.title}</span>

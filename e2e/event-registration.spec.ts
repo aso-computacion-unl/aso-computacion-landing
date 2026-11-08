@@ -256,9 +256,9 @@ test.describe('registration from the admin', () => {
 		}) => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'taller-libre');
-			// Free entry is said once, in the stub: no "Sin inscripción" chip and no separate free-pass label.
-			await expect(item).toContainText('Entrada libre');
-			await expect(item).toContainText('Llega y ya.');
+			// Free entry is said once, in the action column: a chip, no "Llega y ya." filler, no mode chip, no free-pass label.
+			await expect(item.locator('.tk-act .tk-entry')).toHaveText('Entrada libre');
+			await expect(item).not.toContainText('Llega y ya.');
 			await expect(item).not.toContainText('Pase libre');
 			await expect(item.locator('.tk-chip')).toHaveCount(0);
 			await expect(item.locator('[data-reg], [data-reg-action], [data-seat-num]')).toHaveCount(0);
@@ -268,6 +268,50 @@ test.describe('registration from the admin', () => {
 			);
 			// A free pass has no seats: the script that paints them never looks for it.
 			await expect(item).not.toHaveAttribute('data-ticket', /.+/);
+		});
+
+		test('what the action column shows depends on the event: free entry and the calendar, or seats and the way in', async ({
+			page,
+		}) => {
+			await open(page, `${site.url}/`);
+			const column = (slug: string) => ticket(page, slug).locator('.tk-act');
+			const free = column('taller-libre');
+			await expect(free.locator('.tk-entry')).toBeVisible();
+			await expect(free.locator('.tk-cal')).toBeVisible();
+			await expect(free.locator('[data-seat-meter], [data-reg-action], .tk-dl')).toHaveCount(0);
+
+			const enrol = column('taller-abierto');
+			await expect(enrol.locator('[data-seat-num]')).toBeVisible();
+			await expect(enrol.locator('[data-reg-closes]')).toBeVisible();
+			await expect(enrol.locator('[data-reg-action]')).toBeVisible();
+			await expect(enrol.locator('.tk-entry, .tk-cal')).toHaveCount(0);
+			// One strip per activity, one list: the registration strip is the only kind with a primary button.
+			await expect(page.locator('#inscripciones ol.tk-list')).toHaveCount(1);
+			await expect(page.locator('#inscripciones [data-reg-action]')).toHaveCount(3);
+		});
+
+		test('the strip is a row: the date stub, the body and the action column side by side, full width', async ({
+			page,
+		}) => {
+			await open(page, `${site.url}/`);
+			const strip = ticket(page, 'taller-abierto');
+			const box = async (selector: string) => {
+				const found = await strip.locator(selector).boundingBox();
+				if (!found) throw new Error(`${selector} has no box`);
+				return found;
+			};
+			const [whole, date, body, act, list] = [
+				await box('.tk'),
+				await box('.tk-date'),
+				await box('.tk-body'),
+				await box('.tk-act'),
+				await page.locator('#inscripciones .tk-list').boundingBox(),
+			];
+			expect(date.x + date.width).toBeLessThanOrEqual(body.x + 1);
+			expect(body.x + body.width).toBeLessThanOrEqual(act.x + 1);
+			// A strip, not a card: wide and short, and as wide as the list.
+			expect(whole.width).toBeGreaterThan(whole.height * 5);
+			expect(Math.abs(whole.width - (list?.width ?? 0))).toBeLessThan(2);
 		});
 
 		test('a ticket whose deadline passed says so, with its action disabled', async ({ page }) => {
@@ -347,8 +391,10 @@ test.describe('registration from the admin', () => {
 		test('shows the facts the admin gave and only those', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'taller-abierto');
-			// The date is the big numeral of the ticket; the rest are its facts.
-			await expect(item.locator('.tk-day time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
+			// The stub prints the day as its numeral; the body says the date with its weekday.
+			await expect(item.locator('.tk-day b')).toHaveText(/^\d{1,2}$/);
+			await expect(item.locator('.tk-top time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
+			await expect(item.locator('.tk-top time')).toHaveText(/^(lun|mar|mié|jue|vie|sáb|dom) \d{1,2} \w+$/);
 			const facts = item.locator('.tk-facts');
 			await expect(facts).toContainText('Hora');
 			await expect(facts).toContainText('Lugar');
@@ -365,10 +411,59 @@ test.describe('registration from the admin', () => {
 				'href',
 				`${admin.url}/foro/eventos`,
 			);
+			// One link to the reader at a time: the phone's copy at the end of the list is out of the page here.
+			await expect(page.getByRole('link', { name: /Ver todas las inscripciones/ })).toHaveCount(1);
 			// No legend and no code window: the tickets say how each one signs up.
 			await expect(page.locator('#inscripciones .tk-key')).toHaveCount(0);
 			await expect(page.locator('#inscripciones [data-lang]')).toHaveCount(0);
 			await expect(page.locator('#inscripciones .tk-desc')).toHaveCount(0);
+		});
+
+		test('puts "Ver todas" at the right of the heading, on the bottom line of the head', async ({ page }) => {
+			await open(page, `${site.url}/`);
+			const head = page.locator('#inscripciones header.section-head');
+			const link = await head.getByRole('link', { name: /Ver todas/ }).boundingBox();
+			const title = await head.getByRole('heading', { level: 2 }).boundingBox();
+			const lead = await head.locator('.lead').boundingBox();
+			if (!link || !title || !lead) throw new Error('the head is missing a part');
+			expect(link.x).toBeGreaterThan(title.x + title.width);
+			expect(Math.abs(link.y + link.height - (lead.y + lead.height))).toBeLessThan(12);
+		});
+
+		test.describe('on a phone', () => {
+			test.use({ viewport: { width: 390, height: 844 } });
+
+			test('stacks the strips with a narrow stub and ends the list with a full-width "Ver todas"', async ({ page }) => {
+				await open(page, `${site.url}/`);
+				const section = page.locator('#inscripciones');
+				const stub = await ticket(page, 'taller-abierto').locator('.tk-date').boundingBox();
+				expect(stub?.width).toBeGreaterThan(70);
+				expect(stub?.width).toBeLessThan(82);
+				// The button of a registration strip is as wide as the column it sits in.
+				const button = await action(page).boundingBox();
+				const body = await ticket(page, 'taller-abierto').locator('.tk-body').boundingBox();
+				expect(Math.abs((button?.width ?? 0) - ((body?.width ?? 0) - 34))).toBeLessThan(4);
+				// The head's copy of the link is gone; the one at the end of the list is the section's only one.
+				const links = section.getByRole('link', { name: /Ver todas las inscripciones/ });
+				await expect(links).toHaveCount(1);
+				const more = await links.boundingBox();
+				const list = await section.locator('.tk-list').boundingBox();
+				if (!more || !list) throw new Error('missing boxes');
+				expect(more.y).toBeGreaterThan(list.y + list.height);
+				expect(Math.abs(more.width - list.width)).toBeLessThan(2);
+				const overflow = await page.evaluate(
+					() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+				);
+				expect(overflow).toBeLessThanOrEqual(0);
+				// The short "Guardar fecha" still names the activity, and every control keeps its 44px.
+				await expect(
+					ticket(page, 'taller-libre').getByRole('link', { name: /Guardar fecha\s*: Taller libre/ }),
+				).toBeVisible();
+				const small = await section
+					.locator('a:visible, button:visible')
+					.evaluateAll((nodes) => nodes.filter((node) => node.getBoundingClientRect().height < 44).length);
+				expect(small).toBe(0);
+			});
 		});
 
 		test('the activity cards link to their ticket instead of holding a form', async ({ page }) => {
@@ -455,7 +550,7 @@ test.describe('registration from the admin', () => {
 			expect(requests).toEqual([{ method: 'GET', cookie: undefined }]);
 		});
 
-		test('shows "N cupos libres de M" and the meter on each ticket', async ({ page }) => {
+		test('shows "N cupos libres de M" and the meter on each strip', async ({ page }) => {
 			await page.route(SEATS, (route) =>
 				route.fulfill(answer([seatsOf('taller-abierto', 40, 38), seatsOf('charla-unl', 60, 42)])),
 			);
@@ -463,7 +558,6 @@ test.describe('registration from the admin', () => {
 			const item = ticket(page, 'taller-abierto');
 			await expect(item.locator('[data-seat-num]')).toHaveText('2');
 			await expect(item.locator('[data-seat-label]')).toHaveText('cupos libres de 40');
-			await expect(item.locator('[data-seat-taken]')).toHaveText('38 ocupados');
 			const meter = item.locator('[data-seat-meter]');
 			await expect(meter).toHaveAttribute('aria-label', '38 de 40 cupos ocupados');
 			expect(await meter.locator('i').evaluate((node) => (node as HTMLElement).style.width)).toBe('95%');
@@ -504,8 +598,7 @@ test.describe('registration from the admin', () => {
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'charla-unl');
 			await expect(item.locator('[data-ticket-state]')).toHaveText('Inscripciones cerradas');
-			for (const hook of ['[data-seat-num]', '[data-seat-meter]', '[data-seat-taken]'])
-				await expect(item.locator(hook)).toBeHidden();
+			for (const hook of ['[data-seat-num]', '[data-seat-meter]']) await expect(item.locator(hook)).toBeHidden();
 			const link = item.locator('[data-reg-action]');
 			await expect(link).toHaveAttribute('aria-disabled', 'true');
 			await expect(link).not.toHaveAttribute('href', /.+/);
@@ -515,8 +608,7 @@ test.describe('registration from the admin', () => {
 			await page.route(SEATS, (route) => route.fulfill(answer([seatsOf('charla-unl', null, 12)])));
 			await open(page, `${site.url}/`);
 			const item = ticket(page, 'charla-unl');
-			for (const hook of ['[data-seat-num]', '[data-seat-meter]', '[data-seat-taken]'])
-				await expect(item.locator(hook)).toBeHidden();
+			for (const hook of ['[data-seat-num]', '[data-seat-meter]']) await expect(item.locator(hook)).toBeHidden();
 			await expect(item.locator('[data-reg-action]')).toHaveAttribute('href', eventPage(admin, 'charla-unl'));
 		});
 
