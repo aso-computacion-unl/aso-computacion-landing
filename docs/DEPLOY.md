@@ -179,7 +179,7 @@ day, so a scheduled item can show up to about a day late unless a rebuild is tri
 ## Event registration
 
 Each event chooses in the admin how people sign up (none, with a UNL Google account, or an open form). **Signing up
-happens on the admin's event page, `<admin>/foro/eventos/<slug>`**, for both modes: the landing has no form, no
+happens on the admin's event page, `<admin>/inscripciones/<slug>`**, for both modes: the landing has no form, no
 Turnstile widget and sends nothing a person types. It does two things:
 
 - **Links there.** The "Inscribirme" action of every ticket (and the "Ver el boleto" link of an Actividades card) goes to that
@@ -242,6 +242,6 @@ Instagram.
 - [ ] Deploy hook created; its URL set as `CLOUDFLARE_DEPLOY_HOOK_URL` in the admin and as the GitHub secret.
 - [ ] Edit something in the admin: a build starts 8–15 s later and the change shows on the site.
 - [ ] Daily rebuild run once by hand (Actions → Daily rebuild) and a build appears in Cloudflare.
-- [ ] Optional, registration: an event with registration shows its ticket with seats left (the seats request in the browser answers 200), and "Inscribirme" opens `<admin>/foro/eventos/<slug>` on the admin's origin. The admin has `AUTH_URL` and, for open-form events, the Turnstile keys.
+- [ ] Optional, registration: an event with registration shows its ticket with seats left (the seats request in the browser answers 200), and "Inscribirme" opens `<admin>/inscripciones/<slug>` on the admin's origin. The admin has `AUTH_URL` and, for open-form events, the Turnstile keys.
 - [ ] Optional, preview: the preview project (if any) is behind Cloudflare Access, and a build with an expired token fails with `HTTP 401` instead of publishing.
 - [ ] Break `ADMIN_CONTENT_URL` on purpose in a preview build: it still deploys, with the `[content-gate] WARNING`. On the production branch the same break fails the build and the previous deployment stays live.

@@ -3,7 +3,7 @@ import type { TimelineEntry } from '../admin-content/model';
 import { ribbonItems, ribbonLoop } from './ribbon';
 import { chooseTickets } from './tickets';
 
-const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x', capacity: 40 };
+const unl = { mode: 'unl' as const, href: 'https://admin.test/inscripciones/x', capacity: 40 };
 const entry = (id: string, overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
 	id,
 	kind: 'upcoming',

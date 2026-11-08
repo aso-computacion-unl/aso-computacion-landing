@@ -639,7 +639,7 @@ describe('parsePublicContent: event registration, calendar and structured data (
 	});
 
 	it('accepts the calendar link and the structured data', () => {
-		const data = structuredData({ registrationUrl: 'https://admin.example.test/foro/eventos/taller-de-git' });
+		const data = structuredData({ registrationUrl: 'https://admin.example.test/inscripciones/taller-de-git' });
 		const parsed = okAdmin(
 			withFields({
 				calendarUrl: 'https://admin.example.test/api/public/events/taller-de-git/calendar.ics',
@@ -755,9 +755,20 @@ describe('parsePublicContent: event registration, calendar and structured data (
 			const result = parsed({
 				registration: openRegistration(),
 				calendarUrl: `${ADMIN}/api/public/events/taller-de-git/calendar.ics`,
-				structuredData: structuredData({ registrationUrl: `${ADMIN}/foro/eventos/taller-de-git` }),
+				structuredData: structuredData({ registrationUrl: `${ADMIN}/inscripciones/taller-de-git` }),
 			});
 			expect(result.content.events[0].registration).toEqual(openRegistration());
+			expect(result.warnings).toEqual([]);
+		});
+
+		it('keeps the old /foro/eventos/<slug> URLs that cached content may still carry', () => {
+			const legacy = `${ADMIN}/foro/eventos/taller-de-git`;
+			const result = parsed({
+				registration: unlRegistration({ url: legacy }),
+				structuredData: structuredData({ registrationUrl: legacy }),
+			});
+			expect(result.content.events[0].registration).toEqual(unlRegistration({ url: legacy }));
+			expect(result.content.events[0].structuredData?.registrationUrl).toBe(legacy);
 			expect(result.warnings).toEqual([]);
 		});
 
@@ -772,7 +783,7 @@ describe('parsePublicContent: event registration, calendar and structured data (
 		});
 
 		it('does the same for the UNL page url', () => {
-			const url = 'https://evil.example.test/foro/eventos/taller-de-git';
+			const url = 'https://evil.example.test/inscripciones/taller-de-git';
 			const result = parsed({ registration: unlRegistration({ url }) });
 			expect(result.content.events[0].registration).toBeNull();
 			expect(result.warnings).toHaveLength(1);
@@ -790,7 +801,7 @@ describe('parsePublicContent: event registration, calendar and structured data (
 		it('leaves out a calendar link and a schema registration URL on another origin', () => {
 			const result = parsed({
 				calendarUrl: 'https://evil.example.test/x.ics',
-				structuredData: structuredData({ registrationUrl: 'https://evil.example.test/foro/eventos/x' }),
+				structuredData: structuredData({ registrationUrl: 'https://evil.example.test/inscripciones/x' }),
 			});
 			expect(result.content.events[0].calendarUrl).toBeNull();
 			expect(result.content.events[0].structuredData?.registrationUrl).toBeNull();

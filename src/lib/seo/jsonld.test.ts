@@ -127,13 +127,13 @@ describe('buildEvent', () => {
 		const event = buildEvent({
 			...input,
 			registration: {
-				url: 'https://admin.example.test/foro/eventos/taller-de-git',
+				url: 'https://admin.example.test/inscripciones/taller-de-git',
 				deadline: '2026-11-12T15:00:00.000Z',
 			},
 		});
 		expect(event.offers).toEqual({
 			'@type': 'Offer',
-			url: 'https://admin.example.test/foro/eventos/taller-de-git',
+			url: 'https://admin.example.test/inscripciones/taller-de-git',
 			price: '0',
 			priceCurrency: 'USD',
 			availability: 'https://schema.org/InStock',

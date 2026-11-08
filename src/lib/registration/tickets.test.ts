@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { TimelineEntry } from '../admin-content/model';
 import { chooseTickets, closesIn, closesInLabel, ticketAnchor, ticketDate, ticketMode } from './tickets';
 
-const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x' };
-const open = { mode: 'open' as const, href: 'https://admin.test/foro/eventos/x' };
+const unl = { mode: 'unl' as const, href: 'https://admin.test/inscripciones/x' };
+const open = { mode: 'open' as const, href: 'https://admin.test/inscripciones/x' };
 const entry = (id: string, overrides: Partial<TimelineEntry> = {}): TimelineEntry => ({
 	id,
 	kind: 'upcoming',

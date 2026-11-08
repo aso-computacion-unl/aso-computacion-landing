@@ -45,15 +45,15 @@ describe('eventsUrl', () => {
 });
 
 describe('eventUrl', () => {
-	it('puts the event page of a slug under the forum, on the admin origin', () => {
+	it('puts the event page of a slug under the registration route, on the admin origin', () => {
 		expect(eventUrl('https://admin.example.test', 'taller-de-git')).toBe(
-			'https://admin.example.test/foro/eventos/taller-de-git',
+			'https://admin.example.test/inscripciones/taller-de-git',
 		);
 	});
 
 	it('encodes the slug so it can never leave its path segment', () => {
 		expect(eventUrl('https://admin.example.test', '../admin?x=1#y')).toBe(
-			'https://admin.example.test/foro/eventos/..%2Fadmin%3Fx%3D1%23y',
+			'https://admin.example.test/inscripciones/..%2Fadmin%3Fx%3D1%23y',
 		);
 	});
 

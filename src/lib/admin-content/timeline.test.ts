@@ -204,7 +204,7 @@ describe('toTimelineEntry: registration, calendar and structured data (S8)', () 
 			mode: 'open',
 			capacity: 40,
 			deadline: '2026-11-12T15:00:00.000Z',
-			href: 'https://admin.example.test/foro/eventos/taller-de-git',
+			href: 'https://admin.example.test/inscripciones/taller-de-git',
 		});
 		expect(entry.calendarHref).toBe(CAL);
 		expect(entry.schema).toEqual({
@@ -216,7 +216,7 @@ describe('toTimelineEntry: registration, calendar and structured data (S8)', () 
 
 	it('maps the UNL mode to the admin page and leaves the optional values out', () => {
 		const entry = toTimelineEntry(event({ registration: unlRegistration() }), ctx);
-		expect(entry.registration).toEqual({ mode: 'unl', href: 'https://admin.example.test/foro/eventos/taller-de-git' });
+		expect(entry.registration).toEqual({ mode: 'unl', href: 'https://admin.example.test/inscripciones/taller-de-git' });
 	});
 
 	it('adds nothing for an event from an older admin or one with no registration', () => {

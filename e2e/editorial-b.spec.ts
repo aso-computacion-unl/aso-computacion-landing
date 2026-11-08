@@ -42,7 +42,7 @@ const content = (admin: string) =>
 				}),
 			}),
 			event('dos', 'Charla con cuenta UNL', 10, {
-				registration: unlRegistration({ url: `${admin}/foro/eventos/dos` }),
+				registration: unlRegistration({ url: `${admin}/inscripciones/dos` }),
 			}),
 			event('tres', 'Taller libre', 15, { calendarUrl: `${admin}/api/public/events/tres/calendar.ics` }),
 			event('cuatro', 'Hackatón', 20, { calendarUrl: `${admin}/api/public/events/cuatro/calendar.ics` }),
