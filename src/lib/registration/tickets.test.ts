@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TimelineEntry } from '../admin-content/model';
-import { chooseTickets, closesIn, closesInLabel, ticketAnchor, ticketMode } from './tickets';
+import { chooseTickets, closesIn, closesInLabel, ticketAnchor, ticketDate, ticketMode } from './tickets';
 
 const unl = { mode: 'unl' as const, href: 'https://admin.test/foro/eventos/x' };
 const open = { mode: 'open' as const, href: 'https://admin.test/foro/eventos/x' };
@@ -91,5 +91,42 @@ describe('closesInLabel', () => {
 		expect(closesInLabel(2)).toEqual({ key: 'ticket.closesIn', vars: { days: 2 } });
 		expect(closesInLabel(1)).toEqual({ key: 'ticket.closesInOne' });
 		expect(closesInLabel(0)).toEqual({ key: 'ticket.closesSoon' });
+	});
+});
+
+describe('ticketDate', () => {
+	const dated = (overrides: Partial<TimelineEntry> = {}) =>
+		entry('d', { date: '2026-11-12', stamp: '12 nov 2026', ...overrides });
+
+	it('splits the stamp into the big day, the month and the year, and names the weekday', () => {
+		expect(ticketDate(dated(), 'es')).toEqual({ day: '12', month: 'nov', year: '2026', weekday: 'jue' });
+	});
+
+	it('names the weekday in the language of the page', () => {
+		expect(ticketDate(dated({ stamp: '12 Nov 2026' }), 'en')).toEqual({
+			day: '12',
+			month: 'Nov',
+			year: '2026',
+			weekday: 'Thu',
+		});
+	});
+
+	it("reads the weekday of the calendar day, not of the visitor's time zone", () => {
+		expect(ticketDate(dated({ date: '2026-11-08', stamp: '8 nov 2026' }), 'es')?.weekday).toBe('dom');
+	});
+
+	it("gives a month-only date the month in the day's place and no weekday", () => {
+		expect(ticketDate(dated({ date: '2026-12-01', stamp: 'dic 2026', datePrecision: 'month' }), 'es')).toEqual({
+			day: 'dic',
+			month: '2026',
+		});
+	});
+
+	it('keeps the stamp when the date cannot be read', () => {
+		expect(ticketDate(dated({ date: 'nope' }), 'es')).toEqual({ day: '12', month: 'nov', year: '2026' });
+	});
+
+	it('is empty for an undated activity', () => {
+		expect(ticketDate(entry('u', { date: undefined, stamp: undefined }), 'es')).toBeUndefined();
 	});
 });

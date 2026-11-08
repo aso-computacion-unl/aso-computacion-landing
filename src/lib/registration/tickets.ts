@@ -1,3 +1,4 @@
+import type { Locale } from '../../i18n/locales';
 import type { UiKey } from '../../i18n/ui';
 import type { TimelineEntry } from '../admin-content/model';
 import { registrationClosed } from './rules';
@@ -35,6 +36,29 @@ export function chooseTickets(entries: readonly TimelineEntry[]): Ticket[] {
 		.filter((entry) => entry.kind === 'upcoming')
 		.sort(byDate)
 		.map((entry, index): Ticket => ({ entry, mode: ticketMode(entry), number: index + 1 }));
+}
+
+// What the date stub of a ticket prints: the big numeral, a caption and, when the day is known, its weekday for the
+// body. The stamp is "14 abr 2026"; a month-only one ("abr 2026") has no day, so the month takes the numeral's place.
+export interface TicketDate {
+	day: string;
+	month: string;
+	year?: string;
+	weekday?: string;
+}
+
+export function ticketDate(entry: TimelineEntry, locale: Locale): TicketDate | undefined {
+	if (!entry.stamp) return undefined;
+	const [day, month = '', ...year] = entry.stamp.split(' ');
+	const parts: TicketDate = { day, month, ...(year.length > 0 ? { year: year.join(' ') } : {}) };
+	if (entry.datePrecision === 'month' || !entry.date) return parts;
+	// The calendar day as the admin wrote it, so the weekday does not move with the visitor's time zone.
+	const at = new Date(`${entry.date}T00:00:00Z`);
+	if (Number.isNaN(at.getTime())) return parts;
+	const weekday = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'es-EC', { weekday: 'short', timeZone: 'UTC' })
+		.format(at)
+		.replace('.', '');
+	return { ...parts, weekday };
 }
 
 const DAY = 86_400_000;
