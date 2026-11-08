@@ -242,7 +242,7 @@ test.describe('hostile content', () => {
 			);
 			await open(page, `${site.url}/`);
 			await expect(ticket(page).locator('[data-seat-num]')).toHaveText('0');
-			await expect(ticket(page).locator('[data-seat-taken]')).not.toContainText('-');
+			await expect(ticket(page).locator('[data-seat-num]')).not.toContainText('-');
 			const width = await ticket(page)
 				.locator('[data-seat-meter] i')
 				.evaluate((bar) => (bar as HTMLElement).style.width);

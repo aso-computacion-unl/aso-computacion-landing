@@ -1,16 +1,14 @@
 ---
-// The Inscripciones section (S1, S2): one ticket per upcoming activity, nearest date first, for any number of activities
-// and any dates. Which activities get one, and how each signs up, is decided in src/lib/registration/tickets.ts; the
-// section is left out when there is none. The seats left are painted by src/scripts/seats.ts when the admin's origin
-// is known (`data-seats-url`); signing up happens on the admin's event page, which each ticket links to, and the head's
-// one button goes to the admin's list of every event (left out when the origin is unknown). Up to three tickets sit in
-// a grid; more become a rail that scrolls sideways (src/scripts/ticket-rail.ts adds its arrows, counter and bar).
+// The Inscripciones section (S1, S2, S4): one full-width ticket strip per upcoming activity, nearest date first, for any
+// number of activities and any dates. Which activities get one, and how each signs up, is decided in
+// src/lib/registration/tickets.ts; the section is left out when there is none. The seats left are painted by
+// src/scripts/seats.ts when the admin's origin is known (`data-seats-url`); signing up happens on the admin's event
+// page, which each ticket links to. The link to the admin's list of every event (left out when the origin is unknown)
+// sits at the right of the heading, and on a phone, where the heading has no room for it, at the end of the list.
 import { getContent } from '../data/content';
 import { toLocale } from '../i18n/locales';
 import { useTranslations } from '../i18n/ui';
 import { chooseTickets } from '../lib/registration/tickets';
-import { RAIL_MIN, padCount, shouldRail } from '../scripts/ticket-rail';
-import Button from './Button.astro';
 import SectionHead from './SectionHead.astro';
 import Ticket from './Ticket.astro';
 
@@ -25,55 +23,33 @@ const head = {
 	demo: tickets.some((ticket) => ticket.entry.demo),
 };
 const live = tickets.some((ticket) => ticket.mode !== 'free');
-const rail = shouldRail(tickets.length);
-// What the counter says before the script measures the strip: the first row (one ticket fewer than a rail needs).
-const firstPage = t('ticket.rail.range', {
-	from: padCount(1),
-	to: padCount(Math.min(RAIL_MIN - 1, tickets.length)),
-	total: padCount(tickets.length),
-});
 ---
 
 {tickets.length > 0 && (
 	<section id="inscripciones" class="tk-section py-section" data-seats-url={live ? seatsUrl : undefined}>
 		<div class="wrap">
-			{/* Without the button there is no aside at all: an empty slot would still reserve the head's second column. */}
+			{/* Without the link there is no aside at all: an empty slot would still reserve the head's second column. */}
 			{eventsUrl ? (
 				<SectionHead {...head}>
-					<div slot="aside" class="flex lg:justify-end">
-						<Button href={eventsUrl}>{t('ticket.seeAll')}</Button>
+					<div slot="aside" class="tk-all">
+						<a href={eventsUrl}>
+							{t('ticket.seeAll')} <span aria-hidden="true">→</span>
+						</a>
 					</div>
 				</SectionHead>
 			) : (
 				<SectionHead {...head} />
 			)}
-			<div data-rail-host={rail ? '' : undefined}>
-				{rail && (
-					<div class="tk-rail-ui" data-rail-ui hidden>
-						<button type="button" data-rail-prev aria-label={t('ticket.rail.prev')}>
-							<span aria-hidden="true">←</span>
-						</button>
-						<button type="button" data-rail-next aria-label={t('ticket.rail.next')}>
-							<span aria-hidden="true">→</span>
-						</button>
-						<p class="tk-rail-count" data-rail-count aria-live="polite">
-							{firstPage}
-						</p>
-						<span class="tk-rail-bar" aria-hidden="true">
-							<i data-rail-bar />
-						</span>
-					</div>
-				)}
-				<ol
-					class:list={['tk-list', { 'is-rail': rail }]}
-					aria-label={t('ticket.list')}
-					data-rail={rail ? '' : undefined}
-				>
-					{tickets.map((ticket) => (
-						<Ticket ticket={ticket} />
-					))}
-				</ol>
-			</div>
+			<ol class="tk-list" aria-label={t('ticket.list')}>
+				{tickets.map((ticket) => (
+					<Ticket ticket={ticket} />
+				))}
+			</ol>
+			{eventsUrl && (
+				<a class="tk-more" href={eventsUrl}>
+					{t('ticket.seeAll')} <span aria-hidden="true">→</span>
+				</a>
+			)}
 		</div>
 	</section>
 )}
@@ -81,6 +57,4 @@ const firstPage = t('ticket.rail.range', {
 <script>
 	// Pages that do not know the admin's origin (or have no ticket with registration) never ask for the seats.
 	if (document.querySelector('[data-seats-url]')) void import('../scripts/seats');
-	// Only a list with more than three tickets is a rail.
-	if (document.querySelector('[data-rail-host]')) void import('../scripts/ticket-rail');
 </script>

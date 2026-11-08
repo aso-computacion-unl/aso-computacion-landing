@@ -66,7 +66,8 @@ for (const width of [390, 768, 1440]) {
 	test.describe(`at ${width}px`, () => {
 		test.use({ viewport: { width, height: 900 } });
 
-		// The join title is its own, smaller role (the card that invites to propose); every other section title is giant.
+		// The join title and the Inscripciones one are their own, smaller role (the card that invites to propose, and the
+		// strips that lead their section); every other section title is giant.
 		test('every section title has the same size and the page uses at most nine text sizes', async ({ page }) => {
 			await page.goto('/');
 			await page.evaluate(() => document.fonts.ready);
@@ -76,13 +77,16 @@ for (const width of [390, 768, 1440]) {
 					const hasText = [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent?.trim());
 					if (hasText) sizes.add(getComputedStyle(element).fontSize);
 				});
-				const titles = [...document.querySelectorAll('main section[id] h2:not(.join-title)')].map(
+				const titles = [...document.querySelectorAll('main section[id]:not(#inscripciones) h2:not(.join-title)')].map(
 					(h2) => getComputedStyle(h2).fontSize,
 				);
-				return { sizes: [...sizes], titles };
+				const tickets = document.querySelector('#inscripciones h2');
+				return { sizes: [...sizes], titles, tickets: tickets && getComputedStyle(tickets).fontSize };
 			});
 			expect(new Set(result.titles).size).toBe(1);
-			expect(result.titles.length).toBeGreaterThan(4);
+			expect(result.titles.length).toBeGreaterThan(3);
+			// The Inscripciones title steps down from the giant one.
+			expect(parseFloat(result.tickets ?? '0')).toBeLessThan(parseFloat(result.titles[0]));
 			expect(result.sizes.length, result.sizes.join(', ')).toBeLessThanOrEqual(9);
 		});
 
