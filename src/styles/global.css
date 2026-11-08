@@ -3100,12 +3100,6 @@ html.motion .forum-app {
 		background: var(--color-navy);
 	}
 
-	/* The heading is a step smaller than the other sections' (section, not giant: 72px at 1440, 40px on a phone, where
-	   "Inscripciones" in the expanded cut still fits 320px): the strips are the section. */
-	.tk-section .h2-xl {
-		font-size: var(--text-section);
-	}
-
 	.tk-list {
 		display: grid;
 		gap: 0.75rem;
@@ -3526,11 +3520,9 @@ html.motion .forum-app {
 		display: none;
 	}
 
-	/* The action is the Button's face and base, signal red: full width on a phone, as wide as its text otherwise. */
+	/* The action is the paper Button (white on navy, as on every ticket): full width on a phone, as wide as its text
+	   otherwise. */
 	.tk-action {
-		--face: var(--color-signal);
-		--ink: #fff;
-		--base: color-mix(in srgb, var(--color-signal) 65%, var(--color-shade));
 		--lift: 4px;
 		display: block;
 		width: 100%;

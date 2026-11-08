@@ -419,7 +419,7 @@ test.describe('registration from the admin', () => {
 			await expect(page.locator('#inscripciones .tk-desc')).toHaveCount(0);
 		});
 
-		test('puts "Ver todas" at the right of a smaller heading, on the bottom line of the head', async ({ page }) => {
+		test('puts "Ver todas" at the right of the heading, on the bottom line of the head', async ({ page }) => {
 			await open(page, `${site.url}/`);
 			const head = page.locator('#inscripciones header.section-head');
 			const link = await head.getByRole('link', { name: /Ver todas/ }).boundingBox();
@@ -428,11 +428,6 @@ test.describe('registration from the admin', () => {
 			if (!link || !title || !lead) throw new Error('the head is missing a part');
 			expect(link.x).toBeGreaterThan(title.x + title.width);
 			expect(Math.abs(link.y + link.height - (lead.y + lead.height))).toBeLessThan(12);
-			// The section titles are 108px at 1440; this one steps down so the strips lead.
-			const size = await head
-				.getByRole('heading', { level: 2 })
-				.evaluate((h) => parseFloat(getComputedStyle(h).fontSize));
-			expect(size).toBeLessThan(90);
 		});
 
 		test.describe('on a phone', () => {
