@@ -78,7 +78,7 @@ export const unlRegistration = (overrides: Partial<PublicEventRegistration> = {}
 	mode: 'unl',
 	capacity: null,
 	deadline: null,
-	url: 'https://admin.example.test/foro/eventos/taller-de-git',
+	url: 'https://admin.example.test/inscripciones/taller-de-git',
 	endpoint: null,
 	...overrides,
 });

@@ -51,13 +51,13 @@ describe('eventsStructuredData', () => {
 		const [event] = eventsStructuredData(
 			[
 				entry({
-					registration: { mode: 'unl', href: 'https://admin.test/foro/eventos/taller-de-git' },
-					schema: { startDate: '2026-11-12', registrationUrl: 'https://admin.test/foro/eventos/taller-de-git' },
+					registration: { mode: 'unl', href: 'https://admin.test/inscripciones/taller-de-git' },
+					schema: { startDate: '2026-11-12', registrationUrl: 'https://admin.test/inscripciones/taller-de-git' },
 				}),
 			],
 			page,
 		);
-		expect(event.offers).toMatchObject({ url: 'https://admin.test/foro/eventos/taller-de-git', price: '0' });
+		expect(event.offers).toMatchObject({ url: 'https://admin.test/inscripciones/taller-de-git', price: '0' });
 	});
 
 	it('points the offer of an open registration to the admin event page too, with its deadline', () => {
@@ -66,7 +66,7 @@ describe('eventsStructuredData', () => {
 				entry({
 					registration: {
 						mode: 'open',
-						href: 'https://admin.test/foro/eventos/taller-de-git',
+						href: 'https://admin.test/inscripciones/taller-de-git',
 						deadline: '2026-11-12T15:00:00.000Z',
 					},
 				}),
@@ -74,19 +74,19 @@ describe('eventsStructuredData', () => {
 			page,
 		);
 		expect(event.offers).toMatchObject({
-			url: 'https://admin.test/foro/eventos/taller-de-git',
+			url: 'https://admin.test/inscripciones/taller-de-git',
 			validThrough: '2026-11-12T15:00:00.000Z',
 		});
 	});
 
 	it('offers an open registration, which now lives on the admin event page', () => {
-		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/foro/eventos/x' } });
-		expect(eventsStructuredData([open], page)[0]).toHaveProperty('offers.url', 'https://admin.test/foro/eventos/x');
+		const open = entry({ registration: { mode: 'open', href: 'https://admin.test/inscripciones/x' } });
+		expect(eventsStructuredData([open], page)[0]).toHaveProperty('offers.url', 'https://admin.test/inscripciones/x');
 	});
 
 	it('offers nothing once the deadline passed or when there is no registration', () => {
 		const closed = entry({
-			registration: { mode: 'open', href: 'https://admin.test/foro/eventos/x', deadline: '2026-10-01T00:00:00.000Z' },
+			registration: { mode: 'open', href: 'https://admin.test/inscripciones/x', deadline: '2026-10-01T00:00:00.000Z' },
 		});
 		expect(eventsStructuredData([closed], page)[0]).not.toHaveProperty('offers');
 		expect(eventsStructuredData([entry()], page)[0]).not.toHaveProperty('offers');
