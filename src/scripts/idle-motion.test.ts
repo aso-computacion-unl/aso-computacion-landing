@@ -12,12 +12,14 @@ function host() {
 
 async function load(hosts: ReturnType<typeof host>[]) {
 	const observed: unknown[] = [];
+	let observers = 0;
 	let notify: (entries: unknown[]) => void = () => {};
 	vi.stubGlobal('document', { querySelectorAll: vi.fn(() => hosts) });
 	vi.stubGlobal(
 		'IntersectionObserver',
 		class {
 			constructor(callback: (entries: unknown[]) => void) {
+				observers += 1;
 				notify = callback;
 			}
 			observe = (target: unknown) => observed.push(target);
@@ -26,7 +28,7 @@ async function load(hosts: ReturnType<typeof host>[]) {
 	// The script has no exports, so TypeScript does not treat it as a module: import it by a variable name.
 	const script = './idle-motion';
 	await import(/* @vite-ignore */ script);
-	return { observed, notify: (entries: unknown[]) => notify(entries) };
+	return { observed, observers: () => observers, notify: (entries: unknown[]) => notify(entries) };
 }
 
 describe('idle-motion', () => {
@@ -35,7 +37,8 @@ describe('idle-motion', () => {
 
 	it('watches every ticket list', async () => {
 		const hosts = [host(), host()];
-		const { observed } = await load(hosts);
+		const { observed, observers } = await load(hosts);
+		expect(observers()).toBe(1);
 		expect(observed).toEqual(hosts);
 	});
 
@@ -49,7 +52,8 @@ describe('idle-motion', () => {
 	});
 
 	it('does not create an observer on a page without lists', async () => {
-		const { observed } = await load([]);
+		const { observed, observers } = await load([]);
+		expect(observers()).toBe(0);
 		expect(observed).toEqual([]);
 	});
 });

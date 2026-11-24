@@ -10,16 +10,25 @@ const opacities = (page: Page, selector: string) =>
 
 test.describe('editorial entrances', () => {
 	test('wait out of sight while motion is pending', async ({ page }) => {
-		// Hold the motion chunks back so the page stays in its pre-motion state for the check.
+		// Hold the motion chunks back until the checks are done, so the page stays in its pre-motion state for them, and
+		// stop the page's clock so the three-second fallback (src/layouts/Layout.astro) cannot reveal it meanwhile.
+		let release: () => void = () => {};
+		const held = new Promise<void>((resolve) => (release = resolve));
 		await page.route(/\/_astro\/(gsap|ScrollTrigger|lenis)\./, async (route) => {
-			await new Promise((resolve) => setTimeout(resolve, 2500));
+			await held;
 			await route.continue().catch(() => {});
 		});
+		await page.clock.install();
+		await page.clock.pauseAt(Date.now());
 		await page.goto('/');
-		await expect(page.locator('html')).toHaveClass(/\bmotion\b/);
-		for (const selector of pieces) {
-			if ((await page.locator(selector).count()) === 0) continue; // The news list is absent on a build without news.
-			expect(new Set(await opacities(page, selector)), selector).toEqual(new Set(['0']));
+		try {
+			await expect(page.locator('html')).toHaveClass(/\bmotion\b/);
+			for (const selector of pieces) {
+				if ((await page.locator(selector).count()) === 0) continue; // The news list is absent on a build without news.
+				expect(new Set(await opacities(page, selector)), selector).toEqual(new Set(['0']));
+			}
+		} finally {
+			release();
 		}
 	});
 
