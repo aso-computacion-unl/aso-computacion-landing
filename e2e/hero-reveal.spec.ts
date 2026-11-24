@@ -14,12 +14,18 @@ test.describe('hero reveal fallback', () => {
 		const html = page.locator('html');
 		const lines = page.locator('.hero .hero-line');
 		const lede = page.locator('.hero .hero-lede');
+		// The page's clock stands still until the pre-reveal state is checked, so a slow `load` cannot let the three-second
+		// fallback fire first. Then the fallback is run on purpose and time flows again for the late libraries.
+		await page.clock.install();
+		await page.clock.pauseAt(Date.now());
 		await page.goto('/');
 		await expect(html).toHaveClass(/\bmotion\b/);
 		await expect(lines.first()).toBeHidden();
 
 		// Before the fallback it is hidden, afterwards it is not: the fallback's own timing is pinned by the unit test.
-		await expect(html).not.toHaveClass(/\bmotion\b/, { timeout: 4000 });
+		await page.clock.runFor(3000);
+		await page.clock.resume();
+		await expect(html).not.toHaveClass(/\bmotion\b/);
 		await expect(lines).toHaveCount(3);
 		for (const line of await lines.all()) await expect(line).toBeVisible();
 		await expect(lede).toHaveCSS('opacity', '1');
